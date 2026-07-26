@@ -26,7 +26,7 @@
 		"@orange-cloud/changelog": "workspace:*",
 		"@peculiar/x509": "^1.14.3",
 		"jose": "^6.2.3",
-		"next": "16.2.6",
+		"next": "16.2.11",
 		"next-intl": "^4.13.0",
 		"react": "^19.1.7",
 		"react-dom": "^19.1.7"
