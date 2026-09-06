@@ -370,7 +370,7 @@ export struct R2SettingsPage {
           .height(44)
           .fontSize(15)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .enabled(!this.vm.sqlRunning && this.sqlText.trim() !== '')
           .onClick(() => {
             this.vm.runSql(this.bucket, this.sqlText).catch(() => {
@@ -635,7 +635,7 @@ export struct R2SettingsPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving && this.fDomain.trim() !== '' && this.fZoneId.trim() !== '')
         .onClick(() => {
           this.vm.addDomain(this.bucket, this.fDomain.trim(), this.fZoneId.trim()).then((err: string) => {
@@ -683,7 +683,7 @@ export struct R2SettingsPage {
             .fontSize(13)
             .fontWeight(FontWeight.Medium)
             .fontColor(this.fMethods.includes(method) ? Color.White : $r('sys.color.font_primary'))
-            .backgroundColor(this.fMethods.includes(method) ? BRAND_ORANGE : $r('sys.color.comp_background_tertiary'))
+            .backgroundColor(this.fMethods.includes(method) ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_tertiary'))
             .borderRadius(14)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .onClick(() => {
@@ -709,7 +709,7 @@ export struct R2SettingsPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving && this.fOrigins.trim() !== '' && this.fMethods.length > 0)
         .onClick(() => {
           this.submitCorsRule();
@@ -724,7 +724,7 @@ export struct R2SettingsPage {
     promptAction.showDialog({
       title: '启用数据目录',
       message: '启用后该桶将作为 Apache Iceberg 目录，目录操作按量计费（每月含 100 万次免费额度）。目录已启用时手动删除对象会破坏目录。',
-      buttons: [{ text: '取消', color: '#666666' }, { text: '启用', color: '#F48120' }],
+      buttons: [{ text: '取消', color: '#666666' }, { text: '启用', color: $r('app.color.oc_brand') }],
     }).then((result: promptAction.ShowDialogSuccessResponse) => {
       if (result.index === 1) {
         this.vm.setCatalogEnabled(this.bucket, true).then((err: string) => {

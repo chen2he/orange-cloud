@@ -548,7 +548,7 @@ export struct WorkerBindingsPage {
       Button(this.vm.isSaving ? '正在保存…' : '保存')
         .width('100%')
         .height(46)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand'))
         .enabled(!this.vm.isSaving && this.fName.trim() !== '' && this.fValue !== '')
         .onClick(() => {
           this.vm.putSecret(accountStore.selectedId, this.scriptName, this.fName.trim(), this.fValue)
@@ -591,7 +591,7 @@ export struct WorkerBindingsPage {
       Button(this.vm.isSaving ? '正在保存…' : '保存')
         .width('100%')
         .height(46)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand'))
         .enabled(!this.vm.isSaving && this.fName.trim() !== '')
         .onClick(() => {
           const name = this.fName.trim();
@@ -636,7 +636,7 @@ export struct WorkerBindingsPage {
       Button(this.vm.isSaving ? '正在导入…' : '导入')
         .width('100%')
         .height(46)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand'))
         .enabled(!this.vm.isSaving && this.fImportJson.trim() !== '')
         .onClick(() => {
           const json = this.fImportJson.trim();
@@ -676,7 +676,7 @@ export struct WorkerBindingsPage {
             .fontWeight(this.bindKind === option.kind ? FontWeight.Medium : FontWeight.Normal)
             .fontColor(this.bindKind === option.kind ? Color.White : $r('sys.color.font_secondary'))
             .padding({ left: 16, right: 16, top: 6, bottom: 6 })
-            .backgroundColor(this.bindKind === option.kind ? BRAND_ORANGE : $r('sys.color.comp_background_list_card'))
+            .backgroundColor(this.bindKind === option.kind ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
             .borderRadius(16)
             .onClick(() => {
               this.bindKind = option.kind;
@@ -745,7 +745,7 @@ export struct WorkerBindingsPage {
       Button(this.vm.isSaving ? '正在绑定…' : '绑定')
         .width('100%')
         .height(46)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand'))
         .enabled(!this.vm.isSaving && this.fName.trim() !== '' && this.bindValue !== '')
         .onClick(() => {
           const name = this.fName.trim();

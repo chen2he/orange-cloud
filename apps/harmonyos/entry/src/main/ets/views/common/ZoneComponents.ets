@@ -61,7 +61,7 @@ function planTone(planName: string): string {
     return '#3D86E0';
   }
   if (short === 'business') {
-    return '#F48120';
+    return '#E8730F';
   }
   if (short === 'enterprise') {
     return '#C99A1E';

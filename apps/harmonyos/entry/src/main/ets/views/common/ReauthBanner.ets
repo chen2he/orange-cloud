@@ -69,7 +69,7 @@ export struct ReauthBanner {
             .fontWeight(FontWeight.Medium)
             .fontColor(Color.White)
             .padding({ left: 12, right: 12, top: 7, bottom: 7 })
-            .backgroundColor(BRAND_ORANGE)
+            .backgroundColor($r('app.color.oc_brand_cta'))
             .borderRadius(OCLayout.chipRadius)
             .onClick(() => {
               this.startReauthorize();

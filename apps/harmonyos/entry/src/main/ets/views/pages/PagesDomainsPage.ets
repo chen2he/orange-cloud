@@ -281,7 +281,7 @@ export struct PagesDomainsPage {
         .height(46)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving && this.fDomain.trim() !== '')
         .onClick(() => {
           this.vm.add(accountStore.selectedId, this.projectName, this.fDomain.trim())

@@ -264,7 +264,7 @@ export struct DNSListPage {
 
           Blank()
           Toggle({ type: ToggleType.Switch, isOn: this.fProxied })
-            .selectedColor('#F48120')
+            .selectedColor($r('app.color.oc_brand'))
             .onChange((isOn: boolean) => {
               this.fProxied = isOn;
             })
@@ -285,7 +285,7 @@ export struct DNSListPage {
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
         .fontColor(Color.White)
-        .backgroundColor('#F48120')
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving && this.fName.trim() !== '' && this.fContent.trim() !== '')
         .onClick(() => {
           this.submit();
@@ -296,7 +296,7 @@ export struct DNSListPage {
           LoadingProgress()
             .width(18)
             .height(18)
-            .color('#F48120')
+            .color($r('app.color.oc_brand'))
           Text('正在保存…')
             .fontSize(13)
             .fontColor($r('sys.color.font_secondary'))
@@ -380,7 +380,7 @@ export struct DNSListPage {
             LoadingProgress()
               .width(36)
               .height(36)
-              .color('#F48120')
+              .color($r('app.color.oc_brand'))
             Text('正在加载 DNS 记录…')
               .fontSize(14)
               .fontColor($r('sys.color.font_secondary'))
@@ -401,7 +401,7 @@ export struct DNSListPage {
               .padding({ left: 32, right: 32 })
             Button('重试')
               .fontSize(14)
-              .backgroundColor('#F48120')
+              .backgroundColor($r('app.color.oc_brand'))
               .onClick(() => {
                 if (this.zoneId !== '') {
                   this.vm.load(this.zoneId).catch(() => {
@@ -494,7 +494,7 @@ export struct DNSListPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor('#F48120')
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })

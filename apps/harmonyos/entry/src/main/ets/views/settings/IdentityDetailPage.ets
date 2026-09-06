@@ -156,7 +156,7 @@ export struct IdentityDetailPage {
                 Button('保存')
                   .fontSize(14)
                   .fontColor(Color.White)
-                  .backgroundColor(BRAND_ORANGE)
+                  .backgroundColor($r('app.color.oc_brand_cta'))
                   .enabled(this.editingLabel.trim() !== '')
                   .onClick(() => {
                     authManager.renameSession(this.sessionId, this.editingLabel.trim()).then(() => {

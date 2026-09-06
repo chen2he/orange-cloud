@@ -74,7 +74,7 @@ export struct RuleRow {
       .layoutWeight(1)
 
       Toggle({ type: ToggleType.Switch, isOn: this.rule.enabled === true })
-        .selectedColor(BRAND_ORANGE)
+        .selectedColor($r('app.color.oc_brand'))
         .enabled(!this.busy)
         .onChange((isOn: boolean) => {
           if (isOn !== (this.rule.enabled === true)) {

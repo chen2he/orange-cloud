@@ -131,7 +131,7 @@ export struct QueuesPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isCreating && this.fName.trim() !== '')
         .onClick(() => {
           this.vm.create(this.fName.trim()).then((err: string) => {
@@ -220,7 +220,7 @@ export struct QueuesPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
@@ -484,7 +484,7 @@ export struct QueueDetailPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving && this.fQueueName.trim() !== '')
         .onClick(() => {
           const name = this.fQueueName.trim();
@@ -539,7 +539,7 @@ export struct QueueDetailPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving && this.fDelay.trim() !== '' && this.fRetention.trim() !== '')
         .onClick(() => {
           const delay = Number.parseInt(this.fDelay.trim());
@@ -877,7 +877,7 @@ export struct AIGatewayPage {
           .fontColor($r('sys.color.font_primary'))
         Blank()
         Toggle({ type: ToggleType.Switch, isOn: this.fCollectLogs })
-          .selectedColor(BRAND_ORANGE)
+          .selectedColor($r('app.color.oc_brand'))
           .onChange((isOn: boolean) => {
             this.fCollectLogs = isOn;
           })
@@ -915,7 +915,7 @@ export struct AIGatewayPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isCreating && this.fName.trim() !== '')
         .onClick(() => {
           this.vm.create(this.fName.trim(), intOr(this.fCacheTtl, 0), this.fCollectLogs,
@@ -1005,7 +1005,7 @@ export struct AIGatewayPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
@@ -1602,7 +1602,7 @@ export struct HyperdrivePage {
             .fontWeight(this.fScheme === option.scheme ? FontWeight.Medium : FontWeight.Normal)
             .fontColor(this.fScheme === option.scheme ? Color.White : $r('sys.color.font_secondary'))
             .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-            .backgroundColor(this.fScheme === option.scheme ? BRAND_ORANGE : $r('sys.color.comp_background_list_card'))
+            .backgroundColor(this.fScheme === option.scheme ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
             .borderRadius(16)
             .onClick(() => {
               this.fScheme = option.scheme;
@@ -1657,7 +1657,7 @@ export struct HyperdrivePage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isCreating && this.fName.trim() !== '' && this.fHost.trim() !== '' &&
           this.fDatabase.trim() !== '' && this.fUser.trim() !== '')
         .onClick(() => {
@@ -1751,7 +1751,7 @@ export struct HyperdrivePage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
@@ -1988,7 +1988,7 @@ export struct HyperdriveDetailPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving && this.fName.trim() !== '')
         .onClick(() => {
           this.vm.rename(this.fName.trim()).then((err: string) => {
@@ -2058,7 +2058,7 @@ export struct HyperdriveDetailPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving && this.fHost.trim() !== '' && this.fDatabase.trim() !== '' &&
           this.fUser.trim() !== '' && this.fPassword !== '')
         .onClick(() => {
@@ -2099,7 +2099,7 @@ export struct HyperdriveDetailPage {
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
         Toggle({ type: ToggleType.Switch, isOn: !this.eDisabled })
-          .selectedColor(BRAND_ORANGE)
+          .selectedColor($r('app.color.oc_brand'))
           .onChange((isOn: boolean) => {
             this.eDisabled = !isOn;
           })
@@ -2133,7 +2133,7 @@ export struct HyperdriveDetailPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving)
         .onClick(() => {
           const maxAge = Number.parseInt(this.eMaxAge);
@@ -2509,7 +2509,7 @@ export struct WorkersAIPage {
             .height(44)
             .fontSize(15)
             .fontColor(Color.White)
-            .backgroundColor(BRAND_ORANGE)
+            .backgroundColor($r('app.color.oc_brand_cta'))
             .enabled(!this.vm.running && this.prompt.trim() !== '')
             .onClick(() => {
               this.runSelected();

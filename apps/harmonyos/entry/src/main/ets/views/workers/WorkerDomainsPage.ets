@@ -250,7 +250,7 @@ export struct WorkerDomainsPage {
       Button(this.vm.isSaving ? '正在绑定…' : '绑定')
         .width('100%')
         .height(46)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand'))
         .enabled(!this.vm.isSaving && this.fHost.trim() !== '' && this.vm.zones.length > 0)
         .onClick(() => {
           const zone = this.vm.zones[this.fZoneIdx];
@@ -309,7 +309,7 @@ export struct WorkerDomainsPage {
       Button(this.vm.isSaving ? '正在添加…' : '添加')
         .width('100%')
         .height(46)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand'))
         .enabled(!this.vm.isSaving && this.fPattern.trim() !== '' && this.vm.zones.length > 0)
         .onClick(() => {
           const zone = this.vm.zones[this.fZoneIdx];

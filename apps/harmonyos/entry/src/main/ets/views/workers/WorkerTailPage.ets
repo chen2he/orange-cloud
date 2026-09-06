@@ -258,7 +258,7 @@ export struct WorkerTailPage {
           .height(44)
           .fontSize(15)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .onClick(() => {
             this.copyText(this.detailLine?.text ?? '');
           })

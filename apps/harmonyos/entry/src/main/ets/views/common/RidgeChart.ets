@@ -2,6 +2,9 @@
 // 填充暖色渐变，脚下地平线，太阳落在当前时刻的山脊上。主 App 用 Canvas 绘制。
 import { BRAND_ORANGE } from './Components';
 
+/// 图表专用橙：比品牌亮橙深一档，保证线/点这类图形元素对浅底 3.05:1、对深色卡 5.7:1
+const CHART_ORANGE = '#E8730F';
+
 @ComponentV2
 export struct RidgeChart {
   @Require @Param data: number[];
@@ -53,8 +56,8 @@ export struct RidgeChart {
 
     // 填充山体（渐变）
     const grad = ctx.createLinearGradient(0, top, 0, baseline);
-    grad.addColorStop(0, '#66F48120');
-    grad.addColorStop(1, '#0FF48120');
+    grad.addColorStop(0, '#66E8730F');
+    grad.addColorStop(1, '#0FE8730F');
     ctx.beginPath();
     ctx.moveTo(0, baseline);
     for (let i = 0; i < n; i++) {
@@ -71,7 +74,7 @@ export struct RidgeChart {
     for (let i = 1; i < n; i++) {
       ctx.lineTo(xy[i][0], xy[i][1]);
     }
-    ctx.strokeStyle = BRAND_ORANGE;
+    ctx.strokeStyle = CHART_ORANGE;
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -79,7 +82,7 @@ export struct RidgeChart {
     ctx.beginPath();
     ctx.moveTo(0, baseline);
     ctx.lineTo(w, baseline);
-    ctx.strokeStyle = '#33F48120';
+    ctx.strokeStyle = '#33E8730F';
     ctx.lineWidth = 1;
     ctx.stroke();
 
@@ -89,12 +92,12 @@ export struct RidgeChart {
       const sy = xy[this.sunIndex][1];
       ctx.beginPath();
       ctx.arc(sx, sy, 9, 0, Math.PI * 2);
-      ctx.fillStyle = BRAND_ORANGE;
+      ctx.fillStyle = CHART_ORANGE;
       ctx.fill();
       // 光晕
       ctx.beginPath();
       ctx.arc(sx, sy, 15, 0, Math.PI * 2);
-      ctx.fillStyle = '#33F48120';
+      ctx.fillStyle = '#33E8730F';
       ctx.fill();
     }
   }

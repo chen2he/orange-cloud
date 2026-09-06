@@ -62,7 +62,7 @@ export struct WebAuthPage {
             LoadingProgress()
               .width(32)
               .height(32)
-              .color('#F48120')
+              .color($r('app.color.oc_brand'))
             Text('选择授权范围后继续')
               .fontSize(13)
               .fontColor($r('sys.color.font_secondary'))

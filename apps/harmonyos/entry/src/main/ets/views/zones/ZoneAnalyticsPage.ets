@@ -391,7 +391,7 @@ export struct ZoneAnalyticsSection {
         Column()
           .width(`${maxRequests > 0 ? Math.max(1, item.requests * 100 / maxRequests) : 1}%`)
           .height(5)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand'))
           .borderRadius(3)
           .opacity(0.8)
       }
@@ -418,7 +418,7 @@ export struct ZoneAnalyticsSection {
             }
           }
           .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-          .backgroundColor(this.range === r ? BRAND_ORANGE : $r('sys.color.comp_background_list_card'))
+          .backgroundColor(this.range === r ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
           .borderRadius(16)
           .onClick(() => {
             if (this.range === r) {
@@ -458,7 +458,7 @@ export struct ZoneAnalyticsSection {
           Button('重试')
             .fontSize(13)
             .fontColor(Color.White)
-            .backgroundColor(BRAND_ORANGE)
+            .backgroundColor($r('app.color.oc_brand_cta'))
             .onClick(() => {
               this.reload();
             })

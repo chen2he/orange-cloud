@@ -180,7 +180,7 @@ export struct PaywallPage {
         .padding({ top: 10, bottom: 10 })
       }
       .width('100%')
-      .backgroundColor(BRAND_ORANGE)
+      .backgroundColor($r('app.color.oc_brand_cta'))
       .borderRadius(OCLayout.chipRadius)
       .enabled(!this.store.isPurchasing && this.store.unavailable === '')
       .onClick(() => {

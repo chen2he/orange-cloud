@@ -1,8 +1,11 @@
 // 公共 UI 组件：加载 / 错误 / 空态 / 分区头 / 信息行 / 开关行 / 导航行 / 标签。
 // 品牌橙 #F48120 只给点缀（对齐晨昏设计语言：数字回归主文本色）。
 
-export const BRAND_ORANGE = '#F48120';
-export const BRAND_ORANGE_BG = '#1AF48120';
+/// 图形/装饰用橙（字符串型：Canvas、字符串形参、字符串拼接都要用它）。
+/// 比原亮橙 #F48120 深一档，保证线条/图标这类图形元素对浅底 3.05:1、对深色卡 5.7:1。
+/// 文字请用 $r('app.color.oc_brand_text')，白字底请用 $r('app.color.oc_brand_cta')。
+export const BRAND_ORANGE: string = '#E8730F';
+export const BRAND_ORANGE_BG: string = '#1AE8730F';
 export const DANGER_RED = '#DC2626';
 
 @ComponentV2
@@ -45,7 +48,7 @@ export struct OCError {
       Button('重试')
         .fontSize(14)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .onClick(() => {
           this.onRetry();
         })
@@ -154,7 +157,7 @@ export struct ToggleRow {
       .layoutWeight(1)
 
       Toggle({ type: ToggleType.Switch, isOn: this.isOn })
-        .selectedColor(BRAND_ORANGE)
+        .selectedColor($r('app.color.oc_brand'))
         .enabled(this.isEnabled)
         .onChange((isOn: boolean) => {
           if (isOn !== this.isOn) {

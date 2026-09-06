@@ -218,7 +218,7 @@ export struct ZoneDnsSettingsPage {
                               ? Color.White : $r('sys.color.font_secondary'))
                             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                             .backgroundColor((this.vm.settings?.zone_mode ?? 'standard') === opt.value
-                              ? '#F48120' : $r('sys.color.background_secondary'))
+                              ? $r('app.color.oc_brand') : $r('sys.color.background_secondary'))
                             .borderRadius(14)
                             .onClick(() => {
                               if (!this.canWriteSettings || this.vm.isSaving) {

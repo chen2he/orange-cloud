@@ -282,7 +282,7 @@ export struct StatusPage {
                 Text(incidentStatusText(update.status ?? ''))
                   .fontSize(12)
                   .fontWeight(FontWeight.Medium)
-                  .fontColor('#F48120')
+                  .fontColor($r('app.color.oc_brand_text'))
                 Blank()
                 Text(formatTimeAgo(update.display_at ?? ''))
                   .fontSize(11)

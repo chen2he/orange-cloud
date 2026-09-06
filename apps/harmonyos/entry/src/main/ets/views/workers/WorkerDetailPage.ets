@@ -410,7 +410,7 @@ export struct WorkerDetailPage {
           .fontWeight(this.vm.range === r ? FontWeight.Medium : FontWeight.Normal)
           .fontColor(this.vm.range === r ? Color.White : $r('sys.color.font_secondary'))
           .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-          .backgroundColor(this.vm.range === r ? BRAND_ORANGE : $r('sys.color.comp_background_list_card'))
+          .backgroundColor(this.vm.range === r ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
           .borderRadius(16)
           .onClick(() => {
             this.vm.switchRange(accountStore.selectedId, this.scriptName, r).catch(() => {
@@ -648,7 +648,7 @@ export struct WorkerDetailPage {
           .height(44)
           .fontSize(15)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .enabled(!this.vm.isDeployingCode && this.vm.content!.editable && this.fCode.trim() !== '')
           .onClick(() => {
             this.confirmDeployCode();

@@ -101,7 +101,7 @@ export struct WorkerRoutesPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isCreating && this.fPattern.trim() !== '' && this.fScript.trim() !== '')
         .onClick(() => {
           this.vm.create(this.zoneId, this.fPattern.trim(), this.fScript.trim()).then((ok: boolean) => {
@@ -160,7 +160,7 @@ export struct WorkerRoutesPage {
                       .textOverflow({ overflow: TextOverflow.Ellipsis })
                     Text(`→ ${route.script ?? '（无脚本）'}`)
                       .fontSize(12)
-                      .fontColor('#F48120')
+                      .fontColor($r('app.color.oc_brand_text'))
                   }
                   .alignItems(HorizontalAlign.Start)
                   .width('100%')
@@ -184,7 +184,7 @@ export struct WorkerRoutesPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })

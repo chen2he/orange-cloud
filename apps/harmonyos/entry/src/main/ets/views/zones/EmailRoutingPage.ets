@@ -343,7 +343,7 @@ export struct EmailRoutingPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.fCustomLocal.trim() !== '')
         .onClick(() => {
           const address = `${this.fCustomLocal.trim()}@${this.zoneName}`;
@@ -385,7 +385,7 @@ export struct EmailRoutingPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.fNewAddress.trim().includes('@'))
         .onClick(() => {
           this.vm.addAddress(accountStore.selectedId, this.fNewAddress.trim()).then((err: string) => {
@@ -542,7 +542,7 @@ export struct EmailRoutingPage {
                         this.openRuleEditor(rule);
                       })
                       Toggle({ type: ToggleType.Switch, isOn: rule.enabled === true })
-                        .selectedColor(BRAND_ORANGE)
+                        .selectedColor($r('app.color.oc_brand'))
                         .onChange((on: boolean) => {
                           if (on !== (rule.enabled === true)) {
                             this.vm.setRuleEnabled(this.zoneId, rule, on).then((err: string) => {

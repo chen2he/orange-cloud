@@ -140,7 +140,7 @@ export struct PageRulesPage {
       .layoutWeight(1)
 
       Toggle({ type: ToggleType.Switch, isOn: rule.status === 'active' })
-        .selectedColor(BRAND_ORANGE)
+        .selectedColor($r('app.color.oc_brand'))
         .enabled(!this.vm.isMutating)
         .onChange((isOn: boolean) => {
           if (isOn === (rule.status === 'active')) {

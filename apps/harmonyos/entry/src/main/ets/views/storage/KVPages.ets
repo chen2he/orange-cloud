@@ -85,7 +85,7 @@ export struct KVNamespacesPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isCreating && this.fTitle.trim() !== '')
         .onClick(() => {
           this.vm.create(this.fTitle.trim()).then((err: string) => {
@@ -173,7 +173,7 @@ export struct KVNamespacesPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
@@ -348,7 +348,7 @@ export struct KVKeysPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.vm.editingKey.trim() !== '')
         .onClick(() => {
           this.vm.saveValue(this.nsId, this.vm.editingKey.trim(), this.vm.editingValue).then((err: string) => {
@@ -451,7 +451,7 @@ export struct KVKeysPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })

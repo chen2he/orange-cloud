@@ -57,7 +57,7 @@ export struct LoginView {
           Column() {
             // 只取上半圆：高 64 的容器裁下 128 圆的上半（无阴影，避免矩形辉光边）
             Circle({ width: 128, height: 128 })
-              .fill('#F48120')
+              .fill($r('app.color.oc_brand'))
               .opacity(0.94)
           }
           .width(128)
@@ -124,7 +124,7 @@ export struct LoginView {
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
               .fontColor(Color.White)
-              .backgroundColor('#F48120')
+              .backgroundColor($r('app.color.oc_brand_cta'))
               .onClick(() => {
                 this.showPermissionSheet = true;
               })

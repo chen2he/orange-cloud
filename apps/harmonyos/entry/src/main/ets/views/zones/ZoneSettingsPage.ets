@@ -532,7 +532,7 @@ export struct ZoneSettingsPage {
                         .fontWeight(this.purgeModeIndex === index ? FontWeight.Medium : FontWeight.Normal)
                         .fontColor(this.purgeModeIndex === index ? Color.White : $r('sys.color.font_secondary'))
                         .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                        .backgroundColor(this.purgeModeIndex === index ? BRAND_ORANGE : $r('sys.color.background_secondary'))
+                        .backgroundColor(this.purgeModeIndex === index ? $r('app.color.oc_brand_cta') : $r('sys.color.background_secondary'))
                         .borderRadius(14)
                         .onClick(() => {
                           this.purgeModeIndex = index;
@@ -559,7 +559,7 @@ export struct ZoneSettingsPage {
                     .height(42)
                     .fontSize(14)
                     .fontColor(Color.White)
-                    .backgroundColor(BRAND_ORANGE)
+                    .backgroundColor($r('app.color.oc_brand_cta'))
                     .enabled(this.purgeUrls.trim() !== '')
                     .onClick(() => {
                       this.confirmPurgeTargets();

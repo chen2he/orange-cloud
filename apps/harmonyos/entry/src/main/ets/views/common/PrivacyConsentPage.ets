@@ -99,7 +99,7 @@ export struct PrivacyConsentPage {
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(OCLayout.islandRadius)
           .onClick(() => {
             this.onAccept();

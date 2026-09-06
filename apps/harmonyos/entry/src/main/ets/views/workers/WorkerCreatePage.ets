@@ -150,7 +150,7 @@ export struct WorkerCreatePage {
             .height(46)
             .fontSize(15)
             .fontColor(Color.White)
-            .backgroundColor(BRAND_ORANGE)
+            .backgroundColor($r('app.color.oc_brand_cta'))
             .enabled(!this.isSaving && this.nameValid() && this.code.trim() !== '')
             .onClick(() => {
               this.deploy();

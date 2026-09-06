@@ -125,7 +125,7 @@ export struct PermissionSelectionSheet {
       .textAlign(TextAlign.Center)
       .padding({ top: 5, bottom: 5 })
       .layoutWeight(1)
-      .backgroundColor(this.isWrite(module) === write ? BRAND_ORANGE : Color.Transparent)
+      .backgroundColor(this.isWrite(module) === write ? $r('app.color.oc_brand_cta') : Color.Transparent)
       .borderRadius(8)
       .onClick(() => {
         this.setWrite(module, write);
@@ -166,7 +166,7 @@ export struct PermissionSelectionSheet {
         .layoutWeight(1)
 
         Toggle({ type: ToggleType.Switch, isOn: this.isEnabled(module) })
-          .selectedColor(BRAND_ORANGE)
+          .selectedColor($r('app.color.oc_brand'))
           .enabled(!module.required)
           .onChange((isOn: boolean) => {
             if (isOn !== this.isEnabled(module)) {
@@ -303,7 +303,7 @@ export struct PermissionSelectionSheet {
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .enabled(!this.isWorking)
           .margin({ top: 12 })
           .onClick(() => {

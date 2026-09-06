@@ -19,6 +19,10 @@
     {
       "name": "oc_danger",
       "value": "#FF6B5A"
+    },
+    {
+      "name": "oc_brand_cta",
+      "value": "#B35500"
     }
   ]
 }

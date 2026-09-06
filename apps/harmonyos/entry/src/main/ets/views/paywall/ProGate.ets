@@ -53,7 +53,7 @@ export struct ProLockedView {
         .fontSize(15)
         .fontWeight(FontWeight.Medium)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .borderRadius(OCLayout.chipRadius)
         .padding({ left: 24, right: 24 })
         .margin({ top: 4 })

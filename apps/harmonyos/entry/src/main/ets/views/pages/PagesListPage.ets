@@ -94,7 +94,7 @@ export struct PagesListPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isCreating && /^[a-z0-9][a-z0-9-]*$/.test(this.fName.trim()))
         .onClick(() => {
           this.vm.create(this.fName.trim(), this.fBranch.trim() === '' ? 'main' : this.fBranch.trim())
@@ -216,7 +216,7 @@ export struct PagesListPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })

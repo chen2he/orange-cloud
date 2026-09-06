@@ -118,7 +118,7 @@ export struct R2BucketsPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isCreating && this.fName.trim() !== '')
         .onClick(() => {
           this.vm.create(this.fName.trim()).then((ok: boolean) => {
@@ -205,7 +205,7 @@ export struct R2BucketsPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
@@ -611,7 +611,7 @@ export struct R2ObjectsPage {
         .width('100%')
         .height(42)
         .fontSize(14)
-        .fontColor('#F48120')
+        .fontColor($r('app.color.oc_brand_text'))
         .backgroundColor($r('sys.color.comp_background_tertiary'))
         .onClick(() => {
           this.vm.uploadFile(this.bucket).then((err: string) => {
@@ -647,7 +647,7 @@ export struct R2ObjectsPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.fKey.trim() !== '')
         .onClick(() => {
           this.vm.upload(this.bucket, this.fKey.trim(), this.fContent).then((err: string) => {
@@ -786,7 +786,7 @@ export struct R2ObjectsPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isTransferring && this.fDestKey.trim() !== '' &&
           this.fDestKey.trim() !== this.transferSourceKey)
         .onClick(() => {
@@ -814,7 +814,7 @@ export struct R2ObjectsPage {
             .layoutWeight(1)
             .height(38)
             .fontSize(14)
-            .fontColor('#F48120')
+            .fontColor($r('app.color.oc_brand_text'))
             .backgroundColor($r('sys.color.comp_background_tertiary'))
             .onClick(() => {
               this.vm.preview(this.bucket, this.vm.viewerKey).catch((e: Error) => {
@@ -826,7 +826,7 @@ export struct R2ObjectsPage {
           .layoutWeight(1)
           .height(38)
           .fontSize(14)
-          .fontColor('#F48120')
+          .fontColor($r('app.color.oc_brand_text'))
           .backgroundColor($r('sys.color.comp_background_tertiary'))
           .onClick(() => {
             this.vm.saveToDevice(this.bucket, this.vm.viewerKey).then((err: string) => {
@@ -965,7 +965,7 @@ export struct R2ObjectsPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })

@@ -355,7 +355,7 @@ export struct LoadBalancerPage {
               .height(44)
               .fontSize(15)
               .fontColor(Color.White)
-              .backgroundColor(BRAND_ORANGE)
+              .backgroundColor($r('app.color.oc_brand_cta'))
               .onClick(() => {
                 const lb = this.vm.detail;
                 this.detailVisible = false;
@@ -398,7 +398,7 @@ export struct LoadBalancerPage {
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
       Toggle({ type: ToggleType.Checkbox, isOn: this.fDefaultPools.includes(pool.id) })
-        .selectedColor(BRAND_ORANGE)
+        .selectedColor($r('app.color.oc_brand'))
         .onChange((isOn: boolean) => {
           if (isOn) {
             if (!this.fDefaultPools.includes(pool.id)) {
@@ -546,7 +546,7 @@ export struct LoadBalancerPage {
           .height(44)
           .fontSize(15)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .enabled(!this.vm.isSaving && this.fName.trim() !== '' &&
             this.fDefaultPools.length > 0 && this.fFallback !== '')
           .onClick(() => {
@@ -674,7 +674,7 @@ export struct LoadBalancerPage {
             .height(52)
             .fontSize(26)
             .fontColor(Color.White)
-            .backgroundColor(BRAND_ORANGE)
+            .backgroundColor($r('app.color.oc_brand_cta'))
             .borderRadius(26)
             .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
             .margin({ right: 20, bottom: 28 })

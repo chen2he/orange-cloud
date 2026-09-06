@@ -291,7 +291,7 @@ export struct PagesDeploySheet {
           .fontWeight(this.source === 'paste' ? FontWeight.Medium : FontWeight.Normal)
           .fontColor(this.source === 'paste' ? Color.White : $r('sys.color.font_secondary'))
           .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-          .backgroundColor(this.source === 'paste' ? BRAND_ORANGE : $r('sys.color.comp_background_list_card'))
+          .backgroundColor(this.source === 'paste' ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
           .borderRadius(16)
           .onClick(() => {
             this.source = 'paste';
@@ -302,7 +302,7 @@ export struct PagesDeploySheet {
           .fontWeight(this.source === 'files' ? FontWeight.Medium : FontWeight.Normal)
           .fontColor(this.source === 'files' ? Color.White : $r('sys.color.font_secondary'))
           .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-          .backgroundColor(this.source === 'files' ? BRAND_ORANGE : $r('sys.color.comp_background_list_card'))
+          .backgroundColor(this.source === 'files' ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
           .borderRadius(16)
           .onClick(() => {
             this.source = 'files';
@@ -406,7 +406,7 @@ export struct PagesDeploySheet {
         .height(46)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isDeploying() &&
           (this.source === 'files' ? this.vm.files.length > 0 : (this.filename.trim() !== '' && this.code !== '')))
         .onClick(() => {

@@ -84,7 +84,7 @@ export struct SnippetEditPage {
               .height(46)
               .fontSize(15)
               .fontColor(Color.White)
-              .backgroundColor(BRAND_ORANGE)
+              .backgroundColor($r('app.color.oc_brand_cta'))
               .enabled(!this.isSaving && this.snippetName.trim() !== '' && this.code.trim() !== '')
               .onClick(() => {
                 this.save();

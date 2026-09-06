@@ -111,7 +111,7 @@ export struct SnippetsPage {
       .layoutWeight(1)
 
       Toggle({ type: ToggleType.Switch, isOn: rule.enabled === true })
-        .selectedColor(BRAND_ORANGE)
+        .selectedColor($r('app.color.oc_brand'))
         .onChange((isOn: boolean) => {
           if (isOn !== (rule.enabled === true)) {
             const next = this.vm.rules.map((r: SnippetRule, i: number): SnippetRule => {
@@ -180,7 +180,7 @@ export struct SnippetsPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.fRuleSnippet !== '' && this.fRuleExpression.trim() !== '')
         .onClick(() => {
           const newRule: SnippetRule = {
@@ -332,7 +332,7 @@ export struct SnippetsPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })

@@ -5,7 +5,7 @@ import { SectionHeader } from '../common/Components';
 import { OCSkyBackground } from '../common/OCSky';
 import { promptAction } from '@kit.ArkUI';
 
-const BRAND_ORANGE: string = '#F48120';
+const BRAND_ORANGE: string = '#E8730F';
 
 @ObservedV2
 class ScannerVM {
@@ -103,7 +103,7 @@ export struct URLScannerPage {
                 Button(this.vm.isScanning ? '扫描中…' : '开始扫描')
                   .width('100%')
                   .enabled(this.vm.canScan())
-                  .backgroundColor(BRAND_ORANGE)
+                  .backgroundColor($r('app.color.oc_brand'))
                   .onClick(() => {
                     this.vm.scan().then((err: string) => this.toast(err));
                   })

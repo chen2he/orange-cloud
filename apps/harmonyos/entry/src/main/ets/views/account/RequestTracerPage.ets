@@ -8,7 +8,7 @@ import { SectionHeader } from '../common/Components';
 import { promptAction } from '@kit.ArkUI';
 
 const METHODS: string[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'];
-const BRAND_ORANGE: string = '#F48120';
+const BRAND_ORANGE: string = '#E8730F';
 
 @ObservedV2
 class TracerVM {
@@ -72,7 +72,7 @@ export struct RequestTracerPage {
                       .fontSize(12)
                       .fontColor(this.vm.method === m ? Color.White : $r('sys.color.font_secondary'))
                       .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-                      .backgroundColor(this.vm.method === m ? BRAND_ORANGE : $r('sys.color.background_secondary'))
+                      .backgroundColor(this.vm.method === m ? $r('app.color.oc_brand_cta') : $r('sys.color.background_secondary'))
                       .borderRadius(12)
                       .onClick(() => {
                         this.vm.method = m;
@@ -90,7 +90,7 @@ export struct RequestTracerPage {
                 Button(this.vm.isTracing ? '追踪中…' : '开始追踪')
                   .width('100%')
                   .enabled(this.vm.canTrace())
-                  .backgroundColor(BRAND_ORANGE)
+                  .backgroundColor($r('app.color.oc_brand'))
                   .onClick(() => {
                     this.vm.run().then((err: string) => this.toast(err));
                   })

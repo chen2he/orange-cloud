@@ -214,7 +214,7 @@ export struct PagesDeploymentPage {
   }
 
   @Builder
-  actionRow(label: string, color: string, onTap: () => void) {
+  actionRow(label: string, color: ResourceColor, onTap: () => void) {
     Row({ space: 10 }) {
       Text(label)
         .fontSize(15)

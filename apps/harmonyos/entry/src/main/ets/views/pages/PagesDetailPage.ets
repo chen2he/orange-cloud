@@ -333,7 +333,7 @@ export struct PagesDetailPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isSaving)
         .onClick(() => {
           this.vm.updateBuildConfig(this.projectName,

@@ -20,6 +20,9 @@ function compact(value: number): string {
   return `${Math.round(value)}`;
 }
 
+/// Canvas 只接受字符串色值；用图表专用橙（对浅底 3.05:1、对深色卡 5.7:1）
+const CHART_ORANGE = '#E8730F';
+
 @ComponentV2
 export struct MetricsChart {
   @Require @Param points: MetricsPoint[];
@@ -129,7 +132,7 @@ export struct MetricsChart {
         ctx.lineTo(x, y);
       }
     }
-    ctx.strokeStyle = BRAND_ORANGE;
+    ctx.strokeStyle = CHART_ORANGE;
     ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';

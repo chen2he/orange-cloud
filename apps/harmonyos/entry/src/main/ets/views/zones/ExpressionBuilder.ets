@@ -110,7 +110,7 @@ export struct ExpressionBuilder {
       .layoutWeight(1)
       .height(30)
       .borderRadius(7)
-      .backgroundColor(this.guided === toGuided ? BRAND_ORANGE : Color.Transparent)
+      .backgroundColor(this.guided === toGuided ? $r('app.color.oc_brand_cta') : Color.Transparent)
       .onClick(() => {
         this.switchTo(toGuided);
       })

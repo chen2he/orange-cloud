@@ -722,7 +722,7 @@ export struct DashboardView {
   }
 
   /// 进度条颜色随消耗比例橙 → 琥珀 → 红（对齐 iOS UsageRow.barColor）
-  private ratioColor(ratio: number): string {
+  private ratioColor(ratio: number): ResourceColor {
     if (ratio >= 0.9) {
       return DANGER_RED;
     }

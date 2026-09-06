@@ -299,7 +299,7 @@ export struct LBPoolsPage {
           row.weight = value;
         })
       Toggle({ type: ToggleType.Switch, isOn: row.enabled })
-        .selectedColor(BRAND_ORANGE)
+        .selectedColor($r('app.color.oc_brand'))
         .onChange((isOn: boolean) => {
           row.enabled = isOn;
         })
@@ -391,7 +391,7 @@ export struct LBPoolsPage {
           .height(44)
           .fontSize(15)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .enabled(!this.vm.isSaving && this.fName.trim() !== '' && this.hasValidOrigin())
           .onClick(() => {
             this.vm.save(accountStore.selectedId, this.editingId, this.buildPayload()).then((ok: boolean) => {
@@ -465,7 +465,7 @@ export struct LBPoolsPage {
             .height(52)
             .fontSize(26)
             .fontColor(Color.White)
-            .backgroundColor(BRAND_ORANGE)
+            .backgroundColor($r('app.color.oc_brand_cta'))
             .borderRadius(26)
             .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
             .margin({ right: 20, bottom: 28 })

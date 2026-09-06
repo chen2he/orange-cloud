@@ -152,7 +152,7 @@ export struct AlertingPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.pName.trim() !== '' && this.pWebhookId !== '')
         .onClick(() => {
           this.vm.addPolicy(this.pName.trim(), ALERT_TYPES[this.pTypeIndex].id, this.pWebhookId)
@@ -196,7 +196,7 @@ export struct AlertingPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.fName.trim() !== '' && this.fUrl.trim().startsWith('http'))
         .onClick(() => {
           this.vm.addWebhook(this.fName.trim(), this.fUrl.trim()).then((err: string) => {

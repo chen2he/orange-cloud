@@ -331,7 +331,7 @@ export struct D1DatabasesPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isCreating && this.fName.trim() !== '')
         .onClick(() => {
           this.vm.create(this.fName.trim()).then((ok: boolean) => {
@@ -417,7 +417,7 @@ export struct D1DatabasesPage {
           .height(52)
           .fontSize(26)
           .fontColor(Color.White)
-          .backgroundColor(BRAND_ORANGE)
+          .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
           .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
@@ -748,7 +748,7 @@ export struct D1QueryPage {
             .height(42)
             .fontSize(15)
             .fontColor(Color.White)
-            .backgroundColor(BRAND_ORANGE)
+            .backgroundColor($r('app.color.oc_brand_cta'))
             .enabled(!this.vm.running && this.sql.trim() !== '')
             .onClick(() => {
               // 提醒层：不带 LIMIT 的 SELECT 在大表上会整包返回，先提醒、确认后再执行
@@ -1317,7 +1317,7 @@ export struct D1TablePage {
                     .fontColor($r('sys.color.font_primary'))
                   Blank()
                   Toggle({ type: ToggleType.Switch, isOn: this.boolOn(col) })
-                    .selectedColor(BRAND_ORANGE)
+                    .selectedColor($r('app.color.oc_brand'))
                     .onChange((on: boolean) => {
                       this.setField(col, on ? '1' : '0');
                     })
@@ -1377,7 +1377,7 @@ export struct D1TablePage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.saving && Object.keys(this.changedFields()).length > 0)
         .onClick(() => {
           this.vm.saveRow(this.dbId, this.table, this.editRowid, this.changedFields()).then((ok: boolean) => {

@@ -90,7 +90,7 @@ export struct WhatsNewSheet {
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
         .fontColor(Color.White)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .borderRadius(OCLayout.chipRadius)
         .margin({ left: 24, right: 24, bottom: 24 })
         .onClick(() => {

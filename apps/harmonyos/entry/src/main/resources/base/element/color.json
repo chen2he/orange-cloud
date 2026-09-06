@@ -6,7 +6,7 @@
     },
     {
       "name": "oc_brand",
-      "value": "#F48120"
+      "value": "#E8730F"
     },
     {
       "name": "oc_brand_text",
@@ -19,6 +19,10 @@
     {
       "name": "oc_danger",
       "value": "#E84026"
+    },
+    {
+      "name": "oc_brand_cta",
+      "value": "#B35500"
     }
   ]
 }

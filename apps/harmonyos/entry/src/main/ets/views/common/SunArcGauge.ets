@@ -2,6 +2,9 @@
 // 弧的进度 = 比值（0~1）。主 App 用 Canvas 绘制；中心可放百分比文字（由调用方叠加）。
 import { BRAND_ORANGE } from './Components';
 
+/// 图表专用橙：比品牌亮橙深一档，保证线/点这类图形元素对浅底 3.05:1、对深色卡 5.7:1
+const CHART_ORANGE = '#E8730F';
+
 @ComponentV2
 export struct SunArcGauge {
   /// 0~1 比值（如缓存命中率）
@@ -33,7 +36,7 @@ export struct SunArcGauge {
     // 轨道
     ctx.beginPath();
     ctx.arc(cx, cy, radius, start, end);
-    ctx.strokeStyle = '#1FF48120';
+    ctx.strokeStyle = '#1FE8730F';
     ctx.lineWidth = 8;
     ctx.lineCap = 'round';
     ctx.stroke();
@@ -42,7 +45,7 @@ export struct SunArcGauge {
     const cur = start + (end - start) * r;
     ctx.beginPath();
     ctx.arc(cx, cy, radius, start, cur);
-    ctx.strokeStyle = BRAND_ORANGE;
+    ctx.strokeStyle = CHART_ORANGE;
     ctx.lineWidth = 8;
     ctx.lineCap = 'round';
     ctx.stroke();
@@ -52,11 +55,11 @@ export struct SunArcGauge {
     const sy = cy + radius * Math.sin(cur);
     ctx.beginPath();
     ctx.arc(sx, sy, 8, 0, Math.PI * 2);
-    ctx.fillStyle = BRAND_ORANGE;
+    ctx.fillStyle = CHART_ORANGE;
     ctx.fill();
     ctx.beginPath();
     ctx.arc(sx, sy, 13, 0, Math.PI * 2);
-    ctx.fillStyle = '#33F48120';
+    ctx.fillStyle = '#33E8730F';
     ctx.fill();
   }
 

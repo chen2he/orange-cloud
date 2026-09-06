@@ -280,7 +280,7 @@ export struct ZeroTrustPage {
           .alignItems(HorizontalAlign.Start)
           .layoutWeight(1)
           Toggle({ type: ToggleType.Switch, isOn: this.aIncludeEveryone })
-            .selectedColor('#F48120')
+            .selectedColor($r('app.color.oc_brand'))
             .onChange((isOn: boolean) => {
               this.aIncludeEveryone = isOn;
             })
@@ -300,7 +300,7 @@ export struct ZeroTrustPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor('#F48120')
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.aName.trim() !== '' && this.aDomain.trim() !== '' &&
           (this.editingAppId !== '' || this.aIncludeEveryone || this.aEmailDomain.trim() !== ''))
         .onClick(() => {
@@ -378,7 +378,7 @@ export struct ZeroTrustPage {
         .height(44)
         .fontSize(15)
         .fontColor(Color.White)
-        .backgroundColor('#F48120')
+        .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.fName.trim() !== '' && this.fTraffic.trim() !== '')
         .onClick(() => {
           this.vm.addRule(this.fName.trim(), GATEWAY_ACTIONS[this.fActionIndex], this.fTraffic.trim())
@@ -433,13 +433,13 @@ export struct ZeroTrustPage {
               Button('＋ Access 应用')
                 .fontSize(14)
                 .fontColor(Color.White)
-                .backgroundColor('#F48120')
+                .backgroundColor($r('app.color.oc_brand_cta'))
                 .onClick(() => {
                   this.openCreateApp();
                 })
               Button('＋ Gateway 规则')
                 .fontSize(14)
-                .fontColor('#F48120')
+                .fontColor($r('app.color.oc_brand_text'))
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .onClick(() => {
                   this.ruleSheetVisible = true;
@@ -458,7 +458,7 @@ export struct ZeroTrustPage {
                   Blank()
                   Text('＋加应用')
                     .fontSize(13)
-                    .fontColor('#F48120')
+                    .fontColor($r('app.color.oc_brand_text'))
                     .padding({ right: 20, top: 16 })
                     .onClick(() => {
                       this.openCreateApp();
@@ -487,7 +487,7 @@ export struct ZeroTrustPage {
                       if (this.canWriteAccess) {
                         Text('编辑')
                           .fontSize(12)
-                          .fontColor('#F48120')
+                          .fontColor($r('app.color.oc_brand_text'))
                           .padding({ left: 8, right: 4, top: 6, bottom: 6 })
                           .onClick(() => {
                             this.openEditApp(app);
@@ -519,7 +519,7 @@ export struct ZeroTrustPage {
                   Blank()
                   Text('＋加规则')
                     .fontSize(13)
-                    .fontColor('#F48120')
+                    .fontColor($r('app.color.oc_brand_text'))
                     .padding({ right: 20, top: 16 })
                     .onClick(() => {
                       this.ruleSheetVisible = true;
@@ -532,7 +532,7 @@ export struct ZeroTrustPage {
                     Row({ space: 8 }) {
                       Text(rule.action ?? '')
                         .fontSize(10)
-                        .fontColor('#F48120')
+                        .fontColor($r('app.color.oc_brand_text'))
                         .padding({ left: 6, right: 6, top: 2, bottom: 2 })
                         .backgroundColor('#1AF48120')
                         .borderRadius(4)

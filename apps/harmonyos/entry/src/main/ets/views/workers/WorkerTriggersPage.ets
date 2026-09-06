@@ -110,7 +110,7 @@ export struct WorkerTriggersPage {
       Button(this.vm.isSaving ? '正在保存…' : '添加')
         .width('100%')
         .height(46)
-        .backgroundColor(BRAND_ORANGE)
+        .backgroundColor($r('app.color.oc_brand'))
         .enabled(!this.vm.isSaving && this.fCron.trim() !== '')
         .onClick(() => {
           this.vm.add(accountStore.selectedId, this.scriptName, this.fCron.trim()).then((err: string) => {
