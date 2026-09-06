@@ -341,7 +341,7 @@ export struct LBPoolsPage {
         }, (row: OriginForm) => row.key)
         Text('+ 添加源站')
           .fontSize(13)
-          .fontColor(BRAND_ORANGE)
+          .fontColor($r('app.color.oc_brand_text'))
           .width('100%')
           .onClick(() => {
             this.rows = this.rows.concat([new OriginForm('', '1', true, null)]);

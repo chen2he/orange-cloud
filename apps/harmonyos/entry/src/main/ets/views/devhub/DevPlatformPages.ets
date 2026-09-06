@@ -414,7 +414,7 @@ export struct QueueDetailPage {
         .layoutWeight(1)
       Text(action)
         .fontSize(13)
-        .fontColor(BRAND_ORANGE)
+        .fontColor($r('app.color.oc_brand_text'))
         .padding({ left: 8 })
         .onClick(onTap)
     }
@@ -428,11 +428,11 @@ export struct QueueDetailPage {
       Stack() {
         SymbolGlyph($r('sys.symbol.rectangle_stack'))
           .fontSize(26)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
       }
       .width(52)
       .height(52)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(14)
 
       Text(this.vm.queue?.queue_name ?? this.queueName)
@@ -1063,11 +1063,11 @@ export struct AIGatewayDetailPage {
       Stack() {
         SymbolGlyph($r('sys.symbol.wand_and_stars'))
           .fontSize(26)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
       }
       .width(52)
       .height(52)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(14)
 
       Text(this.vm.gateway?.name ?? this.gatewayName)
@@ -1443,9 +1443,9 @@ export struct DurableObjectDetailPage {
                       Text('有数据')
                         .fontSize(10)
                         .fontWeight(FontWeight.Medium)
-                        .fontColor(BRAND_ORANGE)
+                        .fontColor($r('app.color.oc_brand_text'))
                         .padding({ left: 7, right: 7, top: 2, bottom: 2 })
-                        .backgroundColor(BRAND_ORANGE_BG)
+                        .backgroundColor($r('app.color.oc_brand_bg'))
                         .borderRadius(8)
                     }
                   }
@@ -1471,7 +1471,7 @@ export struct DurableObjectDetailPage {
                   .width('100%')
                   .height(42)
                   .fontSize(14)
-                  .fontColor(BRAND_ORANGE)
+                  .fontColor($r('app.color.oc_brand_text'))
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(OCLayout.chipRadius)
                   .border({ width: 0.5, color: $r('sys.color.comp_divider') })
@@ -1914,7 +1914,7 @@ export struct HyperdriveDetailPage {
         .layoutWeight(1)
       Text(action)
         .fontSize(13)
-        .fontColor(BRAND_ORANGE)
+        .fontColor($r('app.color.oc_brand_text'))
         .padding({ left: 8 })
         .onClick(onTap)
     }
@@ -1928,11 +1928,11 @@ export struct HyperdriveDetailPage {
       Stack() {
         SymbolGlyph($r('sys.symbol.archivebox'))
           .fontSize(26)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
       }
       .width(52)
       .height(52)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(14)
 
       Text(this.config?.name ?? 'Hyperdrive')

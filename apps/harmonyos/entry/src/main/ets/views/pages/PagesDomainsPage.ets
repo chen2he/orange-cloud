@@ -318,7 +318,7 @@ export struct PagesDomainsPage {
         .textAlign(TextAlign.End)
       SymbolGlyph($r('sys.symbol.square_on_square_fill'))
         .fontSize(15)
-        .fontColor([BRAND_ORANGE])
+        .fontColor([$r('app.color.oc_brand_text')])
     }
     .width('100%')
     .padding({ left: 16, right: 16, top: 12, bottom: 12 })
@@ -382,10 +382,10 @@ export struct PagesDomainsPage {
           Row({ space: 10 }) {
             SymbolGlyph($r('sys.symbol.plus_circle'))
               .fontSize(17)
-              .fontColor([BRAND_ORANGE])
+              .fontColor([$r('app.color.oc_brand_text')])
             Text('添加 CNAME 记录')
               .fontSize(14)
-              .fontColor(BRAND_ORANGE)
+              .fontColor($r('app.color.oc_brand_text'))
             Blank()
             if (this.vm.isMutating) {
               LoadingProgress()
@@ -454,7 +454,7 @@ export struct PagesDomainsPage {
               .fontWeight(FontWeight.Medium)
               .fontColor(statusColor(this.selected!.status ?? ''))
               .padding({ left: 8, right: 8, top: 3, bottom: 3 })
-              .backgroundColor(BRAND_ORANGE_BG)
+              .backgroundColor($r('app.color.oc_brand_bg'))
               .borderRadius(8)
           }
           .width('100%')
@@ -516,7 +516,7 @@ export struct PagesDomainsPage {
             .width('100%')
             .height(46)
             .fontSize(15)
-            .fontColor(BRAND_ORANGE)
+            .fontColor($r('app.color.oc_brand_text'))
             .backgroundColor($r('sys.color.comp_background_list_card'))
             .borderRadius(OCLayout.chipRadius)
             .border({ width: 0.5, color: $r('sys.color.comp_divider') })

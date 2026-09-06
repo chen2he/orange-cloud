@@ -286,7 +286,7 @@ export struct WorkerTailPage {
         .textOverflow({ overflow: TextOverflow.Ellipsis })
       Text(this.paused ? '继续' : '暂停')
         .fontSize(12)
-        .fontColor(BRAND_ORANGE)
+        .fontColor($r('app.color.oc_brand_text'))
         .onClick(() => {
           this.paused = !this.paused;
           if (!this.paused) {
@@ -296,7 +296,7 @@ export struct WorkerTailPage {
         })
       Text('清屏')
         .fontSize(12)
-        .fontColor(BRAND_ORANGE)
+        .fontColor($r('app.color.oc_brand_text'))
         .onClick(() => {
           this.lines = [];
           this.pausedNewCount = 0;
@@ -350,7 +350,7 @@ export struct WorkerTailPage {
                 .fontColor($r('sys.color.font_secondary'))
               Text('清除筛选')
                 .fontSize(13)
-                .fontColor(BRAND_ORANGE)
+                .fontColor($r('app.color.oc_brand_text'))
                 .onClick(() => {
                   this.keyword = '';
                   this.levelIndex = 0;

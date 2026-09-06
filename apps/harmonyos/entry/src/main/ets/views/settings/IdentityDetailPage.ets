@@ -266,7 +266,7 @@ export struct IdentityDetailPage {
                       Text(this.missingModules().length > 0 ? '🔓 补齐授权' : '🔓 重新授权')
                         .fontSize(14)
                         .fontWeight(FontWeight.Medium)
-                        .fontColor(BRAND_ORANGE)
+                        .fontColor($r('app.color.oc_brand_text'))
                     }
                   }
                   .width('100%')

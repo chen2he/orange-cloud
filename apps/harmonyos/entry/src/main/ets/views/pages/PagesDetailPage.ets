@@ -221,11 +221,11 @@ export struct PagesDetailPage {
       Stack() {
         SymbolGlyph($r('sys.symbol.doc_text'))
           .fontSize(26)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
       }
       .width(52)
       .height(52)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(14)
 
       Text(this.projectName)
@@ -434,7 +434,7 @@ export struct PagesDetailPage {
                     Row() {
                       Text('编辑构建配置')
                         .fontSize(14)
-                        .fontColor(BRAND_ORANGE)
+                        .fontColor($r('app.color.oc_brand_text'))
                       Blank()
                       Image($r('sys.media.ohos_ic_public_arrow_right'))
                         .width(16)

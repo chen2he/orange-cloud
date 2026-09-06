@@ -31,11 +31,11 @@ export struct ProLockedView {
         Stack() {
           SymbolGlyph(this.symbol)
             .fontSize(34)
-            .fontColor([BRAND_ORANGE])
+            .fontColor([$r('app.color.oc_brand_text')])
         }
         .width(72)
         .height(72)
-        .backgroundColor(BRAND_ORANGE_BG)
+        .backgroundColor($r('app.color.oc_brand_bg'))
         .borderRadius(20)
       }
       Text(this.title)

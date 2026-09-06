@@ -245,7 +245,7 @@ export struct AlertingPage {
                   Blank()
                   Text('＋加策略')
                     .fontSize(13)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .padding({ right: 20, top: 16 })
                     .onClick(() => {
                       if (this.vm.webhooks.length === 0) {
@@ -306,7 +306,7 @@ export struct AlertingPage {
                   Blank()
                   Text('＋加 Webhook')
                     .fontSize(13)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .padding({ right: 20, top: 16 })
                     .onClick(() => {
                       this.sheetVisible = true;

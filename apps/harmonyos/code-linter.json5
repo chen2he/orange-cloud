@@ -13,9 +13,17 @@
   ],
   "ruleSet": [
     "plugin:@performance/recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    // 跨设备/UX 规范：含 touch-target-size（点击热区 ≥40vp）、size-unit（用 vp）等，
+    // 对应上架体检的「通用应用 UX 体验标准」
+    "plugin:@cross-device-app-dev/recommended"
   ],
   "rules": {
+    // 品牌橙无法用 sys.color 表达，这两条规则会把每一处 app.color 品牌色都判为违规（噪音）。
+    // 文字对比度已按 WCAG 手算达标（浅底橙字 #B34F00 5.2:1 / 深底 #FFB27A 11.9:1），
+    // 最终以 DevEco App Analyzer 的「色彩对比度」真机体检为准。
+    "@cross-device-app-dev/color-value": "off",
+    "@cross-device-app-dev/color-contrast": "off",
     "@security/no-unsafe-aes": "error",
     "@security/no-unsafe-hash": "error",
     "@security/no-unsafe-mac": "warn",

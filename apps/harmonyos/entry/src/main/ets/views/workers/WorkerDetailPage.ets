@@ -329,11 +329,11 @@ export struct WorkerDetailPage {
       Stack() {
         SymbolGlyph($r('sys.symbol.code_slash'))
           .fontSize(26)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
       }
       .width(52)
       .height(52)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(14)
 
       Text(this.scriptName)

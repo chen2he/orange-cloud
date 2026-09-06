@@ -64,7 +64,7 @@ export struct ZoneListView {
             // 已固定到首页的小图钉标识
             SymbolGlyph($r('sys.symbol.pin_fill'))
               .fontSize(11)
-              .fontColor([BRAND_ORANGE])
+              .fontColor([$r('app.color.oc_brand_text')])
           }
           if (zone.plan?.name) {
             PlanBadge({ planName: zone.plan!.name! })
@@ -131,7 +131,7 @@ export struct ZoneListView {
               .textOverflow({ overflow: TextOverflow.Ellipsis })
             Text('复制')
               .fontSize(12)
-              .fontColor(BRAND_ORANGE)
+              .fontColor($r('app.color.oc_brand_text'))
               .onClick(() => {
                 this.copyText(server);
               })
@@ -156,7 +156,7 @@ export struct ZoneListView {
         .width('100%')
         .height(44)
         .fontSize(15)
-        .fontColor(BRAND_ORANGE)
+        .fontColor($r('app.color.oc_brand_text'))
         .backgroundColor($r('sys.color.comp_background_list_card'))
         .borderRadius(OCLayout.chipRadius)
         .border({ width: 0.5, color: $r('sys.color.comp_divider') })

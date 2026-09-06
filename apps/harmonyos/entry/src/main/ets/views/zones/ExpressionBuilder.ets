@@ -190,7 +190,7 @@ export struct ExpressionBuilder {
       .width('100%')
       .padding(3)
       .borderRadius(9)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
 
       if (this.guided) {
         ForEach(this.rows, (cond: RuleCondition, index: number) => {
@@ -200,7 +200,7 @@ export struct ExpressionBuilder {
         Row({ space: 12 }) {
           Text('＋加条件')
             .fontSize(13)
-            .fontColor(BRAND_ORANGE)
+            .fontColor($r('app.color.oc_brand_text'))
             .onClick(() => {
               this.addRow();
             })

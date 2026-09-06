@@ -28,8 +28,8 @@ export struct GlassIsland {
     .padding(this.pad)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(this.cornerRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
+    // HarmonyOS 卡片是平的：靠卡片色与页面底色（background_secondary）的明度差分层，
+    // 不加描边、不加投影。原先的 0.5px 描边 + 软投影是 iOS 玻璃岛的做法，与系统观感冲突。
   }
 }
 

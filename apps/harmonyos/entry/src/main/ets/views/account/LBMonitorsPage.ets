@@ -182,7 +182,7 @@ export struct LBMonitorsPage {
       Text((monitor.type ?? '').toUpperCase())
         .fontSize(10)
         .fontWeight(FontWeight.Bold)
-        .fontColor(BRAND_ORANGE)
+        .fontColor($r('app.color.oc_brand_text'))
         .padding({ left: 6, right: 6, top: 2, bottom: 2 })
         .backgroundColor('#1AF48120')
         .borderRadius(4)

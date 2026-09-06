@@ -327,11 +327,11 @@ export struct DNSListPage {
         .fontSize(11)
         .fontWeight(FontWeight.Bold)
         .fontFamily('monospace')
-        .fontColor(BRAND_ORANGE)
+        .fontColor($r('app.color.oc_brand_text'))
         .width(52)
         .padding({ top: 5, bottom: 5 })
         .textAlign(TextAlign.Center)
-        .backgroundColor(BRAND_ORANGE_BG)
+        .backgroundColor($r('app.color.oc_brand_bg'))
         .borderRadius(6)
 
       Column({ space: 3 }) {

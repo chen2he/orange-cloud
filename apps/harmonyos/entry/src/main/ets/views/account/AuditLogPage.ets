@@ -241,7 +241,7 @@ export struct AuditLogPage {
                 ListItem() {
                   Text(this.vm.isLoadingMore ? '正在加载…' : '加载更多')
                     .fontSize(13)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .width('100%')
                     .textAlign(TextAlign.Center)
                     .padding(16)

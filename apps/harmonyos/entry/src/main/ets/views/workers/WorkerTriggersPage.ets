@@ -132,7 +132,7 @@ export struct WorkerTriggersPage {
     Row({ space: 10 }) {
       SymbolGlyph($r('sys.symbol.clock'))
         .fontSize(18)
-        .fontColor([BRAND_ORANGE])
+        .fontColor([$r('app.color.oc_brand_text')])
       Text(schedule.cron)
         .fontSize(15)
         .fontFamily('monospace')

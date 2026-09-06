@@ -1122,7 +1122,7 @@ export struct DashboardView {
                 Stack() {
                   SymbolGlyph(resKindSymbol(item.kind))
                     .fontSize(19)
-                    .fontColor([BRAND_ORANGE])
+                    .fontColor([$r('app.color.oc_brand_text')])
                 }
                 .width(36)
                 .height(36)
@@ -1288,7 +1288,7 @@ export struct DashboardView {
               Stack() {
                 SymbolGlyph(resKindSymbol(item.kind))
                   .fontSize(19)
-                  .fontColor([BRAND_ORANGE])
+                  .fontColor([$r('app.color.oc_brand_text')])
               }
               .width(36)
               .height(36)
@@ -1314,7 +1314,7 @@ export struct DashboardView {
               })
               SymbolGlyph($r('sys.symbol.pin_fill'))
                 .fontSize(17)
-                .fontColor([BRAND_ORANGE])
+                .fontColor([$r('app.color.oc_brand_text')])
                 .onClick(() => {
                   this.togglePinItem(item);
                 })

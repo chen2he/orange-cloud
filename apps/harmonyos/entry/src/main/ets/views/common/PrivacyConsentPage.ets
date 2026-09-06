@@ -75,7 +75,7 @@ export struct PrivacyConsentPage {
             .fontColor($r('sys.color.font_secondary'))
           Text('《隐私政策》')
             .fontSize(13)
-            .fontColor(BRAND_ORANGE)
+            .fontColor($r('app.color.oc_brand_text'))
             .onClick(() => {
               this.openLink(PRIVACY_URL);
             })
@@ -84,7 +84,7 @@ export struct PrivacyConsentPage {
             .fontColor($r('sys.color.font_secondary'))
           Text('《使用条款》')
             .fontSize(13)
-            .fontColor(BRAND_ORANGE)
+            .fontColor($r('app.color.oc_brand_text'))
             .onClick(() => {
               this.openLink(TERMS_URL);
             })

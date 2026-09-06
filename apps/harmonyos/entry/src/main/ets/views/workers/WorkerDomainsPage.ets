@@ -196,7 +196,7 @@ export struct WorkerDomainsPage {
       if (action !== '') {
         Text(action)
           .fontSize(13)
-          .fontColor(BRAND_ORANGE)
+          .fontColor($r('app.color.oc_brand_text'))
           .padding({ left: 8, right: 4 })
           .onClick(onAdd)
       }

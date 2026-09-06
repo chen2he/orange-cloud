@@ -48,7 +48,7 @@ export struct RuleRow {
         Row({ space: 6 }) {
           Text(actionLabel(this.rule.action ?? ''))
             .fontSize(10)
-            .fontColor(BRAND_ORANGE)
+            .fontColor($r('app.color.oc_brand_text'))
             .padding({ left: 6, right: 6, top: 2, bottom: 2 })
             .backgroundColor('#1AF48120')
             .borderRadius(4)

@@ -1,46 +1,15 @@
-// 登录页：晨昏天空随本地时刻 + 明暗推导（对齐 iOS/Android 晨昏设计语言）。
-// 天体用相位辉光；文本色按天色明暗自适应（深色天用暖白，浅色天用深棕）。
+// 登录页：HarmonyOS 系统底色 + 系统文字分层参数（深浅色由系统接管）。
+// 「日出」半圆 + 地平线保留为品牌标记（不是整屏天色滤镜），是全 App 唯一的品牌图形。
 import { common } from '@kit.AbilityKit';
-import { mediaquery } from '@kit.ArkUI';
 import { authManager } from '../../core/auth/AuthManager';
-import { SkyPhase, SkyPhaseColors } from '../../core/design/SkyPhase';
 import { PermissionSelectionSheet } from './PermissionSelectionSheet';
 import { ocSheet } from '../common/Sheets';
 
 @ComponentV2
 export struct LoginView {
-  @Local phase: SkyPhase = SkyPhase.Day;
   /// 登录前先弹权限选择（对齐 iOS：先选 scope 再发起授权）
   @Local showPermissionSheet: boolean = false;
 
-  aboutToAppear(): void {
-    let isDark = false;
-    try {
-      const listener = mediaquery.matchMediaSync('(dark-mode: true)');
-      isDark = listener.matches;
-    } catch (e) {
-      isDark = false;
-    }
-    this.phase = SkyPhaseColors.current(isDark, new Date().getHours());
-  }
-
-  private skyColors(): Array<[string, number]> {
-    const body = SkyPhaseColors.body(this.phase);
-    const stops: Array<[string, number]> = [];
-    for (let i = 0; i < body.length; i++) {
-      stops.push([body[i], body.length === 1 ? 0 : i / (body.length - 1)]);
-    }
-    return stops;
-  }
-
-  /// 天景之上的主文本色
-  private onSky(): string {
-    return SkyPhaseColors.isDark(this.phase) ? '#F3ECE4' : '#24190F';
-  }
-
-  private onSkyDim(): string {
-    return SkyPhaseColors.isDark(this.phase) ? '#B3F3ECE4' : '#9924190F';
-  }
 
   private startLogin(scopes: string[]): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
@@ -68,21 +37,18 @@ export struct LoginView {
         .textAlign(TextAlign.Center)
       Text(text)
         .fontSize(14)
-        .fontColor(this.onSkyDim())
+        .fontColor($r('sys.color.font_secondary'))
     }
     .width('100%')
   }
 
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
-      // 天空：随相位的天色渐变
+      // 页面底：系统分层参数，深浅色自动切换
       Column()
         .width('100%')
         .height('100%')
-        .linearGradient({
-          angle: 180,
-          colors: this.skyColors(),
-        })
+        .backgroundColor($r('sys.color.background_primary'))
 
       // 地平线上的日出：太阳半升出地平线，脚下一道地平线（晨昏语言）
       Column() {
@@ -92,7 +58,7 @@ export struct LoginView {
             // 只取上半圆：高 64 的容器裁下 128 圆的上半（无阴影，避免矩形辉光边）
             Circle({ width: 128, height: 128 })
               .fill('#F48120')
-              .opacity(SkyPhaseColors.isDark(this.phase) ? 0.96 : 0.92)
+              .opacity(0.94)
           }
           .width(128)
           .height(64)
@@ -101,7 +67,7 @@ export struct LoginView {
           // 地平线（横贯全宽，压在太阳脚下）
           Divider()
             .strokeWidth(1.5)
-            .color(SkyPhaseColors.isDark(this.phase) ? '#59F48120' : '#59C2502A')
+            .color('#59F48120')
             .width('82%')
         }
         .width('100%')
@@ -114,10 +80,10 @@ export struct LoginView {
           Text('Orange Cloud')
             .fontSize(34)
             .fontWeight(FontWeight.Bold)
-            .fontColor(this.onSky())
+            .fontColor($r('sys.color.font_primary'))
           Text('Cloudflare 随身管理')
             .fontSize(15)
-            .fontColor(this.onSkyDim())
+            .fontColor($r('sys.color.font_secondary'))
         }
         .margin({ top: 96 })
 
@@ -135,7 +101,7 @@ export struct LoginView {
           if (authManager.error !== '') {
             Text(authManager.error)
               .fontSize(13)
-              .fontColor(SkyPhaseColors.isDark(this.phase) ? '#FFD9C2' : '#B3401200')
+              .fontColor('#E84026')
               .textAlign(TextAlign.Center)
               .padding({ left: 24, right: 24 })
           }
@@ -145,10 +111,10 @@ export struct LoginView {
               LoadingProgress()
                 .width(22)
                 .height(22)
-                .color(this.onSky())
+                .color($r('sys.color.font_primary'))
               Text(authManager.status === 'exchanging' ? '正在登录…' : '正在恢复登录…')
                 .fontSize(15)
-                .fontColor(this.onSky())
+                .fontColor($r('sys.color.font_primary'))
             }
             .height(48)
           } else {
@@ -166,7 +132,7 @@ export struct LoginView {
             if (authManager.status === 'authorizing') {
               Text('完成授权后会自动跳回 App')
                 .fontSize(12)
-                .fontColor(this.onSkyDim())
+                .fontColor($r('sys.color.font_secondary'))
             }
           }
         }

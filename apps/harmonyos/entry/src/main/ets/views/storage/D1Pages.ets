@@ -646,7 +646,7 @@ export struct D1QueryPage {
           Row({ space: 12 }) {
             SymbolGlyph($r('sys.symbol.list_bullet'))
               .fontSize(18)
-              .fontColor([BRAND_ORANGE])
+              .fontColor([$r('app.color.oc_brand_text')])
             Text(table)
               .fontSize(14)
               .fontColor($r('sys.color.font_primary'))
@@ -725,10 +725,10 @@ export struct D1QueryPage {
               Row({ space: 5 }) {
                 SymbolGlyph($r('sys.symbol.arrow_up_circle'))
                   .fontSize(15)
-                  .fontColor([BRAND_ORANGE])
+                  .fontColor([$r('app.color.oc_brand_text')])
                 Text('导出 CSV')
                   .fontSize(12)
-                  .fontColor(BRAND_ORANGE)
+                  .fontColor($r('app.color.oc_brand_text'))
               }
               .onClick(() => {
                 this.vm.exportCsv(this.dbName).then((err: string) => {
@@ -1334,7 +1334,7 @@ export struct D1TablePage {
                     .layoutWeight(1)
                   Text('选择日期')
                     .fontSize(13)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .onClick(() => {
                       this.pickDate(col);
                     })
@@ -1539,7 +1539,7 @@ export struct D1TablePage {
                     if (`${idx['unique'] ?? '0'}` === '1') {
                       Text('UNIQUE')
                         .fontSize(10)
-                        .fontColor(BRAND_ORANGE)
+                        .fontColor($r('app.color.oc_brand_text'))
                     }
                     Text(`${idx['origin'] ?? ''}`)
                       .fontSize(10)

@@ -208,9 +208,9 @@ export struct SettingsView {
         .height(38)
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
-        .fontColor(BRAND_ORANGE)
+        .fontColor($r('app.color.oc_brand_text'))
         .textAlign(TextAlign.Center)
-        .backgroundColor(BRAND_ORANGE_BG)
+        .backgroundColor($r('app.color.oc_brand_bg'))
         .borderRadius(10)
       Column({ space: 2 }) {
         Text(session.label)
@@ -259,7 +259,7 @@ export struct SettingsView {
     Row({ space: 12 }) {
       SymbolGlyph(symbol)
         .fontSize(20)
-        .fontColor([BRAND_ORANGE])
+        .fontColor([$r('app.color.oc_brand_text')])
       Text(title)
         .fontSize(15)
         .fontColor($r('sys.color.font_primary'))
@@ -280,7 +280,7 @@ export struct SettingsView {
         }, (opt: SegOption) => opt.value)
       }
       .padding(2)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(15)
     }
     .width('100%')

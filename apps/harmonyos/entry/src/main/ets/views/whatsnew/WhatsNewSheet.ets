@@ -49,11 +49,11 @@ export struct WhatsNewSheet {
                 Stack() {
                   SymbolGlyph(item.symbol)
                     .fontSize(24)
-                    .fontColor([BRAND_ORANGE])
+                    .fontColor([$r('app.color.oc_brand_text')])
                 }
                 .width(44)
                 .height(44)
-                .backgroundColor(BRAND_ORANGE_BG)
+                .backgroundColor($r('app.color.oc_brand_bg'))
                 .borderRadius(12)
 
                 Column({ space: 4 }) {

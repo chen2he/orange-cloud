@@ -454,14 +454,14 @@ export struct WorkerBindingsPage {
       if (actionA !== '') {
         Text(actionA)
           .fontSize(13)
-          .fontColor(BRAND_ORANGE)
+          .fontColor($r('app.color.oc_brand_text'))
           .padding({ left: 8 })
           .onClick(onA)
       }
       if (actionB !== '') {
         Text(actionB)
           .fontSize(13)
-          .fontColor(BRAND_ORANGE)
+          .fontColor($r('app.color.oc_brand_text'))
           .padding({ left: 12, right: 4 })
           .onClick(onB)
       }
@@ -486,9 +486,9 @@ export struct WorkerBindingsPage {
       Text(badge)
         .fontSize(10)
         .fontWeight(FontWeight.Medium)
-        .fontColor(BRAND_ORANGE)
+        .fontColor($r('app.color.oc_brand_text'))
         .padding({ left: 7, right: 7, top: 3, bottom: 3 })
-        .backgroundColor(BRAND_ORANGE_BG)
+        .backgroundColor($r('app.color.oc_brand_bg'))
         .borderRadius(8)
       Column({ space: 3 }) {
         Text(name)

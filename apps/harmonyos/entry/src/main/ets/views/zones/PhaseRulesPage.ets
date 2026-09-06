@@ -631,9 +631,9 @@ export struct PhaseRulesPage {
       ForEach(ALL_ALGORITHMS.filter((name: string) => !this.fAlgos.includes(name)), (name: string) => {
         Text(`+ ${name}`)
           .fontSize(12)
-          .fontColor(BRAND_ORANGE)
+          .fontColor($r('app.color.oc_brand_text'))
           .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-          .backgroundColor(BRAND_ORANGE_BG)
+          .backgroundColor($r('app.color.oc_brand_bg'))
           .borderRadius(12)
           .margin({ right: 8, bottom: 8 })
           .onClick(() => {

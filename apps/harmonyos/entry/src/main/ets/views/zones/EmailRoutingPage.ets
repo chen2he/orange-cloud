@@ -632,7 +632,7 @@ export struct EmailRoutingPage {
                   Blank()
                   Text('＋加地址')
                     .fontSize(13)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .padding({ right: 20, top: 16 })
                     .onClick(() => {
                       this.addressSheetVisible = true;

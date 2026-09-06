@@ -19,12 +19,12 @@
         "type": "HarmonyOS",
         "material": {
           "storeFile": "/Users/zhe/keys/zhe_ltd.p12",
-          "storePassword": "000000192317FA30E5F039DC25D3D27F42698BB98BEAF76B503ABB87AE22B9830CC2816F8552278770",
+          "storePassword": "00000019A061CBE3FB7909B7D9F78BB31E4D1EDE597EF44D8C288CFF28D54B20F455A7B2E659B4AAC2",
           "keyAlias": "zhe_ltd",
-          "keyPassword": "00000019EE538D4A705662AAABB9EF24EBD10E8DA36A491CE6B49EA63A3E5817AB703AA803B6505353",
+          "keyPassword": "00000019034BDEC33CA11C778EC99477CE819D178A6C2C806B499559DA2B20B6B28FF0E17FC81086AD",
           "signAlg": "SHA256withECDSA",
           "profile": "/Users/zhe/keys/prodRelease.p7b",
-          "certpath": "/Users/zhe/keys/distribution.cer"
+          "certpath": "/Users/zhe/keys/zhe_ltd.cer"
         }
       }
     ],

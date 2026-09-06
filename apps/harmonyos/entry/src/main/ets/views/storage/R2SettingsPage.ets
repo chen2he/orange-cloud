@@ -345,7 +345,7 @@ export struct R2SettingsPage {
                 Text(ref)
                   .fontSize(11)
                   .fontFamily('monospace')
-                  .fontColor(BRAND_ORANGE)
+                  .fontColor($r('app.color.oc_brand_text'))
                   .padding({ left: 8, right: 8, top: 4, bottom: 4 })
                   .backgroundColor('#1FF48120')
                   .borderRadius(10)
@@ -783,7 +783,7 @@ export struct R2SettingsPage {
                         .layoutWeight(1)
                       Text('复制')
                         .fontSize(13)
-                        .fontColor(BRAND_ORANGE)
+                        .fontColor($r('app.color.oc_brand_text'))
                         .onClick(() => {
                           this.copyText(`https://${this.vm.managed?.domain ?? ''}`);
                         })
@@ -807,7 +807,7 @@ export struct R2SettingsPage {
                   Blank()
                   Text('＋添加')
                     .fontSize(13)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .padding({ right: 20, top: 16 })
                     .onClick(() => {
                       if (this.guardWrite()) {
@@ -906,10 +906,10 @@ export struct R2SettingsPage {
                         Row({ space: 10 }) {
                           SymbolGlyph($r('sys.symbol.code_slash'))
                             .fontSize(17)
-                            .fontColor([BRAND_ORANGE])
+                            .fontColor([$r('app.color.oc_brand_text')])
                           Text('R2 SQL 查询')
                             .fontSize(14)
-                            .fontColor(BRAND_ORANGE)
+                            .fontColor($r('app.color.oc_brand_text'))
                         }
                         .width('100%')
                         .padding({ left: 14, right: 14, top: 10, bottom: 12 })
@@ -937,7 +937,7 @@ export struct R2SettingsPage {
                   Blank()
                   Text('＋添加')
                     .fontSize(13)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .padding({ right: 20, top: 16 })
                     .onClick(() => {
                       if (this.guardWrite()) {

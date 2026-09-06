@@ -546,11 +546,11 @@ export struct TunnelDetailPage {
       Stack() {
         SymbolGlyph($r('sys.symbol.wifi_router'))
           .fontSize(26)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
       }
       .width(52)
       .height(52)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(14)
 
       Text(this.tunnelName)
@@ -687,7 +687,7 @@ export struct TunnelDetailPage {
                   if (this.canWrite) {
                     Text('＋添加')
                       .fontSize(13)
-                      .fontColor(BRAND_ORANGE)
+                      .fontColor($r('app.color.oc_brand_text'))
                       .padding({ left: 8, right: 4 })
                       .onClick(() => {
                         this.openRouteSheet(-1);
@@ -803,7 +803,7 @@ export struct TunnelDetailPage {
                           })
                         Text('复制命令')
                           .fontSize(13)
-                          .fontColor(BRAND_ORANGE)
+                          .fontColor($r('app.color.oc_brand_text'))
                           .onClick(() => {
                             this.copyText(this.installCommand(false));
                           })

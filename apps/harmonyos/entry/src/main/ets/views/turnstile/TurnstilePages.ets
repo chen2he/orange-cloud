@@ -674,10 +674,10 @@ export struct TurnstileDetailPage {
                     Row({ space: 10 }) {
                       SymbolGlyph($r('sys.symbol.arrow_2_circlepath'))
                         .fontSize(17)
-                        .fontColor([BRAND_ORANGE])
+                        .fontColor([$r('app.color.oc_brand_text')])
                       Text('轮换密钥')
                         .fontSize(14)
-                        .fontColor(BRAND_ORANGE)
+                        .fontColor($r('app.color.oc_brand_text'))
                     }
                     .width('100%')
                     .padding({ left: 16, right: 16, top: 12, bottom: 12 })

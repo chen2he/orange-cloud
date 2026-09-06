@@ -102,11 +102,11 @@ export struct PermissionSelectionSheet {
     Text(title)
       .fontSize(13)
       .fontWeight(FontWeight.Medium)
-      .fontColor(BRAND_ORANGE)
+      .fontColor($r('app.color.oc_brand_text'))
       .textAlign(TextAlign.Center)
       .padding({ top: 9, bottom: 9 })
       .layoutWeight(1)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(10)
       .onClick(() => {
         onTap();
@@ -149,9 +149,9 @@ export struct PermissionSelectionSheet {
               Text('必选')
                 .fontSize(10)
                 .fontWeight(FontWeight.Medium)
-                .fontColor(BRAND_ORANGE)
+                .fontColor($r('app.color.oc_brand_text'))
                 .padding({ left: 6, right: 6, top: 2, bottom: 2 })
-                .backgroundColor(BRAND_ORANGE_BG)
+                .backgroundColor($r('app.color.oc_brand_bg'))
                 .borderRadius(8)
             }
           }

@@ -115,7 +115,7 @@ export struct UrlNormalizationPage {
             if (this.vm.value?.type === option.value) {
               SymbolGlyph($r('sys.symbol.checkmark_circle'))
                 .fontSize(20)
-                .fontColor([BRAND_ORANGE])
+                .fontColor([$r('app.color.oc_brand_text')])
             }
           }
           .width('100%')
@@ -155,7 +155,7 @@ export struct UrlNormalizationPage {
             if (this.vm.value?.scope === option.value) {
               SymbolGlyph($r('sys.symbol.checkmark_circle'))
                 .fontSize(20)
-                .fontColor([BRAND_ORANGE])
+                .fontColor([$r('app.color.oc_brand_text')])
             }
           }
           .width('100%')

@@ -284,7 +284,7 @@ export struct SnippetsPage {
                   Blank()
                   Text('＋加规则')
                     .fontSize(13)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .padding({ right: 20, top: 16 })
                     .onClick(() => {
                       if (this.vm.snippets.length === 0) {

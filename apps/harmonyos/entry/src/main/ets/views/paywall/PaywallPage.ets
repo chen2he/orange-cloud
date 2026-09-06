@@ -101,11 +101,11 @@ export struct PaywallPage {
       Stack() {
         SymbolGlyph($r('sys.symbol.cloud'))
           .fontSize(36)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
       }
       .width(76)
       .height(76)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(22)
 
       Text('Orange Cloud Pro')
@@ -139,11 +139,11 @@ export struct PaywallPage {
       Stack() {
         SymbolGlyph(item.symbol)
           .fontSize(19)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
       }
       .width(36)
       .height(36)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(9)
 
       Column({ space: 2 }) {
@@ -237,7 +237,7 @@ export struct PaywallPage {
       Row({ space: 8 }) {
         SymbolGlyph($r('sys.symbol.checkmark_circle'))
           .fontSize(18)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
         Text(this.store.hasLifetime ? '已持有终身版' : '订阅生效中')
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
@@ -305,7 +305,7 @@ export struct PaywallPage {
                   .width('100%')
                   .height(40)
                   .fontSize(14)
-                  .fontColor(BRAND_ORANGE)
+                  .fontColor($r('app.color.oc_brand_text'))
                   .backgroundColor(Color.Transparent)
                   .enabled(!this.store.isRestoring)
                   .onClick(() => {
@@ -321,13 +321,13 @@ export struct PaywallPage {
                 Row({ space: 16 }) {
                   Text('隐私政策')
                     .fontSize(12)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .onClick(() => {
                       this.openLink(PRIVACY_URL);
                     })
                   Text('使用条款')
                     .fontSize(12)
-                    .fontColor(BRAND_ORANGE)
+                    .fontColor($r('app.color.oc_brand_text'))
                     .onClick(() => {
                       this.openLink(TERMS_URL);
                     })

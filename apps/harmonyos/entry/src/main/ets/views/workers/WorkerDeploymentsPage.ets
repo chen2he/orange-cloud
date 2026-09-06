@@ -97,9 +97,9 @@ export struct WorkerDeploymentsPage {
             Text('活跃')
               .fontSize(10)
               .fontWeight(FontWeight.Medium)
-              .fontColor(BRAND_ORANGE)
+              .fontColor($r('app.color.oc_brand_text'))
               .padding({ left: 7, right: 7, top: 2, bottom: 2 })
-              .backgroundColor(BRAND_ORANGE_BG)
+              .backgroundColor($r('app.color.oc_brand_bg'))
               .borderRadius(8)
           }
         }

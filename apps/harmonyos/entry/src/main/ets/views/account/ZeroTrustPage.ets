@@ -652,11 +652,11 @@ export struct AccessAppDetailPage {
       Stack() {
         SymbolGlyph($r('sys.symbol.lock_shield'))
           .fontSize(26)
-          .fontColor([BRAND_ORANGE])
+          .fontColor([$r('app.color.oc_brand_text')])
       }
       .width(52)
       .height(52)
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(14)
 
       Text(this.vm.app?.name ?? this.appName)
@@ -670,9 +670,9 @@ export struct AccessAppDetailPage {
         Text(AccessAppDetailVM.typeLabel(this.vm.app?.type))
           .fontSize(10)
           .fontWeight(FontWeight.Medium)
-          .fontColor(BRAND_ORANGE)
+          .fontColor($r('app.color.oc_brand_text'))
           .padding({ left: 7, right: 7, top: 3, bottom: 3 })
-          .backgroundColor(BRAND_ORANGE_BG)
+          .backgroundColor($r('app.color.oc_brand_bg'))
           .borderRadius(20)
         if ((this.vm.app?.domain ?? '') !== '') {
           Text(this.vm.app?.domain ?? '')

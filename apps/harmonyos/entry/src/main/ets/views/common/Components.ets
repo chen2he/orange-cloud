@@ -184,11 +184,11 @@ export struct NavRow {
         Stack() {
           SymbolGlyph(this.symbol)
             .fontSize(19)
-            .fontColor([BRAND_ORANGE])
+            .fontColor([$r('app.color.oc_brand_text')])
         }
         .width(36)
         .height(36)
-        .backgroundColor(BRAND_ORANGE_BG)
+        .backgroundColor($r('app.color.oc_brand_bg'))
         .borderRadius(9)
       } else if (this.icon !== '') {
         Text(this.icon)
@@ -196,7 +196,7 @@ export struct NavRow {
           .width(36)
           .height(36)
           .textAlign(TextAlign.Center)
-          .backgroundColor(BRAND_ORANGE_BG)
+          .backgroundColor($r('app.color.oc_brand_bg'))
           .borderRadius(9)
       }
       Column({ space: 2 }) {
@@ -240,9 +240,9 @@ export struct ProBadge {
     Text('Pro')
       .fontSize(10)
       .fontWeight(FontWeight.Medium)
-      .fontColor(BRAND_ORANGE)
+      .fontColor($r('app.color.oc_brand_text'))
       .padding({ left: 7, right: 7, top: 2, bottom: 2 })
-      .backgroundColor(BRAND_ORANGE_BG)
+      .backgroundColor($r('app.color.oc_brand_bg'))
       .borderRadius(8)
   }
 }
@@ -267,11 +267,11 @@ export struct ResourceCard {
         Stack() {
           SymbolGlyph(this.symbol)
             .fontSize(21)
-            .fontColor([BRAND_ORANGE])
+            .fontColor([$r('app.color.oc_brand_text')])
         }
         .width(40)
         .height(40)
-        .backgroundColor(BRAND_ORANGE_BG)
+        .backgroundColor($r('app.color.oc_brand_bg'))
         .borderRadius(11)
       } else if (this.icon !== '') {
         Text(this.icon)
@@ -279,7 +279,7 @@ export struct ResourceCard {
           .width(40)
           .height(40)
           .textAlign(TextAlign.Center)
-          .backgroundColor(BRAND_ORANGE_BG)
+          .backgroundColor($r('app.color.oc_brand_bg'))
           .borderRadius(11)
       }
       Column({ space: 3 }) {
