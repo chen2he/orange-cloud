@@ -269,9 +269,9 @@ export struct SettingsView {
           Text(opt.label)
             .fontSize(12)
             .fontWeight(this.segSelected(kind) === opt.value ? FontWeight.Medium : FontWeight.Normal)
-            .fontColor(this.segSelected(kind) === opt.value ? Color.White : $r('sys.color.font_secondary'))
+            .fontColor(this.segSelected(kind) === opt.value ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
             .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-            .backgroundColor(this.segSelected(kind) === opt.value ? $r('app.color.oc_brand_cta') : Color.Transparent)
+            .backgroundColor(this.segSelected(kind) === opt.value ? $r('app.color.oc_brand_bg') : Color.Transparent)
             .borderRadius(13)
             .animation({ duration: 150, curve: Curve.EaseOut })
             .onClick(() => {

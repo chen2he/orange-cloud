@@ -105,12 +105,12 @@ export struct ExpressionBuilder {
     Text(title)
       .fontSize(13)
       .fontWeight(this.guided === toGuided ? FontWeight.Medium : FontWeight.Normal)
-      .fontColor(this.guided === toGuided ? Color.White : $r('sys.color.font_secondary'))
+      .fontColor(this.guided === toGuided ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
       .textAlign(TextAlign.Center)
       .layoutWeight(1)
       .height(30)
       .borderRadius(7)
-      .backgroundColor(this.guided === toGuided ? $r('app.color.oc_brand_cta') : Color.Transparent)
+      .backgroundColor(this.guided === toGuided ? $r('app.color.oc_brand_bg') : Color.Transparent)
       .onClick(() => {
         this.switchTo(toGuided);
       })

@@ -674,9 +674,9 @@ export struct WorkerBindingsPage {
           Text(option.label)
             .fontSize(13)
             .fontWeight(this.bindKind === option.kind ? FontWeight.Medium : FontWeight.Normal)
-            .fontColor(this.bindKind === option.kind ? Color.White : $r('sys.color.font_secondary'))
+            .fontColor(this.bindKind === option.kind ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
             .padding({ left: 16, right: 16, top: 6, bottom: 6 })
-            .backgroundColor(this.bindKind === option.kind ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
+            .backgroundColor(this.bindKind === option.kind ? $r('app.color.oc_brand_bg') : $r('sys.color.comp_background_list_card'))
             .borderRadius(16)
             .onClick(() => {
               this.bindKind = option.kind;

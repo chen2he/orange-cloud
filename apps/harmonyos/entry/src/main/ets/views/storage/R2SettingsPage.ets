@@ -682,8 +682,8 @@ export struct R2SettingsPage {
           Text(method)
             .fontSize(13)
             .fontWeight(FontWeight.Medium)
-            .fontColor(this.fMethods.includes(method) ? Color.White : $r('sys.color.font_primary'))
-            .backgroundColor(this.fMethods.includes(method) ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_tertiary'))
+            .fontColor(this.fMethods.includes(method) ? $r('app.color.oc_brand_text') : $r('sys.color.font_primary'))
+            .backgroundColor(this.fMethods.includes(method) ? $r('app.color.oc_brand_bg') : $r('sys.color.comp_background_tertiary'))
             .borderRadius(14)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .onClick(() => {

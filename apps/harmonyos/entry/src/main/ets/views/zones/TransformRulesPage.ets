@@ -264,9 +264,9 @@ export struct TransformRulesPage {
               Text(spec.label)
                 .fontSize(13)
                 .fontWeight(this.phaseIndex === index ? FontWeight.Medium : FontWeight.Normal)
-                .fontColor(this.phaseIndex === index ? Color.White : $r('sys.color.font_secondary'))
+                .fontColor(this.phaseIndex === index ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
                 .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-                .backgroundColor(this.phaseIndex === index ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
+                .backgroundColor(this.phaseIndex === index ? $r('app.color.oc_brand_bg') : $r('sys.color.comp_background_list_card'))
                 .borderRadius(16)
                 .onClick(() => {
                   this.phaseIndex = index;

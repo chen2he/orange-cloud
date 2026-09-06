@@ -1,3 +1,12 @@
+// 页面层级（HarmonyOS「深度层级 / 平面层级」口径）——新页面一律照这四级铺，别自造中间色：
+//   L0 页面底     sys.color.background_secondary      灰底 / 纯黑
+//   L1 分组卡片   sys.color.comp_background_list_card 白 / #1A1A1A（无描边、无投影，靠明度差分层）
+//   L2 卡内控件   sys.color.comp_background_tertiary  分段轨道 / 输入框 / 芯片底
+//   L3 浮层       半模态与弹窗（ocSheet：灰底 + 内部 L1 卡片，与设置页同一套分组语言）
+// 视觉权重同理只有三档：主操作 = oc_brand_cta 实心（每屏至多一个）；
+//   选中态 / 筛选态 = oc_brand_bg 浅底 + oc_brand_text 文字；其余 = 系统中性色。
+// 反面教材（已清理）：整屏渐变天色、卡片 0.5px 描边 + 投影、选中态用实心品牌色——
+// 三者叠加会让一屏出现五六个同等权重的色块，层级就糊了。
 // 「晨昏」设计基座（精确对照 iOS Views/Components/Daybreak.swift）：
 // 玻璃岛浮在天色上 + 地平线弧上的太阳/月亮按时走位 + 布局常量全局统一。
 import { mediaquery } from '@kit.ArkUI';

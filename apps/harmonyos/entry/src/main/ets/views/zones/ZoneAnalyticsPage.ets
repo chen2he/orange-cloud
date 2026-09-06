@@ -410,15 +410,15 @@ export struct ZoneAnalyticsSection {
             Text(r)
               .fontSize(13)
               .fontWeight(this.range === r ? FontWeight.Medium : FontWeight.Normal)
-              .fontColor(this.range === r ? Color.White : $r('sys.color.font_secondary'))
+              .fontColor(this.range === r ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
             if (r !== '24h' && !this.entitlements.isPro) {
               SymbolGlyph($r('sys.symbol.lock'))
                 .fontSize(11)
-                .fontColor([this.range === r ? Color.White : $r('sys.color.font_tertiary')])
+                .fontColor([this.range === r ? $r('app.color.oc_brand_text') : $r('sys.color.font_tertiary')])
             }
           }
           .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-          .backgroundColor(this.range === r ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
+          .backgroundColor(this.range === r ? $r('app.color.oc_brand_bg') : $r('sys.color.comp_background_list_card'))
           .borderRadius(16)
           .onClick(() => {
             if (this.range === r) {

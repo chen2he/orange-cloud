@@ -289,9 +289,9 @@ export struct PagesDeploySheet {
         Text('粘贴代码')
           .fontSize(13)
           .fontWeight(this.source === 'paste' ? FontWeight.Medium : FontWeight.Normal)
-          .fontColor(this.source === 'paste' ? Color.White : $r('sys.color.font_secondary'))
+          .fontColor(this.source === 'paste' ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
           .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-          .backgroundColor(this.source === 'paste' ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
+          .backgroundColor(this.source === 'paste' ? $r('app.color.oc_brand_bg') : $r('sys.color.comp_background_list_card'))
           .borderRadius(16)
           .onClick(() => {
             this.source = 'paste';
@@ -300,9 +300,9 @@ export struct PagesDeploySheet {
         Text('选择文件')
           .fontSize(13)
           .fontWeight(this.source === 'files' ? FontWeight.Medium : FontWeight.Normal)
-          .fontColor(this.source === 'files' ? Color.White : $r('sys.color.font_secondary'))
+          .fontColor(this.source === 'files' ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
           .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-          .backgroundColor(this.source === 'files' ? $r('app.color.oc_brand_cta') : $r('sys.color.comp_background_list_card'))
+          .backgroundColor(this.source === 'files' ? $r('app.color.oc_brand_bg') : $r('sys.color.comp_background_list_card'))
           .borderRadius(16)
           .onClick(() => {
             this.source = 'files';

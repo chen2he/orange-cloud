@@ -530,9 +530,9 @@ export struct ZoneSettingsPage {
                       Text(spec.label)
                         .fontSize(13)
                         .fontWeight(this.purgeModeIndex === index ? FontWeight.Medium : FontWeight.Normal)
-                        .fontColor(this.purgeModeIndex === index ? Color.White : $r('sys.color.font_secondary'))
+                        .fontColor(this.purgeModeIndex === index ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
                         .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                        .backgroundColor(this.purgeModeIndex === index ? $r('app.color.oc_brand_cta') : $r('sys.color.background_secondary'))
+                        .backgroundColor(this.purgeModeIndex === index ? $r('app.color.oc_brand_bg') : $r('sys.color.background_secondary'))
                         .borderRadius(14)
                         .onClick(() => {
                           this.purgeModeIndex = index;

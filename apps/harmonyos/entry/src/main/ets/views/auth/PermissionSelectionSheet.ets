@@ -121,11 +121,11 @@ export struct PermissionSelectionSheet {
     Text(write ? '读写' : '只读')
       .fontSize(12)
       .fontWeight(FontWeight.Medium)
-      .fontColor(this.isWrite(module) === write ? Color.White : $r('sys.color.font_secondary'))
+      .fontColor(this.isWrite(module) === write ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
       .textAlign(TextAlign.Center)
       .padding({ top: 5, bottom: 5 })
       .layoutWeight(1)
-      .backgroundColor(this.isWrite(module) === write ? $r('app.color.oc_brand_cta') : Color.Transparent)
+      .backgroundColor(this.isWrite(module) === write ? $r('app.color.oc_brand_bg') : Color.Transparent)
       .borderRadius(8)
       .onClick(() => {
         this.setWrite(module, write);

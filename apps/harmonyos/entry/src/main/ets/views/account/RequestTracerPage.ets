@@ -70,9 +70,9 @@ export struct RequestTracerPage {
                   ForEach(METHODS, (m: string) => {
                     Text(m)
                       .fontSize(12)
-                      .fontColor(this.vm.method === m ? Color.White : $r('sys.color.font_secondary'))
+                      .fontColor(this.vm.method === m ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
                       .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-                      .backgroundColor(this.vm.method === m ? $r('app.color.oc_brand_cta') : $r('sys.color.background_secondary'))
+                      .backgroundColor(this.vm.method === m ? $r('app.color.oc_brand_bg') : $r('sys.color.background_secondary'))
                       .borderRadius(12)
                       .onClick(() => {
                         this.vm.method = m;
