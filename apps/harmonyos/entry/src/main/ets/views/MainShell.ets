@@ -1,3 +1,4 @@
+import { systemMaterial } from './common/Effects';
 // 登录后的主壳：底部 5 Tab（总览/域名/开发/存储/设置），下钻页共用一条 NavPathStack。
 // API 23+ 走 HarmonyOS Design 悬浮式材质页签栏（backgroundBlurStyle 材质 + 圆角内缩 + 阴影，
 // 内容从浮栏下方穿过）；低版本回退经典底部 Tab 栏（.tabBar + barHeight）。
@@ -143,7 +144,8 @@ export struct MainShell {
       .animationDuration(0)
       // 悬浮模式：隐藏内置栏（barHeight 0）、内容占满、让浮栏叠在其上；经典模式保留内置栏
       // 页签栏交给 UI Design Kit：系统悬浮材质 + 分割线随滚动动态显隐（HDS 光效仅真机渲染）
-      .barFloatingStyle({})
+      // 沉浸光感材质：等级设 ADAPTIVE，由系统按设备算力自适应（低算力设备自动降档，避免发热卡顿）
+      .barFloatingStyle({ systemMaterialEffect: systemMaterial() })
       .barBackgroundStyle({})
       .divider({ mode: DividerMode.FOLLOW_SCROLL })
       .onChange((index: number) => {

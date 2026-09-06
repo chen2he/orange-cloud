@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 独立健康检查：源站是否在线（/zones/{id}/healthchecks，healthcheck.read/.write）。
@@ -228,8 +229,11 @@ export struct HealthCheckPage {
         .width('100%')
         .height('100%')
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
     }
-    .titleBar({ content: { title: { mainTitle: '健康检查' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '健康检查' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
       const param = context.pathInfo.param as ZoneRouteParam;

@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Transform 规则：三个 phase 切换（URL 重写 / 请求头 / 响应头），动作恒为 rewrite。
@@ -329,10 +330,13 @@ export struct TransformRulesPage {
             this.openEditor(null);
           })
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · Transform` } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.zoneName} · Transform` } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

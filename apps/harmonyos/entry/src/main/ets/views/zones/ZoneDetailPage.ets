@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zone 详情 hub（对照 iOS ZoneDetailView）：Hero 卡（头像+名字+状态+套餐）+
@@ -312,7 +313,11 @@ export struct ZoneDetailPage {
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: this.zoneName } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.zoneName } } })
+    // HDS 标题栏是层叠布局（浮在内容之上，供滑动动态模糊），
+    // 内容必须自己让出标题栏高度，否则首屏会被标题压住。
+    .padding({ top: OC_TITLE_BAR_INSET })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

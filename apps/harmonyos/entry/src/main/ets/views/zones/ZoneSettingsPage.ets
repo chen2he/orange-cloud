@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zone 设置：开发模式 / Under Attack 模式 / 暂停 Cloudflare + 按目标清缓存（URL / 前缀 / 主机 /
@@ -581,10 +582,13 @@ export struct ZoneSettingsPage {
           .height('100%')
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 设置` } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.zoneName} · 设置` } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as ZoneRouteParam;

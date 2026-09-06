@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 通知告警：告警策略（查看+删除）+ Webhook 目标（查看+新建）（对齐 Android CFAlertingScreen）。
@@ -354,10 +355,13 @@ export struct AlertingPage {
           .height('100%')
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: '通知告警' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '通知告警' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.sheetVisible, this.webhookSheet(), ocSheet(() => {
       this.sheetVisible = false;

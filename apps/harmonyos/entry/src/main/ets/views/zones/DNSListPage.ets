@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { HdsListItem } from '@kit.UIDesignKit';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
@@ -516,10 +517,13 @@ export struct DNSListPage {
             this.openEditor(null);
           })
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: this.zoneName !== '' ? `${this.zoneName} · DNS` : 'DNS 记录' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.zoneName !== '' ? `${this.zoneName} · DNS` : 'DNS 记录' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

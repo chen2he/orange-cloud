@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // SSL/TLS：加密模式（off/flexible/full/strict）+ HTTPS 开关 + 最低 TLS + TLS 1.3
@@ -247,10 +248,13 @@ export struct ZoneSslPage {
           .height('100%')
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · SSL/TLS` } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.zoneName} · SSL/TLS` } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

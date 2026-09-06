@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 实时日志 tail：创建会话 → WebSocket 流；条目展平成日志行后滚动展示。
@@ -410,10 +411,13 @@ export struct WorkerTailPage {
         .width('100%')
         .height('100%')
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: `${this.scriptName} · 日志` } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.scriptName} · 日志` } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.detailVisible, this.detailSheet(), ocSheet(() => {
       this.detailVisible = false;

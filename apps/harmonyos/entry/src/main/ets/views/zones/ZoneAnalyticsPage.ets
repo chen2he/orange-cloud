@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 流量分析：24h/7d/30d 切换 + 汇总卡 + 请求柱状图 + 国家/地区排行（对齐 Android ZoneAnalyticsScreen）。
 import { AnalyticsRange, CountryTraffic, TrafficDataPoint } from '../../models/AnalyticsModels';
@@ -546,10 +547,13 @@ export struct ZoneAnalyticsPage {
         .height('100%')
         .align(Alignment.Top)
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 分析` } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.zoneName} · 分析` } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

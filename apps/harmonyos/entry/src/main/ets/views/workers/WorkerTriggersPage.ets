@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 定时触发器（对照 iOS WorkerTriggersView）：Cron 查看 + 增删。
@@ -228,10 +229,13 @@ export struct WorkerTriggersPage {
           })
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: '触发器' }, menu: { value: [{ content: { icon: $r('sys.symbol.plus'), label: '添加', action: () => { if (this.canWrite()) { this.fCron = '0 * * * *'; this.sheetVisible = true; } } } }] } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '触发器' }, menu: { value: [{ content: { icon: $r('sys.symbol.plus'), label: '添加', action: () => { if (this.canWrite()) { this.fCron = '0 * * * *'; this.sheetVisible = true; } } } }] } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.sheetVisible, this.cronSheet(), ocSheetCompact(() => {
       this.sheetVisible = false;

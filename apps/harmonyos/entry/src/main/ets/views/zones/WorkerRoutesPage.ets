@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 路由（zone 级）：pattern → script 映射，列表 + 新建 + 删除（对齐 Android Worker 路由管理）。
@@ -193,10 +194,13 @@ export struct WorkerRoutesPage {
             this.showCreate = true;
           })
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · Worker 路由` } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.zoneName} · Worker 路由` } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;

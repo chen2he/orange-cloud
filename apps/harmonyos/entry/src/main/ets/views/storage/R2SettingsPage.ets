@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // R2 桶设置：公开访问（r2.dev 托管域）/ 自定义域 / CORS 规则（对齐 iOS R2BucketSettingsView）。
@@ -1013,10 +1014,13 @@ export struct R2SettingsPage {
           .height('100%')
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: `${this.bucket} · 桶设置` } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.bucket} · 桶设置` } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showAddDomain, this.addDomainSheet(), ocSheet(() => {
       this.showAddDomain = false;

@@ -1,3 +1,4 @@
+import { OC_PRESS_EFFECT } from './Effects';
 import { HdsListItemCard, IconSize, PrefixIcon, SuffixArrow, SuffixSwitch, SuffixText, SuffixTextAndArrow } from '@kit.UIDesignKit';
 // 公共 UI 组件：加载 / 错误 / 空态 / 分区头 / 信息行 / 开关行 / 导航行 / 标签。
 // 品牌橙 #F48120 只给点缀（对齐晨昏设计语言：数字回归主文本色）。
@@ -268,6 +269,9 @@ export struct ResourceCard {
     .padding({ left: 14, right: 14, top: 12, bottom: 12 })
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(16)
+    // HDS 按压交互阴影（真机渲染，模拟器无效果）
+
+    .visualEffect(OC_PRESS_EFFECT)
     .onClick(() => {
       this.onTap();
     })

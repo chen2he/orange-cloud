@@ -1,3 +1,4 @@
+import { OC_SOFT_LIGHT } from '../common/Effects';
 // 登录页：HarmonyOS 系统底色 + 系统文字分层参数（深浅色由系统接管）。
 // 「日出」半圆 + 地平线保留为品牌标记（不是整屏天色滤镜），是全 App 唯一的品牌图形。
 import { common } from '@kit.AbilityKit';
@@ -125,6 +126,9 @@ export struct LoginView {
               .fontWeight(FontWeight.Medium)
               .fontColor(Color.White)
               .backgroundColor($r('app.color.oc_brand_cta'))
+              // 主 CTA 描边柔光（HDS 点光源，真机渲染）
+
+              .visualEffect(OC_SOFT_LIGHT)
               .onClick(() => {
                 this.showPermissionSheet = true;
               })

@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Cloudflare 官方状态页（cloudflarestatus.com 公开 API）：总体状态 → 进行中的事件 →
 // 计划维护 → 产品服务 → 边缘网络（按大区汇总）→ 最近事件历史。事件点按看更新时间线（sheet）。
@@ -475,10 +476,13 @@ export struct StatusPage {
           .height('100%')
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: 'Cloudflare 状态' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'Cloudflare 状态' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.detailVisible, this.detailSheet(), ocSheet(() => {
       this.detailVisible = false;

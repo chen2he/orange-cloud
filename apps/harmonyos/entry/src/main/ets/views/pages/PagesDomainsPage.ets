@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Pages 自定义域名（对照 iOS PagesDomainsView）：列表 + 添加 + 删除 + 域名详情。
@@ -647,10 +648,13 @@ export struct PagesDomainsPage {
           })
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: '自定义域名' }, menu: { value: [{ content: { icon: $r('sys.symbol.plus'), label: '添加', action: () => { if (this.canWrite()) { this.fDomain = ''; this.addSheetVisible = true; } } } }] } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '自定义域名' }, menu: { value: [{ content: { icon: $r('sys.symbol.plus'), label: '添加', action: () => { if (this.canWrite()) { this.fDomain = ''; this.addSheetVisible = true; } } } }] } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.addSheetVisible, this.addSheet(), ocSheetCompact(() => {
       this.addSheetVisible = false;

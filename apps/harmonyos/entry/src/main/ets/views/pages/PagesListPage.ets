@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Cloudflare Pages 项目列表 + 新建（对齐 Android PagesScreens）。
 import { PagesProject } from '../../models/WorkerModels';
@@ -224,10 +225,13 @@ export struct PagesListPage {
             this.showCreate = true;
           })
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: 'Pages' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'Pages' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;

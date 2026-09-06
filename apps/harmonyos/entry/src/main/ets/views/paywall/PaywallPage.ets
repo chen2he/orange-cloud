@@ -1,3 +1,5 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
+import { OC_SOFT_LIGHT } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 付费墙（对齐 iOS Views/Paywall/PaywallView）：场景触发推入本页，也可从设置页常驻入口进。
@@ -183,6 +185,7 @@ export struct PaywallPage {
       }
       .width('100%')
       .backgroundColor($r('app.color.oc_brand_cta'))
+      .visualEffect(OC_SOFT_LIGHT)
       .borderRadius(OCLayout.chipRadius)
       .enabled(!this.store.isPurchasing && this.store.unavailable === '')
       .onClick(() => {
@@ -349,10 +352,13 @@ export struct PaywallPage {
         .width('100%')
         .height('100%')
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: 'Orange Cloud Pro' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'Orange Cloud Pro' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as PaywallParam | undefined;

@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 在 Cloudflare 注册的域名：到期日、自动续费、转移锁（只读）。
@@ -182,8 +183,11 @@ export struct RegistrarPage {
           .height('100%')
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
     }
-    .titleBar({ content: { title: { mainTitle: '域名注册' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '域名注册' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .onReady(() => {
       this.vm.load().catch(() => {
       });

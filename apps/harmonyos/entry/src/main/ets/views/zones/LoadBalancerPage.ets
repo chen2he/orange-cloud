@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 负载均衡（zone 级）：LB 列表 + 启停开关 + 详情 sheet（转向策略 / 会话保持 / 代理 / TTL / 默认+回退池，池解析为名称与健康）
@@ -679,10 +680,13 @@ export struct LoadBalancerPage {
             })
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 负载均衡` } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.zoneName} · 负载均衡` } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.detailVisible, this.detailSheet(), ocSheet(() => {
       this.detailVisible = false;

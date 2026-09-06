@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 托管请求/响应头：Cloudflare 维护的开关式头部改写，不用自己写 Transform 规则。
@@ -127,8 +128,11 @@ export struct ManagedHeadersPage {
           .height('100%')
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
     }
-    .titleBar({ content: { title: { mainTitle: '托管头' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '托管头' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as ZoneRouteParam;
       this.zoneId = param.zoneId;

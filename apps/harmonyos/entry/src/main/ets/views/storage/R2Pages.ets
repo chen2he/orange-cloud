@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // R2：存储桶列表 → 对象浏览（游标分页）+ 对象文本/文件上传 + 查看/详情/复制/移动/删除（对齐 Android R2Screens + iOS R2ObjectListView）。
@@ -214,10 +215,13 @@ export struct R2BucketsPage {
             this.showCreate = true;
           })
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: 'R2 存储桶' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'R2 存储桶' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
@@ -972,10 +976,13 @@ export struct R2ObjectsPage {
             this.uploadVisible = true;
           })
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: this.bucket }, menu: { value: [{ content: { icon: $r('sys.symbol.gearshape'), label: '桶设置', action: () => { const param: IdNameParam = { id: this.bucket, name: this.bucket }; this.pathStack?.pushPathByName(Routes.R2_SETTINGS, param); } } }] } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.bucket }, menu: { value: [{ content: { icon: $r('sys.symbol.gearshape'), label: '桶设置', action: () => { const param: IdNameParam = { id: this.bucket, name: this.bucket }; this.pathStack?.pushPathByName(Routes.R2_SETTINGS, param); } } }] } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.viewerVisible, this.viewerSheet(), ocSheet(() => {
       this.viewerVisible = false;

@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // URL 安全扫描：提交链接，看归属、状态与风险判定。需账号，故不在免登录工具箱里。
@@ -161,7 +162,10 @@ export struct URLScannerPage {
         .width('100%')
         .height('100%')
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
     }
-    .titleBar({ content: { title: { mainTitle: 'URL 扫描' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'URL 扫描' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
   }
 }

@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 审计日志：最近 30 天操作记录 + 游标分页续接（对齐 iOS AuditLogViewModel，只读）。
 import { AuditLogEntry } from '../../models/AccountModels';
@@ -278,6 +279,8 @@ export struct AuditLogPage {
           })
         }
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
       .bindSheet($$this.vm.historyOpen, this.HistorySheet(), {
@@ -285,7 +288,8 @@ export struct AuditLogPage {
         title: { title: '变更历史' },
       })
     }
-    .titleBar({ content: { title: { mainTitle: '审计日志' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '审计日志' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady(() => {
       this.vm.load().catch(() => {

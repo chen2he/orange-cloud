@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 「这个请求为什么被拦了」——模拟一条请求打过 Cloudflare，看它逐步走了哪些规则。
@@ -169,7 +170,10 @@ export struct RequestTracerPage {
         .width('100%')
         .height('100%')
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
     }
-    .titleBar({ content: { title: { mainTitle: '请求追踪' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '请求追踪' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
   }
 }

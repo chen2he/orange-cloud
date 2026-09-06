@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 免登录工具箱：7 件套集成在一页（工具选择 + 输入 + 结果），对齐 Android ToolboxHub。
 // whois / DNS 查询 / GeoIP / HTTP 探测 / CF Trace / SSL 探测 / CIDR 计算。
@@ -180,10 +181,13 @@ export struct ToolboxPage {
         .width('100%')
         .height('100%')
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: '工具箱' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '工具箱' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
   }
 }

@@ -1,3 +1,4 @@
+import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Turnstile 人机验证：widget 列表 / 新建 / 编辑 / 密钥轮换 / 删除（对齐 iOS Views/Turnstile）。
@@ -390,10 +391,13 @@ export struct TurnstileListPage {
             this.openCreate();
           })
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: 'Turnstile' } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'Turnstile' } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showEditor, this.editorSheet(), ocSheet(() => {
       this.showEditor = false;
@@ -788,10 +792,13 @@ export struct TurnstileDetailPage {
         .width('100%')
         .height('100%')
       }
+      // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .width('100%')
       .height('100%')
     }
-    .titleBar({ content: { title: { mainTitle: this.widget?.name ?? 'Turnstile' }, menu: { value: this.canWrite ? [{ content: { icon: $r('sys.symbol.square_and_pencil'), label: '编辑', action: () => { this.openEditor(); } } }] : [] } } })
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.widget?.name ?? 'Turnstile' }, menu: { value: this.canWrite ? [{ content: { icon: $r('sys.symbol.square_and_pencil'), label: '编辑', action: () => { this.openEditor(); } } }] : [] } } })
+    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showEditor, this.editorSheet(), ocSheet(() => {
       this.showEditor = false;
