@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 负载均衡·源站池（account 级）：列表（健康状态 / 源站数 / 监测）+ 新建 / 编辑（名称、多源站行、
 // 最少可用源站、健康监测选择）+ 长按删除。对齐 iOS PoolListView；写操作按 LB_POOLS_WRITE 门控。
@@ -144,7 +145,7 @@ export struct LBPoolsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

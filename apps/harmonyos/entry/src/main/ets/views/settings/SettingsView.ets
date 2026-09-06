@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 // 设置 Tab：身份管理（切换/添加/详情）+ 偏好（外观/用量口径）+ 帮助与反馈 + 关于
 //（对齐 iOS SettingsView 的分区结构）。
 import { ConfigurationConstant, Want } from '@kit.AbilityKit';
@@ -105,7 +106,7 @@ export struct SettingsView {
   private requestRating(): void {
     RatingPrompt.request().then((err: string) => {
       if (err !== '') {
-        this.getUIContext().getPromptAction().showToast({ message: err });
+        ocSnack(this.getUIContext(), err);
       }
     }).catch(() => {
     });
@@ -165,7 +166,7 @@ export struct SettingsView {
   private copyFeedbackEmail(): void {
     const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, FEEDBACK_EMAIL);
     pasteboard.getSystemPasteboard().setData(data).then(() => {
-      this.getUIContext().getPromptAction().showToast({ message: '未找到邮件应用，已复制邮箱地址' });
+      ocSnack(this.getUIContext(), '未找到邮件应用，已复制邮箱地址');
     }).catch(() => {
     });
   }

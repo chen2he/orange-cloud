@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // D1：数据库列表 + 新建 → SQL 查询控制台（对齐 Android D1Screens）。
 import { D1Database, D1QueryResult } from '../../models/StorageModels';
@@ -295,9 +296,9 @@ export struct D1DatabasesPage {
             this.confirmDeleting = false;
             if (err === '') {
               this.confirmVisible = false;
-              this.getUIContext().getPromptAction().showToast({ message: '已删除' });
+              ocSnack(this.getUIContext(), '已删除');
             } else {
-              this.getUIContext().getPromptAction().showToast({ message: err });
+              ocSnack(this.getUIContext(), err);
             }
           });
         })
@@ -578,7 +579,7 @@ export struct D1QueryPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 
@@ -1115,7 +1116,7 @@ export struct D1TablePage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 性能设置：网络开关（brotli/http2/http3/0-RTT/Early Hints/WebSockets/IPv6）
 // + 缓存级别 + Always Online + 查询串排序（对齐 Android ZonePerformanceScreen）。
@@ -101,7 +102,7 @@ export struct ZonePerformancePage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

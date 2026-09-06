@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 邮件路由：状态开关 + 路由规则（自定义地址 → 转发/丢弃）+ 目标地址管理。
 // 对齐 Android EmailRoutingScreen。
@@ -243,7 +244,7 @@ export struct EmailRoutingPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 
@@ -606,7 +607,7 @@ export struct EmailRoutingPage {
                         .gesture(LongPressGesture().onAction(() => {
                           this.vm.removeSuppression(this.zoneId, item).then((err: string) => {
                             if (err !== '') {
-                              promptAction.showToast({ message: err });
+                              ocSnack(this.getUIContext(), err);
                             }
                           });
                         }))

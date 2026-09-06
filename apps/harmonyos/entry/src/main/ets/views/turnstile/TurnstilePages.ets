@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Turnstile 人机验证：widget 列表 / 新建 / 编辑 / 密钥轮换 / 删除（对齐 iOS Views/Turnstile）。
 // 读 challenge-widgets.read，写操作按 challenge-widgets.write 门控；入口在概览页「网络」岛，
@@ -121,7 +122,7 @@ export struct TurnstileListPage {
 
   private toast(msg: string): void {
     if (msg !== '') {
-      promptAction.showToast({ message: msg });
+      ocSnack(this.getUIContext(), msg);
     }
   }
 
@@ -423,7 +424,7 @@ export struct TurnstileDetailPage {
 
   private toast(msg: string): void {
     if (msg !== '') {
-      promptAction.showToast({ message: msg });
+      ocSnack(this.getUIContext(), msg);
     }
   }
 

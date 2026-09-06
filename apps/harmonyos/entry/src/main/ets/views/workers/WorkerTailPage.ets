@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 实时日志 tail：创建会话 → WebSocket 流；条目展平成日志行后滚动展示。
 // 对齐 iOS WorkerTailView：关键词搜索 + 级别筛选 + 暂停（只冻结画面、日志照收）
@@ -214,7 +215,7 @@ export struct WorkerTailPage {
   private copyText(text: string): void {
     const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
     pasteboard.getSystemPasteboard().setData(data).then(() => {
-      promptAction.showToast({ message: '已复制' });
+      ocSnack(this.getUIContext(), '已复制');
     }).catch(() => {
     });
   }

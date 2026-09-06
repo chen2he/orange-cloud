@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Rulesets phase 泛化列表页（对照 iOS ZonePhaseRulesListView + ZoneRuleEditorView）：
 // 列表 / 启停 / 删除 / 新建 / 编辑，编辑器按 phase 给出对应 action 参数表单。
@@ -155,7 +156,7 @@ export struct PhaseRulesPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Page Rules（传统）：列表 + 启停（PATCH status）+ 长按删除，不做新建编辑（与 iOS 一致）。
 // Cloudflare 建议迁移到新的规则产品，已有规则在此查看维护。
@@ -85,7 +86,7 @@ export struct PageRulesPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

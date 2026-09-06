@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // IP 访问规则：列表 / 新建 / 改动作 / 删除（对齐 Android ZoneAccessRulesScreen）。
 // configuration 创建后不可改，编辑仅开放 mode + notes。
@@ -113,7 +114,7 @@ export struct AccessRulesPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 // 总览 Tab：身份/账户切换 + 域名概况 + 账号级模块入口（对齐 Android DashboardScreen）。
 import { Account, Zone, DNSRecord } from '../../models/Models';
 import { tabBarScroll } from '../common/PlatformCompat';
@@ -342,9 +343,7 @@ export struct DashboardView {
       ? pinnedZones.toggle(accountId, item.id)
       : pinnedResources.toggle(accountId, item.kind, item.id);
     done.then((nowPinned: boolean) => {
-      this.getUIContext().getPromptAction().showToast({
-        message: nowPinned ? '已固定到首页' : '已取消固定',
-      });
+      ocSnack(this.getUIContext(), nowPinned ? '已固定到首页' : '已取消固定',);
     }).catch(() => {
     });
   }

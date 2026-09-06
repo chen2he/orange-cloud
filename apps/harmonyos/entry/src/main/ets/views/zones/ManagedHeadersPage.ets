@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 托管请求/响应头：Cloudflare 维护的开关式头部改写，不用自己写 Transform 规则。
 import { ZoneRouteParam } from '../../models/Routes';
@@ -60,7 +61,7 @@ export struct ManagedHeadersPage {
 
   private toast(msg: string): void {
     if (msg !== '') {
-      promptAction.showToast({ message: msg });
+      ocSnack(this.getUIContext(), msg);
     }
   }
 

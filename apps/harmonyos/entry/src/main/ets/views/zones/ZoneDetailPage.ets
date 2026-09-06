@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zone 详情 hub（对照 iOS ZoneDetailView）：Hero 卡（头像+名字+状态+套餐）+
 // 分组（小标签 + 玻璃岛行入口）+ 缓存清除。
@@ -90,9 +91,7 @@ export struct ZoneDetailPage {
       return;
     }
     pinnedZones.toggle(accountId, this.zoneId).then((nowPinned: boolean) => {
-      this.getUIContext().getPromptAction().showToast({
-        message: nowPinned ? '已固定到首页' : '已取消固定',
-      });
+      ocSnack(this.getUIContext(), nowPinned ? '已固定到首页' : '已取消固定',);
     }).catch(() => {
     });
   }
@@ -110,10 +109,10 @@ export struct ZoneDetailPage {
           this.isPurging = true;
           this.zoneService.purgeAllCache(this.zoneId).then(() => {
             this.isPurging = false;
-            this.getUIContext().getPromptAction().showToast({ message: '已提交缓存清除' });
+            ocSnack(this.getUIContext(), '已提交缓存清除');
           }).catch((e: Error) => {
             this.isPurging = false;
-            this.getUIContext().getPromptAction().showToast({ message: e.message ?? '清除失败' });
+            ocSnack(this.getUIContext(), e.message ?? '清除失败');
           });
         },
       },
@@ -170,7 +169,7 @@ export struct ZoneDetailPage {
   private copyText(text: string): void {
     const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
     pasteboard.getSystemPasteboard().setData(data).then(() => {
-      this.getUIContext().getPromptAction().showToast({ message: '已复制' });
+      ocSnack(this.getUIContext(), '已复制');
     }).catch(() => {
     });
   }

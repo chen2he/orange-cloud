@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 的 CI 构建记录：状态、分支/commit、日志、取消。
 import { IdNameParam } from '../../models/Routes';
@@ -65,7 +66,7 @@ export struct WorkerBuildsPage {
 
   private toast(msg: string): void {
     if (msg !== '') {
-      promptAction.showToast({ message: msg });
+      ocSnack(this.getUIContext(), msg);
     }
   }
 

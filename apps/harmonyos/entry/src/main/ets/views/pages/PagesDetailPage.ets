@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Pages 项目详情：信息 + 构建配置（可编辑）+ 环境变量（只读）+ 部署记录（点按进部署详情）
 // + 自定义域名 + 删除项目（对齐 iOS PagesProjectDetailView）。
@@ -151,7 +152,7 @@ export struct PagesDetailPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

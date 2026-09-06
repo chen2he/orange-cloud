@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 定时触发器（对照 iOS WorkerTriggersView）：Cron 查看 + 增删。
 // Cron 走 UTC，5 字段标准表达式；端点是**整组 PUT**，加/删都要回写全集。
@@ -80,7 +81,7 @@ export struct WorkerTriggersPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // WAF 自定义规则（Rulesets http_request_firewall_custom）：列表 / 启停 / 新建 / 编辑 / 删除。
 // 对齐 Android WafRulesScreen（AI 表达式生成为安卓云端能力，此处提供表达式直编）。
@@ -27,7 +28,7 @@ export struct WafRulesPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

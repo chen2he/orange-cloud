@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 付费墙（对齐 iOS Views/Paywall/PaywallView）：场景触发推入本页，也可从设置页常驻入口进。
 // 价格一律取自 queryProducts 的 Product.price，**不硬编码任何价格**；
@@ -42,7 +43,7 @@ export struct PaywallPage {
   }
 
   private toast(message: string): void {
-    this.getUIContext().getPromptAction().showToast({ message: message });
+    ocSnack(this.getUIContext(), message);
   }
 
   private handleOutcome(outcome: PurchaseOutcome): void {

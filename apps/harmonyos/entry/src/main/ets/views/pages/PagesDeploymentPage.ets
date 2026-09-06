@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Pages 部署详情：概览 + 构建阶段时间线 + 操作（重试 / 回滚 / 删除，对齐 iOS PagesDeploymentDetailView）。
 // 路由参数 PagesDeploymentParam；写操作按 page.write 门控，均先确认弹窗再执行。
@@ -151,7 +152,7 @@ export struct PagesDeploymentPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

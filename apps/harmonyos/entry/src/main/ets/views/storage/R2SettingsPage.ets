@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // R2 桶设置：公开访问（r2.dev 托管域）/ 自定义域 / CORS 规则（对齐 iOS R2BucketSettingsView）。
 // 入口：R2 对象列表右上角齿轮。写操作按 workers-r2.write 门控 + 确认弹窗。
@@ -303,7 +304,7 @@ export struct R2SettingsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 
@@ -730,7 +731,7 @@ export struct R2SettingsPage {
       if (result.index === 1) {
         this.vm.setCatalogEnabled(this.bucket, true).then((err: string) => {
           if (err !== '') {
-            promptAction.showToast({ message: err });
+            ocSnack(this.getUIContext(), err);
           }
         });
       }
@@ -873,7 +874,7 @@ export struct R2SettingsPage {
                         } else {
                           this.vm.setCatalogEnabled(this.bucket, false).then((err: string) => {
                             if (err !== '') {
-                              promptAction.showToast({ message: err });
+                              ocSnack(this.getUIContext(), err);
                             }
                           });
                         }

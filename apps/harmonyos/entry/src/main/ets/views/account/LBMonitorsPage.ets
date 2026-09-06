@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 负载均衡·健康监测（account 级）：列表 + 新建 / 编辑（类型 http/https/tcp、路径、方法、期望码、
 // 间隔 / 超时 / 重试、跟随重定向、允许不安全证书）+ 长按删除。对齐 iOS MonitorListView；LB_POOLS_WRITE 门控。
@@ -95,7 +96,7 @@ export struct LBMonitorsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

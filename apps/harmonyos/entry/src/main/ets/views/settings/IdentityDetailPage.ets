@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 身份详情：重命名 / 已授权 scope 列表 / 升级授权（补齐缺失模块）/ 退出该身份
 //（对齐 iOS IdentityDetailView 的「升级授权」区 + Android IdentityDetailScreen）。
@@ -161,7 +162,7 @@ export struct IdentityDetailPage {
                   .enabled(this.editingLabel.trim() !== '')
                   .onClick(() => {
                     authManager.renameSession(this.sessionId, this.editingLabel.trim()).then(() => {
-                      this.getUIContext().getPromptAction().showToast({ message: '已保存' });
+                      ocSnack(this.getUIContext(), '已保存');
                     });
                   })
               }

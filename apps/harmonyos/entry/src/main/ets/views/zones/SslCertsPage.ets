@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 边缘证书：证书包列表 + Universal SSL 开关 + 删除高级包（对齐 Android SslCerts 屏）。
 import { ZoneRouteParam } from '../../models/Routes';
@@ -69,7 +70,7 @@ export struct SslCertsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

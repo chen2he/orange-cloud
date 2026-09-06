@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 路由（zone 级）：pattern → script 映射，列表 + 新建 + 删除（对齐 Android Worker 路由管理）。
 import { WorkerRoute } from '../../models/WorkerModels';
@@ -66,7 +67,7 @@ export struct WorkerRoutesPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // URL 安全扫描：提交链接，看归属、状态与风险判定。需账号，故不在免登录工具箱里。
 import { URLScannerService, URLScanResult } from '../../services/URLScannerService';
@@ -66,7 +67,7 @@ export struct URLScannerPage {
 
   private toast(msg: string): void {
     if (msg !== '') {
-      promptAction.showToast({ message: msg });
+      ocSnack(this.getUIContext(), msg);
     }
   }
 

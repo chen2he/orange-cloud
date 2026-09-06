@@ -1,3 +1,4 @@
+import { HdsListItemCard, IconSize, PrefixIcon, SuffixArrow, SuffixSwitch, SuffixText, SuffixTextAndArrow } from '@kit.UIDesignKit';
 // 公共 UI 组件：加载 / 错误 / 空态 / 分区头 / 信息行 / 开关行 / 导航行 / 标签。
 // 品牌橙 #F48120 只给点缀（对齐晨昏设计语言：数字回归主文本色）。
 
@@ -114,21 +115,12 @@ export struct InfoRow {
   @Param value: string = '';
 
   build() {
-    Row({ space: 12 }) {
-      Text(this.label)
-        .fontSize(14)
-        .fontColor($r('sys.color.font_secondary'))
-      Blank()
-      Text(this.value)
-        .fontSize(14)
-        .fontColor($r('sys.color.font_primary'))
-        .maxLines(2)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .textAlign(TextAlign.End)
-        .layoutWeight(1)
-    }
-    .width('100%')
-    .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+    HdsListItemCard({
+      textItem: { primaryText: { text: this.label } },
+      suffixItem: new SuffixText({ text: this.value }),
+      // 卡片背板交给外层分组容器（GlassIsland），这里只取系统列表项的排版与触感
+      cardBackgroundColor: Color.Transparent,
+    })
   }
 }
 
@@ -142,31 +134,23 @@ export struct ToggleRow {
   };
 
   build() {
-    Row({ space: 12 }) {
-      Column({ space: 2 }) {
-        Text(this.title)
-          .fontSize(15)
-          .fontColor($r('sys.color.font_primary'))
-        if (this.subtitle !== '') {
-          Text(this.subtitle)
-            .fontSize(12)
-            .fontColor($r('sys.color.font_secondary'))
-        }
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-
-      Toggle({ type: ToggleType.Switch, isOn: this.isOn })
-        .selectedColor($r('app.color.oc_brand'))
-        .enabled(this.isEnabled)
-        .onChange((isOn: boolean) => {
+    HdsListItemCard({
+      textItem: {
+        primaryText: { text: this.title },
+        secondaryText: this.subtitle !== '' ? { text: this.subtitle } : undefined,
+      },
+      suffixItem: new SuffixSwitch({
+        isCheck: this.isOn,
+        enable: this.isEnabled,
+        selectColor: $r('app.color.oc_brand'),
+        onChange: (isOn: boolean) => {
           if (isOn !== this.isOn) {
             this.onToggle(isOn);
           }
-        })
-    }
-    .width('100%')
-    .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+        },
+      }),
+      cardBackgroundColor: Color.Transparent,
+    })
   }
 }
 
@@ -182,56 +166,23 @@ export struct NavRow {
   };
 
   build() {
-    Row({ space: 12 }) {
-      if (this.symbol !== null) {
-        Stack() {
-          SymbolGlyph(this.symbol)
-            .fontSize(19)
-            .fontColor([$r('app.color.oc_brand_text')])
-        }
-        .width(36)
-        .height(36)
-        .backgroundColor($r('app.color.oc_brand_bg'))
-        .borderRadius(9)
-      } else if (this.icon !== '') {
-        Text(this.icon)
-          .fontSize(20)
-          .width(36)
-          .height(36)
-          .textAlign(TextAlign.Center)
-          .backgroundColor($r('app.color.oc_brand_bg'))
-          .borderRadius(9)
-      }
-      Column({ space: 2 }) {
-        Text(this.title)
-          .fontSize(15)
-          .fontWeight(FontWeight.Medium)
-          .fontColor($r('sys.color.font_primary'))
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-        if (this.subtitle !== '') {
-          Text(this.subtitle)
-            .fontSize(12)
-            .fontColor($r('sys.color.font_secondary'))
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-        }
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-
-      if (this.locked) {
-        ProBadge()
-      }
-      Image($r('sys.media.ohos_ic_public_arrow_right'))
-        .width(16)
-        .height(16)
-        .fillColor($r('sys.color.font_tertiary'))
-    }
-    .width('100%')
-    .padding({ left: 16, right: 12, top: 12, bottom: 12 })
-    .onClick(() => {
-      this.onNav();
+    HdsListItemCard({
+      prefixItem: this.symbol !== null
+        ? new PrefixIcon({ iconValue: { symbol: this.symbol }, iconSize: IconSize.SYSTEM_ICON })
+        : undefined,
+      textItem: {
+        primaryText: { text: this.title },
+        secondaryText: this.subtitle !== '' ? { text: this.subtitle } : undefined,
+      },
+      // Pro 闸门行用「Pro ›」文字+箭头槽位：HDS 列表项没有徽章槽，把 ProBadge 挂在卡片
+      // 外面会被卡片裁掉（实测右侧只露出半个「Pr」），所以走系统的 SuffixTextAndArrow。
+      suffixItem: this.locked
+        ? new SuffixTextAndArrow({ text: 'Pro' }, {})
+        : new SuffixArrow({}),
+      onClick: () => {
+        this.onNav();
+      },
+      cardBackgroundColor: Color.Transparent,
     })
   }
 }

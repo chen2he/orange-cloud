@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // DNS 记录列表（NavDestination）：读 + 新建 / 编辑 / 侧滑删除
 import { DNSRecord, DNSRecordPayload } from '../../models/Models';
@@ -151,7 +152,7 @@ export struct DNSListPage {
         action: () => {
           this.vm.remove(record).then((errorMessage: string) => {
             if (errorMessage !== '') {
-              this.getUIContext().getPromptAction().showToast({ message: errorMessage });
+              ocSnack(this.getUIContext(), errorMessage);
             }
           });
         },

@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 在 Cloudflare 注册的域名：到期日、自动续费、转移锁（只读）。
 // 域名注册是花钱操作，移动端不做。
@@ -89,7 +90,7 @@ export struct RegistrarPage {
 
   private toast(msg: string): void {
     if (msg !== '') {
-      promptAction.showToast({ message: msg });
+      ocSnack(this.getUIContext(), msg);
     }
   }
 

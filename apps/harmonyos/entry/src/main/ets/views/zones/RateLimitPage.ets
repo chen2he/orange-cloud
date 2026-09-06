@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 速率限制（Rulesets http_ratelimit）：列表 / 启停 / 新建 / 编辑 / 删除。
 // 计数特征固定 ip.src + cf.colo.id（免费套餐可用组合，对齐 Android ZoneRateLimitScreen）。
@@ -35,7 +36,7 @@ export struct RateLimitPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

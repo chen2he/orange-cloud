@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Transform 规则：三个 phase 切换（URL 重写 / 请求头 / 响应头），动作恒为 rewrite。
 // 对齐 Android ZoneTransformScreen。
@@ -61,7 +62,7 @@ export struct TransformRulesPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

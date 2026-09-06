@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 详情 hub（对照 iOS WorkerDetailView）：信息 + 指标 + 管理入口 + 调试入口 + 删除。
 // 各子模块拆成独立页面（变量与密钥 / 触发器 / 部署历史 / 域名 / 实时日志），本页只做导航与概览。
@@ -218,7 +219,7 @@ export struct WorkerDetailPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

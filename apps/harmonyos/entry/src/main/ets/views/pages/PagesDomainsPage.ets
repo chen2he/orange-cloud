@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Pages 自定义域名（对照 iOS PagesDomainsView）：列表 + 添加 + 删除 + 域名详情。
 // 详情含状态、CNAME 目标（可复制）、以及 zone 不在 Cloudflare 时的 TXT 归属验证记录。
@@ -210,7 +211,7 @@ export struct PagesDomainsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

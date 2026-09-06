@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 缓存规则（Rulesets http_request_cache_settings）：列表 / 启停 / 新建 / 编辑 / 删除。
 // 表单开放：表达式 + 缓存资格（缓存/绕过）+ 边缘 TTL 覆写（对齐 Android ZoneCacheRulesScreen 常用面）。
@@ -36,7 +37,7 @@ export struct CacheRulesPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

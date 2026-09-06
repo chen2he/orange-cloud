@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 // 域名 Tab（对照 iOS ZoneListView）：大标题「域名」+ 副标题统计 + 搜索 +
 // 每个域名一张独立玻璃岛卡片（字母头像 + 名字 + 套餐徽章 + 状态点 + chevron）。
 import { Zone, zoneDisplayStatus } from '../../models/Models';
@@ -100,7 +101,7 @@ export struct ZoneListView {
   private copyText(text: string): void {
     const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
     pasteboard.getSystemPasteboard().setData(data).then(() => {
-      this.getUIContext().getPromptAction().showToast({ message: '已复制' });
+      ocSnack(this.getUIContext(), '已复制');
     }).catch(() => {
     });
   }

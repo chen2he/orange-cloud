@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Bulk Redirects：重定向列表（查看/新建/删除）→ 条目查看（对齐 Android RedirectScreens）。
 import { RedirectList, RedirectListItem } from '../../models/AccountModels';
@@ -67,7 +68,7 @@ export struct RedirectListsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 
@@ -272,7 +273,7 @@ export struct RedirectItemsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

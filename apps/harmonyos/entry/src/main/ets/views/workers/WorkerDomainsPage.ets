@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 域名与路由（对照 iOS WorkerRoutesView）：
 // workers.dev 子域开关 + 自定义域（挂/卸）+ Zone 路由（加/删）。
@@ -149,7 +150,7 @@ export struct WorkerDomainsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

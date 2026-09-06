@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // URL 规范化（对照 iOS URLNormalizationView）：GET 与 PUT /zones/{id}/url_normalization。
 // 规范化类型 cloudflare/rfc3986 单选 + 作用范围 incoming/both（含 none 只读兜底），改动即时 PUT。
@@ -71,7 +72,7 @@ export struct UrlNormalizationPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

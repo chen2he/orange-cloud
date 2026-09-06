@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // R2：存储桶列表 → 对象浏览（游标分页）+ 对象文本/文件上传 + 查看/详情/复制/移动/删除（对齐 Android R2Screens + iOS R2ObjectListView）。
 import { R2Bucket, R2Object, R2ObjectPage, R2PreviewKind, previewKindOf, mimeOf, extOf } from '../../models/StorageModels';
@@ -89,7 +90,7 @@ export struct R2BucketsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 
@@ -511,7 +512,7 @@ export struct R2ObjectsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

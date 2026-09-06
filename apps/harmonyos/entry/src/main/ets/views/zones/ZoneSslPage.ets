@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // SSL/TLS：加密模式（off/flexible/full/strict）+ HTTPS 开关 + 最低 TLS + TLS 1.3
 // + 边缘证书入口（对齐 Android ZoneSslScreens）。
@@ -95,7 +96,7 @@ export struct ZoneSslPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

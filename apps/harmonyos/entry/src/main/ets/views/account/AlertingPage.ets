@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 通知告警：告警策略（查看+删除）+ Webhook 目标（查看+新建）（对齐 Android CFAlertingScreen）。
 import { AlertPolicy, WebhookDestination } from '../../models/AccountModels';
@@ -101,7 +102,7 @@ export struct AlertingPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

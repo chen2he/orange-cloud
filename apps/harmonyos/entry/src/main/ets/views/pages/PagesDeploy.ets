@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 // Pages 直接上传部署（对照 iOS PagesDeployViewModel + PagesDeployView）。
 //
 // 四步链路，缺一不可：
@@ -259,7 +260,7 @@ export struct PagesDeploySheet {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

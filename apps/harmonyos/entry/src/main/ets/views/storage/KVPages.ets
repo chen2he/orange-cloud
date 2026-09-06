@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // KV：命名空间列表 → 键列表（游标分页）+ 读/写/删值（对齐 Android KVScreens）。
 import { KVKey, KVNamespace } from '../../models/StorageModels';
@@ -62,7 +63,7 @@ export struct KVNamespacesPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 
@@ -287,7 +288,7 @@ export struct KVKeysPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

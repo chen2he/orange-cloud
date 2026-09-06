@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 「规则中心」聚合入口（对照 iOS ZoneRulesHubView）：把域名详情页平铺的规则类条目
 // （Transform / 缓存规则 / Snippets）与五个 Rulesets phase（单条重定向 / 源站 / 配置 /
@@ -151,7 +152,7 @@ export struct RulesHubPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

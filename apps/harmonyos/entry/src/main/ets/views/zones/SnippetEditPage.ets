@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Snippet 编辑：新建（命名 + 代码）或改正文，multipart 上传（对齐 Android SnippetEdit 屏）。
 import { SnippetEditParam } from '../../models/Routes';
@@ -35,7 +36,7 @@ export struct SnippetEditPage {
     this.error = '';
     this.service.upload(this.zoneId, name, this.code).then(() => {
       this.isSaving = false;
-      this.getUIContext().getPromptAction().showToast({ message: '已保存' });
+      ocSnack(this.getUIContext(), '已保存');
       this.pathStack?.pop();
     }).catch((e: Error) => {
       this.isSaving = false;

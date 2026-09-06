@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Cloudflare Tunnel：列表（状态/活跃连接）+ 详情（公共主机名 CRUD / 连接令牌 / 清理失活连接）
 // + 新建 + 删除（对齐 iOS Views/Tunnels）。
@@ -397,7 +398,7 @@ export struct TunnelDetailPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 
@@ -521,7 +522,7 @@ export struct TunnelDetailPage {
             if (err === '') {
               this.pathStack?.pop();
             } else {
-              this.getUIContext().getPromptAction().showToast({ message: err });
+              ocSnack(this.getUIContext(), err);
             }
           });
         },

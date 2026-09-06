@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 新建 Worker：命名 + 代码编辑器（默认 Hello World），multipart 部署（对齐 Android WorkerCreateScreen）。
 import { WorkerService } from '../../services/WorkerService';
@@ -73,7 +74,7 @@ export struct WorkerCreatePage {
     this.error = '';
     this.service.deploy(accountStore.selectedId, this.name.trim(), this.code, this.compatDate.trim()).then(() => {
       this.isSaving = false;
-      this.getUIContext().getPromptAction().showToast({ message: '已部署' });
+      ocSnack(this.getUIContext(), '已部署');
       this.pathStack?.pop();
     }).catch((e: Error) => {
       this.isSaving = false;

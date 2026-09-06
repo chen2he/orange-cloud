@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zero Trust：Access 应用（建/编辑/删）+ Gateway 规则（建/删），双分区一页（对齐 iOS Views/ZeroTrust）。
 import { AccessApp, AccessPolicySummary, GatewayRule } from '../../models/AccountModels';
@@ -160,7 +161,7 @@ export struct ZeroTrustPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

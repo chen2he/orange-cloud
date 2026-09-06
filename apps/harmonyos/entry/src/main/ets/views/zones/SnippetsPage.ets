@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Snippets：片段列表（点入编辑、长按删除）+ 规则整组管理（对齐 Android SnippetsScreens）。
 import { Snippet, SnippetRule, SnippetService } from '../../services/SnippetService';
@@ -63,7 +64,7 @@ export struct SnippetsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

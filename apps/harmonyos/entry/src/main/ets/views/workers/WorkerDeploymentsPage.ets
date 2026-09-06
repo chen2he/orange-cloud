@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 部署历史（对照 iOS WorkerDeploymentsView）：列表 + 删除。
 // 列表首项为当前活跃部署，Cloudflare 拒绝删除活跃部署，故活跃项不给删除入口。
@@ -53,7 +54,7 @@ export struct WorkerDeploymentsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 

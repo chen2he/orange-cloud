@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 「这个请求为什么被拦了」——模拟一条请求打过 Cloudflare，看它逐步走了哪些规则。
 import {
@@ -54,7 +55,7 @@ export struct RequestTracerPage {
 
   private toast(msg: string): void {
     if (msg !== '') {
-      promptAction.showToast({ message: msg });
+      ocSnack(this.getUIContext(), msg);
     }
   }
 

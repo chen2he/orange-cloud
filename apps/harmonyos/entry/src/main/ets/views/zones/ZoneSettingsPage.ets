@@ -1,3 +1,4 @@
+import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zone 设置：开发模式 / Under Attack 模式 / 暂停 Cloudflare + 按目标清缓存（URL / 前缀 / 主机 /
 // 缓存标签四模式，对照 iOS PurgeCacheSheet；POST /zones/{id}/purge_cache 的 files/prefixes/hosts/tags）。
@@ -257,7 +258,7 @@ export struct ZoneSettingsPage {
 
   private toast(message: string): void {
     if (message !== '') {
-      this.getUIContext().getPromptAction().showToast({ message: message });
+      ocSnack(this.getUIContext(), message);
     }
   }
 
