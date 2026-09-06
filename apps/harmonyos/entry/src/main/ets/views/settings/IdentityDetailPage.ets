@@ -134,8 +134,6 @@ export struct IdentityDetailPage {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.islandRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
   }
 
   build() {
@@ -170,8 +168,6 @@ export struct IdentityDetailPage {
               .padding({ left: 16, right: 16, top: 8, bottom: 8 })
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(OCLayout.chipRadius)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-              .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
             }
             .width('100%')
 
@@ -187,8 +183,6 @@ export struct IdentityDetailPage {
               .width('100%')
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(OCLayout.chipRadius)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-              .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
               .clip(true)
             }
             .width('100%')
@@ -209,8 +203,6 @@ export struct IdentityDetailPage {
               .padding({ top: 6, bottom: 6 })
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(OCLayout.chipRadius)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-              .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
               .clip(true)
             }
             .width('100%')
@@ -291,8 +283,6 @@ export struct IdentityDetailPage {
                 .width('100%')
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                 .clip(true)
 
                 Text('补齐授权会跳转浏览器重新授权当前账号，无需退出登录；请务必使用原账号完成授权。')
@@ -312,7 +302,6 @@ export struct IdentityDetailPage {
               .fontColor('#DC2626')
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(OCLayout.chipRadius)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
               .margin({ bottom: 8 })
               .onClick(() => {
                 this.confirmRemove();

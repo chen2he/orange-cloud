@@ -91,6 +91,5 @@ export struct ReauthBanner {
     .backgroundColor('#26F48120')
     .borderRadius(OCLayout.islandRadius)
     .border({ width: 0.5, color: '#59F48120' })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
   }
 }

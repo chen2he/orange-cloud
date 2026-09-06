@@ -90,8 +90,6 @@ export struct ZoneListView {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.islandRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
     .onClick(() => {
       const param: ZoneRouteParam = { zoneId: zone.id, zoneName: zone.name };
       this.pathStack.pushPathByName(Routes.ZONE_DETAIL, param);
@@ -150,7 +148,6 @@ export struct ZoneListView {
       .width('100%')
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(OCLayout.chipRadius)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
       .clip(true)
 
       Button('复制两条 NS')
@@ -160,7 +157,6 @@ export struct ZoneListView {
         .fontColor($r('app.color.oc_brand_text'))
         .backgroundColor($r('sys.color.comp_background_list_card'))
         .borderRadius(OCLayout.chipRadius)
-        .border({ width: 0.5, color: $r('sys.color.comp_divider') })
         .onClick(() => {
           this.copyText(this.vm.createdNameServers.join('\n'));
         })
@@ -317,7 +313,6 @@ export struct ZoneListView {
         .fontColor(Color.White)
         .backgroundColor($r('app.color.oc_brand_cta'))
         .borderRadius(26)
-        .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
         .margin({ right: 20, bottom: 28 })
         .onClick(() => {
           this.vm.createError = '';

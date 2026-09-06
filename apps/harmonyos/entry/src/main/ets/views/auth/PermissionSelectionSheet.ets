@@ -240,7 +240,6 @@ export struct PermissionSelectionSheet {
           .width('100%')
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .borderRadius(OCLayout.islandRadius)
-          .border({ width: 0.5, color: $r('sys.color.comp_divider') })
           .clip(true)
 
           // scope 计数与展开明细
@@ -277,7 +276,6 @@ export struct PermissionSelectionSheet {
           .width('100%')
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .borderRadius(OCLayout.islandRadius)
-          .border({ width: 0.5, color: $r('sys.color.comp_divider') })
           .clip(true)
         }
         .width('100%')

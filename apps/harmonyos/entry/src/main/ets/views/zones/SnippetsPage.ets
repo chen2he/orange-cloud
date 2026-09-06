@@ -273,7 +273,6 @@ export struct SnippetsPage {
                   }
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(14)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                   .clip(true)
                   .margin({ left: 16, right: 16 })
                 }
@@ -313,7 +312,6 @@ export struct SnippetsPage {
                   }
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(14)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                   .clip(true)
                   .margin({ left: 16, right: 16 })
                 }
@@ -336,7 +334,6 @@ export struct SnippetsPage {
           .fontColor(Color.White)
           .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
-          .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
           .onClick(() => {
             this.openEdit('');

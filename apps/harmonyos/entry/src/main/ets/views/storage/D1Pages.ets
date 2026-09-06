@@ -421,7 +421,6 @@ export struct D1DatabasesPage {
           .fontColor(Color.White)
           .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
-          .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
           .onClick(() => {
             this.showCreate = true;
@@ -677,7 +676,6 @@ export struct D1QueryPage {
       .width('100%')
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(12)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
       .clip(true)
     }
     .width('100%')
@@ -1554,7 +1552,6 @@ export struct D1TablePage {
               .padding(12)
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(12)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
             }
 
             if (this.vm.rowCount > 0) {

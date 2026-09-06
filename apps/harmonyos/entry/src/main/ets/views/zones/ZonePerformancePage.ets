@@ -127,7 +127,6 @@ export struct ZonePerformancePage {
       }
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(14)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
       .clip(true)
       .margin({ left: 16, right: 16 })
     }

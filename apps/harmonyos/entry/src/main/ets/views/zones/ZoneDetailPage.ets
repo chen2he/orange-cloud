@@ -162,8 +162,6 @@ export struct ZoneDetailPage {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.islandRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
   }
 
   private copyText(text: string): void {
@@ -210,7 +208,6 @@ export struct ZoneDetailPage {
         .width('100%')
         .backgroundColor($r('sys.color.comp_background_list_card'))
         .borderRadius(OCLayout.chipRadius)
-        .border({ width: 0.5, color: $r('sys.color.comp_divider') })
         .clip(true)
       }
       Text(`Zone ID · ${this.zoneId}`)
@@ -263,8 +260,6 @@ export struct ZoneDetailPage {
       .width('100%')
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(OCLayout.chipRadius)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-      .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
       .clip(true)
     }
     .width('100%')
@@ -303,7 +298,6 @@ export struct ZoneDetailPage {
             .fontColor('#DC2626')
             .backgroundColor($r('sys.color.comp_background_list_card'))
             .borderRadius(OCLayout.chipRadius)
-            .border({ width: 0.5, color: $r('sys.color.comp_divider') })
             .enabled(!this.isPurging)
             .margin({ bottom: 8 })
             .onClick(() => {

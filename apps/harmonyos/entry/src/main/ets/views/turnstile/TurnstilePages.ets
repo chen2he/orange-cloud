@@ -385,7 +385,6 @@ export struct TurnstileListPage {
           .fontColor(Color.White)
           .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
-          .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
           .onClick(() => {
             this.openCreate();
@@ -690,7 +689,6 @@ export struct TurnstileDetailPage {
                 }
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                 .clip(true)
                 .margin({ left: 16, right: 16 })
                 Text('sitekey 嵌进网页组件，secret 用于服务端 siteverify 校验——secret 请勿泄露。点按可复制。')
@@ -754,7 +752,6 @@ export struct TurnstileDetailPage {
                 .padding(14)
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                 .margin({ left: 16, right: 16 })
                 Text('组件在所列域名及其子域生效；域名留空表示任意主机名均可使用。')
                   .fontSize(11)
@@ -774,7 +771,6 @@ export struct TurnstileDetailPage {
                     .fontColor(DANGER_RED)
                     .backgroundColor($r('sys.color.comp_background_list_card'))
                     .borderRadius(OCLayout.chipRadius)
-                    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                     .margin({ left: 16, right: 16 })
                     .onClick(() => {
                       this.confirmDelete();

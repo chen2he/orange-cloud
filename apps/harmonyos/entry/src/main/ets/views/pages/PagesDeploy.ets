@@ -342,7 +342,6 @@ export struct PagesDeploySheet {
           .fontColor($r('sys.color.font_primary'))
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .borderRadius(OCLayout.chipRadius)
-          .border({ width: 0.5, color: $r('sys.color.comp_divider') })
           .enabled(!this.vm.isDeploying())
           .onClick(() => {
             this.vm.pickFiles().then((err: string) => {
@@ -371,7 +370,6 @@ export struct PagesDeploySheet {
           .width('100%')
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .borderRadius(OCLayout.chipRadius)
-          .border({ width: 0.5, color: $r('sys.color.comp_divider') })
           .clip(true)
         }
         Text('选中的文件会放在站点根目录下；子目录结构请用打包好的产物逐个选取。')

@@ -148,7 +148,6 @@ export struct WorkerListPage {
           .fontColor(Color.White)
           .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
-          .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
           .onClick(() => {
             this.pathStack?.pushPathByName(Routes.WORKER_CREATE, null);

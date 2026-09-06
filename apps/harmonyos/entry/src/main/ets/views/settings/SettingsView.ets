@@ -325,8 +325,6 @@ export struct SettingsView {
             }
             .backgroundColor($r('sys.color.comp_background_list_card'))
             .borderRadius(16)
-            .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-            .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
             .clip(true)
             .margin({ left: 16, right: 16 })
           }
@@ -347,8 +345,6 @@ export struct SettingsView {
             }
             .backgroundColor($r('sys.color.comp_background_list_card'))
             .borderRadius(16)
-            .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-            .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
             .clip(true)
             .margin({ left: 16, right: 16 })
           }
@@ -399,8 +395,6 @@ export struct SettingsView {
             }
             .backgroundColor($r('sys.color.comp_background_list_card'))
             .borderRadius(16)
-            .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-            .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
             .clip(true)
             .margin({ left: 16, right: 16 })
           }
@@ -422,8 +416,6 @@ export struct SettingsView {
             }
             .backgroundColor($r('sys.color.comp_background_list_card'))
             .borderRadius(16)
-            .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-            .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
             .clip(true)
             .margin({ left: 16, right: 16 })
           }
@@ -443,8 +435,6 @@ export struct SettingsView {
             }
             .backgroundColor($r('sys.color.comp_background_list_card'))
             .borderRadius(16)
-            .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-            .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
             .clip(true)
             .margin({ left: 16, right: 16 })
           }
@@ -485,8 +475,6 @@ export struct SettingsView {
             }
             .backgroundColor($r('sys.color.comp_background_list_card'))
             .borderRadius(16)
-            .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-            .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
             .clip(true)
             .margin({ left: 16, right: 16 })
           }

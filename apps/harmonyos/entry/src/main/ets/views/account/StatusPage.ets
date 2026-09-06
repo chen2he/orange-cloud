@@ -301,7 +301,6 @@ export struct StatusPage {
         }
         .backgroundColor($r('sys.color.comp_background_list_card'))
         .borderRadius(14)
-        .border({ width: 0.5, color: $r('sys.color.comp_divider') })
         .clip(true)
         .margin({ left: 16, right: 16 })
       }
@@ -353,7 +352,6 @@ export struct StatusPage {
               .padding(16)
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(14)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
               .margin({ left: 16, right: 16, top: 12 })
 
               // ── 进行中的事件 ──
@@ -366,7 +364,6 @@ export struct StatusPage {
                 }
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(14)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                 .clip(true)
                 .margin({ left: 16, right: 16 })
               }
@@ -381,7 +378,6 @@ export struct StatusPage {
                 }
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(14)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                 .clip(true)
                 .margin({ left: 16, right: 16 })
               }
@@ -421,7 +417,6 @@ export struct StatusPage {
               }
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(14)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
               .clip(true)
               .margin({ left: 16, right: 16 })
 
@@ -447,7 +442,6 @@ export struct StatusPage {
                 }
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(14)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                 .clip(true)
                 .margin({ left: 16, right: 16 })
               }
@@ -462,7 +456,6 @@ export struct StatusPage {
                 }
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(14)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                 .clip(true)
                 .margin({ left: 16, right: 16, bottom: 24 })
               } else {

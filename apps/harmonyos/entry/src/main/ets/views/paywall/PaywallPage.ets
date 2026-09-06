@@ -204,7 +204,6 @@ export struct PaywallPage {
       .width('100%')
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(OCLayout.chipRadius)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
       .enabled(!this.store.isPurchasing && this.store.unavailable === '')
       .onClick(() => {
         this.buyLifetime();
@@ -253,7 +252,6 @@ export struct PaywallPage {
           .fontColor($r('sys.color.font_primary'))
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .borderRadius(OCLayout.chipRadius)
-          .border({ width: 0.5, color: $r('sys.color.comp_divider') })
           .onClick(() => {
             this.store.openManageSubscriptions().catch(() => {
             });
@@ -288,8 +286,6 @@ export struct PaywallPage {
               .width('100%')
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(OCLayout.islandRadius)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-              .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
               .clip(true)
             }
 

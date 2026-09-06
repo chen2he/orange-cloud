@@ -224,7 +224,6 @@ export struct QueuesPage {
           .fontColor(Color.White)
           .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
-          .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
           .onClick(() => {
             this.showCreate = true;
@@ -462,8 +461,6 @@ export struct QueueDetailPage {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.islandRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
   }
 
   @Builder
@@ -750,7 +747,6 @@ export struct QueueDetailPage {
                 .fontColor('#DC2626')
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                 .margin({ top: 8, bottom: 24 })
                 .onClick(() => {
                   this.confirmPurge();
@@ -1009,7 +1005,6 @@ export struct AIGatewayPage {
           .fontColor(Color.White)
           .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
-          .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
           .onClick(() => {
             this.showCreate = true;
@@ -1097,8 +1092,6 @@ export struct AIGatewayDetailPage {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.islandRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
   }
 
   build() {
@@ -1464,8 +1457,6 @@ export struct DurableObjectDetailPage {
               .width('100%')
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(OCLayout.chipRadius)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-              .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
               .clip(true)
 
               if (this.vm.cursor !== '') {
@@ -1476,7 +1467,6 @@ export struct DurableObjectDetailPage {
                   .fontColor($r('app.color.oc_brand_text'))
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(OCLayout.chipRadius)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                   .enabled(!this.vm.isLoading)
                   .onClick(() => {
                     this.vm.loadMore(this.namespaceId).catch(() => {
@@ -1755,7 +1745,6 @@ export struct HyperdrivePage {
           .fontColor(Color.White)
           .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
-          .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
           .onClick(() => {
             this.showCreate = true;
@@ -1966,8 +1955,6 @@ export struct HyperdriveDetailPage {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.islandRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
   }
 
   @Builder
@@ -2619,8 +2606,6 @@ export struct WorkersAIPage {
                       .width('100%')
                       .backgroundColor($r('sys.color.comp_background_list_card'))
                       .borderRadius(OCLayout.chipRadius)
-                      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                      .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                       .clip(true)
                     }
                     .width('100%')

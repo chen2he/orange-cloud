@@ -429,7 +429,6 @@ export struct PagesDomainsPage {
       .width('100%')
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(OCLayout.chipRadius)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
       .clip(true)
     }
   }
@@ -472,7 +471,6 @@ export struct PagesDomainsPage {
         .width('100%')
         .backgroundColor($r('sys.color.comp_background_list_card'))
         .borderRadius(OCLayout.chipRadius)
-        .border({ width: 0.5, color: $r('sys.color.comp_divider') })
         .clip(true)
 
         // zone 不在 Cloudflare 时，CF 会给一条 TXT 记录做归属验证
@@ -496,7 +494,6 @@ export struct PagesDomainsPage {
           .width('100%')
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .borderRadius(OCLayout.chipRadius)
-          .border({ width: 0.5, color: $r('sys.color.comp_divider') })
           .clip(true)
         }
 
@@ -521,7 +518,6 @@ export struct PagesDomainsPage {
             .fontColor($r('app.color.oc_brand_text'))
             .backgroundColor($r('sys.color.comp_background_list_card'))
             .borderRadius(OCLayout.chipRadius)
-            .border({ width: 0.5, color: $r('sys.color.comp_divider') })
             .enabled(!this.vm.isMutating)
             .onClick(() => {
               if (!this.canWrite()) {
@@ -541,7 +537,6 @@ export struct PagesDomainsPage {
           .fontColor(DANGER_RED)
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .borderRadius(OCLayout.chipRadius)
-          .border({ width: 0.5, color: $r('sys.color.comp_divider') })
           .onClick(() => {
             if (this.canWrite()) {
               this.confirmDelete(this.selected!);
@@ -632,8 +627,6 @@ export struct PagesDomainsPage {
                 .width('100%')
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                 .clip(true)
               }
               .width('100%')

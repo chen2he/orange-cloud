@@ -741,7 +741,6 @@ export struct WorkerBindingsPage {
         .width('100%')
         .backgroundColor($r('sys.color.comp_background_list_card'))
         .borderRadius(OCLayout.chipRadius)
-        .border({ width: 0.5, color: $r('sys.color.comp_divider') })
       }
 
       Button(this.vm.isSaving ? '正在绑定…' : '绑定')

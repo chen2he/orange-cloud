@@ -162,8 +162,6 @@ export struct PageRulesPage {
     .padding(14)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(16)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 10, color: '#12000000', offsetY: 4 })
     .margin({ left: 16, right: 16, top: 5, bottom: 5 })
     .opacity(rule.status === 'active' ? 1 : 0.55)
     .gesture(LongPressGesture().onAction(() => {

@@ -257,8 +257,6 @@ export struct PagesDetailPage {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.islandRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
   }
 
   @Builder
@@ -374,7 +372,6 @@ export struct PagesDetailPage {
             .fontColor($r('sys.color.font_secondary'))
             .padding({ left: 6, right: 6, top: 2, bottom: 2 })
             .borderRadius(6)
-            .border({ width: 0.5, color: $r('sys.color.comp_divider') })
         }
         Text(this.envDisplay(envName, item))
           .fontSize(13)
@@ -419,8 +416,6 @@ export struct PagesDetailPage {
                 .width('100%')
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                 .clip(true)
               }
               .width('100%')
@@ -453,8 +448,6 @@ export struct PagesDetailPage {
                 .width('100%')
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                 .clip(true)
               }
               .width('100%')
@@ -477,8 +470,6 @@ export struct PagesDetailPage {
                   .padding({ bottom: 6 })
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(OCLayout.chipRadius)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                  .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                   .clip(true)
                 }
                 .width('100%')
@@ -522,8 +513,6 @@ export struct PagesDetailPage {
                 .width('100%')
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                 .clip(true)
               }
               .width('100%')
@@ -546,8 +535,6 @@ export struct PagesDetailPage {
                   .width('100%')
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(OCLayout.chipRadius)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                  .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                   .clip(true)
                 }
                 .width('100%')
@@ -584,8 +571,6 @@ export struct PagesDetailPage {
                 .width('100%')
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                 .clip(true)
               }
               .width('100%')
@@ -598,7 +583,6 @@ export struct PagesDetailPage {
                 .fontColor(DANGER_RED)
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                 .margin({ bottom: 8 })
                 .onClick(() => {
                   this.confirmDelete();

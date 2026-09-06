@@ -241,7 +241,6 @@ export struct TunnelListPage {
           .fontColor(Color.White)
           .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
-          .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
           .onClick(() => {
             this.showCreate = true;
@@ -580,8 +579,6 @@ export struct TunnelDetailPage {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.islandRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
   }
 
   @Builder
@@ -671,8 +668,6 @@ export struct TunnelDetailPage {
                 .width('100%')
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                 .clip(true)
               }
               .width('100%')
@@ -756,8 +751,6 @@ export struct TunnelDetailPage {
                 .width('100%')
                 .backgroundColor($r('sys.color.comp_background_list_card'))
                 .borderRadius(OCLayout.chipRadius)
-                .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                 .clip(true)
               }
               .width('100%')
@@ -822,8 +815,6 @@ export struct TunnelDetailPage {
                   .padding(OCLayout.islandPadding)
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(OCLayout.chipRadius)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                  .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                   .clip(true)
                 }
                 .width('100%')
@@ -851,8 +842,6 @@ export struct TunnelDetailPage {
                   .width('100%')
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(OCLayout.chipRadius)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                  .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
                   .clip(true)
                 }
                 .width('100%')
@@ -868,7 +857,6 @@ export struct TunnelDetailPage {
                     .fontColor($r('sys.color.font_primary'))
                     .backgroundColor($r('sys.color.comp_background_list_card'))
                     .borderRadius(OCLayout.chipRadius)
-                    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                     .onClick(() => {
                       this.confirmCleanConnections();
                     })
@@ -881,7 +869,6 @@ export struct TunnelDetailPage {
                   .fontColor('#DC2626')
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(OCLayout.chipRadius)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                   .onClick(() => {
                     this.confirmDelete();
                   })

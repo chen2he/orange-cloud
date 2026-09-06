@@ -1,3 +1,4 @@
+import { HdsListItem } from '@kit.UIDesignKit';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // DNS 记录列表（NavDestination）：读 + 新建 / 编辑 / 侧滑删除
@@ -158,6 +159,17 @@ export struct DNSListPage {
         },
       },
     });
+  }
+
+  /// 列表项卡片外壳（HdsListItem 的 customItemBuilder 用）
+  @Builder
+  recordCard(record: DNSRecord) {
+    Column() {
+      this.recordRow(record)
+    }
+    .width('100%')
+    .backgroundColor($r('sys.color.comp_background_list_card'))
+    .borderRadius(OCLayout.chipRadius)
   }
 
   @Builder
@@ -450,24 +462,25 @@ export struct DNSListPage {
           Refresh({ refreshing: this.refreshing }) {
             List() {
               ForEach(this.filteredRecords(), (record: DNSRecord) => {
-                ListItem() {
-                  Column() {
-                    this.recordRow(record)
-                  }
-                  .width('100%')
-                  .backgroundColor($r('sys.color.comp_background_list_card'))
-                  .borderRadius(OCLayout.chipRadius)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-                  .shadow({ radius: 10, color: '#12000000', offsetY: 4 })
-                }
-                .margin({ left: 16, right: 16, top: 5, bottom: 5 })
-                .swipeAction({
-                  end: {
-                    builder: () => {
-                      this.deleteAction(record);
+                // 横滑删除交给 UI Design Kit：系统删除图标 + 统一横滑动效。
+                // 不开 isFullDelete——删 DNS 记录不可撤销，仍要走二次确认弹窗。
+                HdsListItem({
+                  customItemBuilder: () => {
+                    this.recordCard(record)
+                  },
+                  // swipeActionOptions 接受 HdsSwipeActionOptions | SwipeActionOptions 联合类型。
+                  // HDS 的 deleteIconOptions 只给样式、没有点击回调（删除动作只有全滑的
+                  // onFullDeleteAction），而删 DNS 记录不可撤销、必须二次确认，
+                  // 所以这里传标准 SwipeActionOptions，保留原有的「删除」按钮 + 确认弹窗。
+                  swipeActionOptions: {
+                    end: {
+                      builder: () => {
+                        this.deleteAction(record);
+                      },
                     },
                   },
                 })
+                  .margin({ left: 16, right: 16, top: 5, bottom: 5 })
               }, (record: DNSRecord) => record.id)
             }
             .width('100%')
@@ -498,7 +511,6 @@ export struct DNSListPage {
           .fontColor(Color.White)
           .backgroundColor($r('app.color.oc_brand_cta'))
           .borderRadius(26)
-          .shadow({ radius: 12, color: '#40000000', offsetY: 4 })
           .margin({ right: 20, bottom: 28 })
           .onClick(() => {
             this.openEditor(null);

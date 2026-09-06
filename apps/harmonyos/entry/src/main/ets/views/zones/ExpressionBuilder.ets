@@ -167,7 +167,6 @@ export struct ExpressionBuilder {
     .padding(10)
     .borderRadius(12)
     .backgroundColor($r('sys.color.comp_background_list_card'))
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
   }
 
   private opLabel(cond: RuleCondition): string {

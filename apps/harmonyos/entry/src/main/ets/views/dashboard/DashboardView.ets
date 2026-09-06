@@ -824,8 +824,6 @@ export struct DashboardView {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.chipRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
     .onClick(() => {
       if (serviceKey !== '') {
         this.usageSheetService = serviceKey;
@@ -1088,7 +1086,6 @@ export struct DashboardView {
       .padding({ left: 12, right: 12, top: 4, bottom: 4 })
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(OCLayout.chipRadius)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
       .margin({ top: 8 })
 
       if (this.resourceItems().length === 0) {
@@ -1159,7 +1156,6 @@ export struct DashboardView {
               .padding({ left: 12, right: 12, top: 10, bottom: 10 })
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(OCLayout.chipRadius)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
             }
           }, (item: ResourceItem) => `${item.kind}|${item.id}`)
         }

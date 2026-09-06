@@ -311,7 +311,6 @@ export struct ZoneAnalyticsSection {
     .padding(14)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(12)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
   }
 
   @Builder
@@ -333,7 +332,6 @@ export struct ZoneAnalyticsSection {
     .padding({ top: 14, bottom: 14 })
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(12)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
   }
 
   @Builder
@@ -353,7 +351,6 @@ export struct ZoneAnalyticsSection {
         .justifyContent(FlexAlign.Center)
         .backgroundColor($r('sys.color.comp_background_list_card'))
         .borderRadius(14)
-        .border({ width: 0.5, color: $r('sys.color.comp_divider') })
       } else {
         // Map Kit（Petal Maps）：真机渲染；模拟器不显示属预期，Top-5 列表兜底
         Stack() {
@@ -368,7 +365,6 @@ export struct ZoneAnalyticsSection {
         .height(240)
         .borderRadius(14)
         .clip(true)
-        .border({ width: 0.5, color: $r('sys.color.comp_divider') })
       }
     }
     .width('100%')

@@ -268,8 +268,6 @@ export struct ResourceCard {
     .padding({ left: 14, right: 14, top: 12, bottom: 12 })
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(16)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 10, color: '#12000000', offsetY: 4 })
     .onClick(() => {
       this.onTap();
     })

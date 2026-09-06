@@ -365,8 +365,6 @@ export struct WorkerDetailPage {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.islandRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
   }
 
   /// 信息分组（对照 iOS WorkerDetailView 的「信息」Section）
@@ -395,8 +393,6 @@ export struct WorkerDetailPage {
       .width('100%')
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(OCLayout.chipRadius)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-      .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
       .clip(true)
     }
     .width('100%')
@@ -446,7 +442,6 @@ export struct WorkerDetailPage {
     .padding(OCLayout.islandPadding)
     .backgroundColor($r('sys.color.comp_background_list_card'))
     .borderRadius(OCLayout.chipRadius)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
   }
 
   /// 指标区（对照 iOS metricsSection）：时间窗 + 趋势图 + 汇总 + CPU + 调用状态分解
@@ -495,7 +490,6 @@ export struct WorkerDetailPage {
               .width('100%')
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(OCLayout.chipRadius)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
               .clip(true)
             }
             if (this.vm.metrics!.statusBreakdown.length > 0) {
@@ -524,7 +518,6 @@ export struct WorkerDetailPage {
               .padding(OCLayout.islandPadding)
               .backgroundColor($r('sys.color.comp_background_list_card'))
               .borderRadius(OCLayout.chipRadius)
-              .border({ width: 0.5, color: $r('sys.color.comp_divider') })
             }
           }
         }
@@ -572,8 +565,6 @@ export struct WorkerDetailPage {
       .width('100%')
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(OCLayout.chipRadius)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-      .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
       .clip(true)
     }
     .width('100%')
@@ -602,8 +593,6 @@ export struct WorkerDetailPage {
       .width('100%')
       .backgroundColor($r('sys.color.comp_background_list_card'))
       .borderRadius(OCLayout.chipRadius)
-      .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-      .shadow({ radius: 12, color: '#14000000', offsetY: 5 })
       .clip(true)
     }
     .width('100%')
@@ -700,7 +689,6 @@ export struct WorkerDetailPage {
                   .fontColor(DANGER_RED)
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(OCLayout.chipRadius)
-                  .border({ width: 0.5, color: $r('sys.color.comp_divider') })
                   .margin({ top: 4, bottom: 8 })
                   .onClick(() => {
                     if (this.canWrite()) {
