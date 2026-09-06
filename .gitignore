@@ -39,7 +39,6 @@ skills-lock.json
 
 price/
 
-apps/harmonyos
 
 # 独立子仓库（自有 git，单独发布到 chen2he/orange-cloud-push-server）
 orange-cloud-push/

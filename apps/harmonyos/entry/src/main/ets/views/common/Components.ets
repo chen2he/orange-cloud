@@ -1,0 +1,341 @@
+// 公共 UI 组件：加载 / 错误 / 空态 / 分区头 / 信息行 / 开关行 / 导航行 / 标签。
+// 品牌橙 #F48120 只给点缀（对齐晨昏设计语言：数字回归主文本色）。
+
+export const BRAND_ORANGE = '#F48120';
+export const BRAND_ORANGE_BG = '#1AF48120';
+export const DANGER_RED = '#DC2626';
+
+@ComponentV2
+export struct OCLoading {
+  @Param text: string = '正在加载…';
+
+  build() {
+    Column({ space: 12 }) {
+      LoadingProgress()
+        .width(36)
+        .height(36)
+        .color(BRAND_ORANGE)
+      Text(this.text)
+        .fontSize(14)
+        .fontColor($r('sys.color.font_secondary'))
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .justifyContent(FlexAlign.Center)
+  }
+}
+
+@ComponentV2
+export struct OCError {
+  @Param message: string = '加载失败';
+  @Param onRetry: () => void = () => {
+  };
+
+  build() {
+    Column({ space: 14 }) {
+      Text('出错了')
+        .fontSize(16)
+        .fontWeight(FontWeight.Medium)
+        .fontColor($r('sys.color.font_primary'))
+      Text(this.message)
+        .fontSize(13)
+        .fontColor($r('sys.color.font_secondary'))
+        .textAlign(TextAlign.Center)
+        .padding({ left: 32, right: 32 })
+      Button('重试')
+        .fontSize(14)
+        .fontColor(Color.White)
+        .backgroundColor(BRAND_ORANGE)
+        .onClick(() => {
+          this.onRetry();
+        })
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .justifyContent(FlexAlign.Center)
+  }
+}
+
+@ComponentV2
+export struct OCEmpty {
+  @Param icon: string = '';
+  @Param symbol: Resource | null = null;
+  @Param title: string = '暂无数据';
+  @Param subtitle: string = '';
+
+  build() {
+    Column({ space: 8 }) {
+      if (this.symbol !== null) {
+        SymbolGlyph(this.symbol)
+          .fontSize(46)
+          .fontColor([$r('sys.color.font_tertiary')])
+          .margin({ bottom: 4 })
+      } else {
+        Text(this.icon !== '' ? this.icon : '🗒️')
+          .fontSize(40)
+      }
+      Text(this.title)
+        .fontSize(16)
+        .fontColor($r('sys.color.font_primary'))
+      if (this.subtitle !== '') {
+        Text(this.subtitle)
+          .fontSize(13)
+          .fontColor($r('sys.color.font_secondary'))
+          .textAlign(TextAlign.Center)
+          .padding({ left: 32, right: 32 })
+      }
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .justifyContent(FlexAlign.Center)
+  }
+}
+
+@ComponentV2
+export struct SectionHeader {
+  @Param title: string = '';
+
+  build() {
+    Text(this.title)
+      .fontSize(13)
+      .fontWeight(FontWeight.Medium)
+      .fontColor($r('sys.color.font_secondary'))
+      .width('100%')
+      .padding({ left: 20, right: 20, top: 16, bottom: 6 })
+  }
+}
+
+@ComponentV2
+export struct InfoRow {
+  @Param label: string = '';
+  @Param value: string = '';
+
+  build() {
+    Row({ space: 12 }) {
+      Text(this.label)
+        .fontSize(14)
+        .fontColor($r('sys.color.font_secondary'))
+      Blank()
+      Text(this.value)
+        .fontSize(14)
+        .fontColor($r('sys.color.font_primary'))
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .textAlign(TextAlign.End)
+        .layoutWeight(1)
+    }
+    .width('100%')
+    .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+  }
+}
+
+@ComponentV2
+export struct ToggleRow {
+  @Param title: string = '';
+  @Param subtitle: string = '';
+  @Param isOn: boolean = false;
+  @Param isEnabled: boolean = true;
+  @Param onToggle: (isOn: boolean) => void = () => {
+  };
+
+  build() {
+    Row({ space: 12 }) {
+      Column({ space: 2 }) {
+        Text(this.title)
+          .fontSize(15)
+          .fontColor($r('sys.color.font_primary'))
+        if (this.subtitle !== '') {
+          Text(this.subtitle)
+            .fontSize(12)
+            .fontColor($r('sys.color.font_secondary'))
+        }
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+
+      Toggle({ type: ToggleType.Switch, isOn: this.isOn })
+        .selectedColor(BRAND_ORANGE)
+        .enabled(this.isEnabled)
+        .onChange((isOn: boolean) => {
+          if (isOn !== this.isOn) {
+            this.onToggle(isOn);
+          }
+        })
+    }
+    .width('100%')
+    .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+  }
+}
+
+@ComponentV2
+export struct NavRow {
+  @Param icon: string = '';
+  @Param symbol: Resource | null = null;
+  @Param title: string = '';
+  @Param subtitle: string = '';
+  /// Pro 闸门行：chevron 前挂一枚「Pro」徽章（点按仍进，由 requirePro 决定是推付费墙还是目的页）
+  @Param locked: boolean = false;
+  @Param onNav: () => void = () => {
+  };
+
+  build() {
+    Row({ space: 12 }) {
+      if (this.symbol !== null) {
+        Stack() {
+          SymbolGlyph(this.symbol)
+            .fontSize(19)
+            .fontColor([BRAND_ORANGE])
+        }
+        .width(36)
+        .height(36)
+        .backgroundColor(BRAND_ORANGE_BG)
+        .borderRadius(9)
+      } else if (this.icon !== '') {
+        Text(this.icon)
+          .fontSize(20)
+          .width(36)
+          .height(36)
+          .textAlign(TextAlign.Center)
+          .backgroundColor(BRAND_ORANGE_BG)
+          .borderRadius(9)
+      }
+      Column({ space: 2 }) {
+        Text(this.title)
+          .fontSize(15)
+          .fontWeight(FontWeight.Medium)
+          .fontColor($r('sys.color.font_primary'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+        if (this.subtitle !== '') {
+          Text(this.subtitle)
+            .fontSize(12)
+            .fontColor($r('sys.color.font_secondary'))
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+
+      if (this.locked) {
+        ProBadge()
+      }
+      Image($r('sys.media.ohos_ic_public_arrow_right'))
+        .width(16)
+        .height(16)
+        .fillColor($r('sys.color.font_tertiary'))
+    }
+    .width('100%')
+    .padding({ left: 16, right: 12, top: 12, bottom: 12 })
+    .onClick(() => {
+      this.onNav();
+    })
+  }
+}
+
+/// Pro 徽章：闸门入口的统一标识（品牌橙描边胶囊，不抢主文本）
+@ComponentV2
+export struct ProBadge {
+  build() {
+    Text('Pro')
+      .fontSize(10)
+      .fontWeight(FontWeight.Medium)
+      .fontColor(BRAND_ORANGE)
+      .padding({ left: 7, right: 7, top: 2, bottom: 2 })
+      .backgroundColor(BRAND_ORANGE_BG)
+      .borderRadius(8)
+  }
+}
+
+/// 资源玻璃卡片行（对照 iOS glassRow）：图标(暖底方块) + 标题/副标题 + 可选尾标 + chevron，
+/// 点按 onTap、长按 onLongPress（删除等）。用于 R2/D1/KV/Workers/Pages 等资源列表页。
+@ComponentV2
+export struct ResourceCard {
+  @Param icon: string = '';
+  @Param symbol: Resource | null = null;
+  @Param title: string = '';
+  @Param subtitle: string = '';
+  @Param trailing: string = '';
+  @Param onTap: () => void = () => {
+  };
+  @Param onLongPress: () => void = () => {
+  };
+
+  build() {
+    Row({ space: 12 }) {
+      if (this.symbol !== null) {
+        Stack() {
+          SymbolGlyph(this.symbol)
+            .fontSize(21)
+            .fontColor([BRAND_ORANGE])
+        }
+        .width(40)
+        .height(40)
+        .backgroundColor(BRAND_ORANGE_BG)
+        .borderRadius(11)
+      } else if (this.icon !== '') {
+        Text(this.icon)
+          .fontSize(20)
+          .width(40)
+          .height(40)
+          .textAlign(TextAlign.Center)
+          .backgroundColor(BRAND_ORANGE_BG)
+          .borderRadius(11)
+      }
+      Column({ space: 3 }) {
+        Text(this.title)
+          .fontSize(15)
+          .fontWeight(FontWeight.Medium)
+          .fontColor($r('sys.color.font_primary'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+        if (this.subtitle !== '') {
+          Text(this.subtitle)
+            .fontSize(12)
+            .fontColor($r('sys.color.font_secondary'))
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+
+      if (this.trailing !== '') {
+        Text(this.trailing)
+          .fontSize(12)
+          .fontColor($r('sys.color.font_tertiary'))
+      }
+      Image($r('sys.media.ohos_ic_public_arrow_right'))
+        .width(14)
+        .height(14)
+        .fillColor($r('sys.color.font_tertiary'))
+    }
+    .width('100%')
+    .padding({ left: 14, right: 14, top: 12, bottom: 12 })
+    .backgroundColor($r('sys.color.comp_background_list_card'))
+    .borderRadius(16)
+    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
+    .shadow({ radius: 10, color: '#12000000', offsetY: 4 })
+    .onClick(() => {
+      this.onTap();
+    })
+    .gesture(LongPressGesture().onAction(() => {
+      this.onLongPress();
+    }))
+  }
+}
+
+@ComponentV2
+export struct OCTag {
+  @Param text: string = '';
+  @Param color: string = BRAND_ORANGE;
+
+  build() {
+    Text(this.text)
+      .fontSize(10)
+      .fontColor(this.color)
+      .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+      .backgroundColor(`#1A${this.color.replace('#', '')}`)
+      .borderRadius(4)
+  }
+}

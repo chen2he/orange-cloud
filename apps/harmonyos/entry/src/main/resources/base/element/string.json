@@ -1,0 +1,36 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "Orange Cloud 主模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Cloudflare 随身管理"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Orange Cloud"
+    },
+    {
+      "name": "widget_display_name",
+      "value": "账号总览"
+    },
+    {
+      "name": "widget_desc",
+      "value": "域名总数与账号，随天色而变"
+    },
+    {
+      "name": "widget_ridge_name",
+      "value": "流量山脊"
+    },
+    {
+      "name": "widget_ridge_desc",
+      "value": "24h 请求长成地形，太阳落在此刻"
+    },
+    {
+      "name": "FormAbility_desc",
+      "value": "Orange Cloud 服务卡片"
+    }
+  ]
+}
