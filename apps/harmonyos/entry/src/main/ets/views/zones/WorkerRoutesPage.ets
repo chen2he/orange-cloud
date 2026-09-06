@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 路由（zone 级）：pattern → script 映射，列表 + 新建 + 删除（对齐 Android Worker 路由管理）。
 import { WorkerRoute } from '../../models/WorkerModels';
 import { ZoneRouteParam } from '../../models/Routes';
@@ -118,7 +119,7 @@ export struct WorkerRoutesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -195,7 +196,7 @@ export struct WorkerRoutesPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · Worker 路由`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · Worker 路由` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;

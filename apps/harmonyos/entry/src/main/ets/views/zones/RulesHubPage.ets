@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 「规则中心」聚合入口（对照 iOS ZoneRulesHubView）：把域名详情页平铺的规则类条目
 // （Transform / 缓存规则 / Snippets）与五个 Rulesets phase（单条重定向 / 源站 / 配置 /
 // 压缩 / 自定义错误）、Page Rules（传统）、URL 规范化收进一个二级页。
@@ -225,7 +226,7 @@ export struct RulesHubPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Scroll() {
@@ -248,7 +249,7 @@ export struct RulesHubPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · 规则`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 规则` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

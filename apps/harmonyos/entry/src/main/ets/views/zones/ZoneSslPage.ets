@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // SSL/TLS：加密模式（off/flexible/full/strict）+ HTTPS 开关 + 最低 TLS + TLS 1.3
 // + 边缘证书入口（对齐 Android ZoneSslScreens）。
 import { Routes, ZoneRouteParam } from '../../models/Routes';
@@ -129,7 +130,7 @@ export struct ZoneSslPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -251,7 +252,7 @@ export struct ZoneSslPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · SSL/TLS`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · SSL/TLS` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

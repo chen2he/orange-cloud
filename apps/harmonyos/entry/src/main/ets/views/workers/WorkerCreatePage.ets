@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 新建 Worker：命名 + 代码编辑器（默认 Hello World），multipart 部署（对齐 Android WorkerCreateScreen）。
 import { WorkerService } from '../../services/WorkerService';
 import { accountStore } from '../../core/store/AccountStore';
@@ -81,7 +82,7 @@ export struct WorkerCreatePage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Column({ space: 12 }) {
@@ -163,7 +164,7 @@ export struct WorkerCreatePage {
       .width('100%')
       .height('100%')
     }
-    .title('新建 Worker')
+    .titleBar({ content: { title: { mainTitle: '新建 Worker' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

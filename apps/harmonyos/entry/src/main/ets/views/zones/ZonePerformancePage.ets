@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 性能设置：网络开关（brotli/http2/http3/0-RTT/Early Hints/WebSockets/IPv6）
 // + 缓存级别 + Always Online + 查询串排序（对齐 Android ZonePerformanceScreen）。
 import { ZoneRouteParam } from '../../models/Routes';
@@ -133,7 +134,7 @@ export struct ZonePerformancePage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -188,7 +189,7 @@ export struct ZonePerformancePage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · 性能`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 性能` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as ZoneRouteParam;

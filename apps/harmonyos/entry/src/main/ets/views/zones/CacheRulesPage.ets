@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 缓存规则（Rulesets http_request_cache_settings）：列表 / 启停 / 新建 / 编辑 / 删除。
 // 表单开放：表达式 + 缓存资格（缓存/绕过）+ 边缘 TTL 覆写（对齐 Android ZoneCacheRulesScreen 常用面）。
 import { BrowserTTL, cacheRuleHasAdvanced, EdgeTTL, RuleActionParameters, RulesetPhases, RulesetRule,
@@ -274,7 +275,7 @@ export struct CacheRulesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -344,7 +345,7 @@ export struct CacheRulesPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · 缓存规则`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 缓存规则` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

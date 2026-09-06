@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // DNS 记录列表（NavDestination）：读 + 新建 / 编辑 / 侧滑删除
 import { DNSRecord, DNSRecordPayload } from '../../models/Models';
 import { ZoneRouteParam } from '../../models/Routes';
@@ -372,7 +373,7 @@ export struct DNSListPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.records.length === 0) {
@@ -505,7 +506,7 @@ export struct DNSListPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.zoneName !== '' ? `${this.zoneName} · DNS` : 'DNS 记录')
+    .titleBar({ content: { title: { mainTitle: this.zoneName !== '' ? `${this.zoneName} · DNS` : 'DNS 记录' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // R2：存储桶列表 → 对象浏览（游标分页）+ 对象文本/文件上传 + 查看/详情/复制/移动/删除（对齐 Android R2Screens + iOS R2ObjectListView）。
 import { R2Bucket, R2Object, R2ObjectPage, R2PreviewKind, previewKindOf, mimeOf, extOf } from '../../models/StorageModels';
 import { Routes, NameParam, IdNameParam } from '../../models/Routes';
@@ -134,7 +135,7 @@ export struct R2BucketsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.buckets.length === 0) {
@@ -216,7 +217,7 @@ export struct R2BucketsPage {
       .width('100%')
       .height('100%')
     }
-    .title('R2 存储桶')
+    .titleBar({ content: { title: { mainTitle: 'R2 存储桶' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
@@ -853,7 +854,7 @@ export struct R2ObjectsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.objects.length === 0 && this.vm.folders.length === 0) {
@@ -976,18 +977,8 @@ export struct R2ObjectsPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.bucket)
+    .titleBar({ content: { title: { mainTitle: this.bucket }, menu: { value: [{ content: { icon: $r('sys.symbol.gearshape'), label: '桶设置', action: () => { const param: IdNameParam = { id: this.bucket, name: this.bucket }; this.pathStack?.pushPathByName(Routes.R2_SETTINGS, param); } } }] } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .menus([
-      {
-        value: '桶设置',
-        symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
-        action: () => {
-          const param: IdNameParam = { id: this.bucket, name: this.bucket };
-          this.pathStack?.pushPathByName(Routes.R2_SETTINGS, param);
-        },
-      } as NavigationMenuItem,
-    ])
     .bindSheet(this.viewerVisible, this.viewerSheet(), ocSheet(() => {
       this.viewerVisible = false;
     }))

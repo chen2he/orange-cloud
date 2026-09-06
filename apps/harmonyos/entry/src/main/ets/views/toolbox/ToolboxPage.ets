@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 免登录工具箱：7 件套集成在一页（工具选择 + 输入 + 结果），对齐 Android ToolboxHub。
 // whois / DNS 查询 / GeoIP / HTTP 探测 / CF Trace / SSL 探测 / CIDR 计算。
 import { ToolField, ToolboxService } from '../../services/ToolboxService';
@@ -69,7 +70,7 @@ export struct ToolboxPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Column({ space: 12 }) {
@@ -182,7 +183,7 @@ export struct ToolboxPage {
       .width('100%')
       .height('100%')
     }
-    .title('工具箱')
+    .titleBar({ content: { title: { mainTitle: '工具箱' } } })
     .backgroundColor($r('sys.color.background_secondary'))
   }
 }

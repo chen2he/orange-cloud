@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 域名的 DNS 设置：DNSSEC、CNAME 展平、多提供商 DNS、名称服务器、域名模式。
 // 与 DNS 记录列表分开——那里是逐条记录，这里是 zone 级策略。
 import { ZoneRouteParam } from '../../models/Routes';
@@ -108,7 +109,7 @@ export struct ZoneDnsSettingsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -257,7 +258,7 @@ export struct ZoneDnsSettingsPage {
         }
       }
     }
-    .title('DNS 设置')
+    .titleBar({ content: { title: { mainTitle: 'DNS 设置' } } })
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
       const param = context.pathInfo.param as ZoneRouteParam;

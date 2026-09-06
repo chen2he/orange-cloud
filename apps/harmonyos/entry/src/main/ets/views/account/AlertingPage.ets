@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 通知告警：告警策略（查看+删除）+ Webhook 目标（查看+新建）（对齐 Android CFAlertingScreen）。
 import { AlertPolicy, WebhookDestination } from '../../models/AccountModels';
 import { AccountModuleService } from '../../services/AccountModuleService';
@@ -215,7 +216,7 @@ export struct AlertingPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -357,7 +358,7 @@ export struct AlertingPage {
       .width('100%')
       .height('100%')
     }
-    .title('通知告警')
+    .titleBar({ content: { title: { mainTitle: '通知告警' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.sheetVisible, this.webhookSheet(), ocSheet(() => {
       this.sheetVisible = false;

@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 托管请求/响应头：Cloudflare 维护的开关式头部改写，不用自己写 Transform 规则。
 import { ZoneRouteParam } from '../../models/Routes';
 import {
@@ -100,7 +101,7 @@ export struct ManagedHeadersPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.loaded) {
@@ -127,7 +128,7 @@ export struct ManagedHeadersPage {
         }
       }
     }
-    .title('托管头')
+    .titleBar({ content: { title: { mainTitle: '托管头' } } })
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as ZoneRouteParam;
       this.zoneId = param.zoneId;

@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Pages 自定义域名（对照 iOS PagesDomainsView）：列表 + 添加 + 删除 + 域名详情。
 // 详情含状态、CNAME 目标（可复制）、以及 zone 不在 Cloudflare 时的 TXT 归属验证记录。
 import { pasteboard } from '@kit.BasicServicesKit';
@@ -588,7 +589,7 @@ export struct PagesDomainsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.loaded) {
@@ -655,17 +656,7 @@ export struct PagesDomainsPage {
       .width('100%')
       .height('100%')
     }
-    .title('自定义域名')
-    .menus([{
-      value: '添加',
-      icon: $r('sys.media.ohos_ic_public_add'),
-      action: () => {
-        if (this.canWrite()) {
-          this.fDomain = '';
-          this.addSheetVisible = true;
-        }
-      },
-    }])
+    .titleBar({ content: { title: { mainTitle: '自定义域名' }, menu: { value: [{ content: { icon: $r('sys.symbol.plus'), label: '添加', action: () => { if (this.canWrite()) { this.fDomain = ''; this.addSheetVisible = true; } } } }] } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.addSheetVisible, this.addSheet(), ocSheetCompact(() => {
       this.addSheetVisible = false;

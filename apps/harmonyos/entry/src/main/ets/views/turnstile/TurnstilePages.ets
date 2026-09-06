@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Turnstile 人机验证：widget 列表 / 新建 / 编辑 / 密钥轮换 / 删除（对齐 iOS Views/Turnstile）。
 // 读 challenge-widgets.read，写操作按 challenge-widgets.write 门控；入口在概览页「网络」岛，
 // 整模块是 Pro 闸门（对齐 iOS ProGatedValueLink(feature: .turnstile)）。
@@ -307,7 +308,7 @@ export struct TurnstileListPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.widgets.length === 0) {
@@ -392,7 +393,7 @@ export struct TurnstileListPage {
       .width('100%')
       .height('100%')
     }
-    .title('Turnstile')
+    .titleBar({ content: { title: { mainTitle: 'Turnstile' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showEditor, this.editorSheet(), ocSheet(() => {
       this.showEditor = false;
@@ -634,7 +635,7 @@ export struct TurnstileDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Scroll() {
@@ -793,14 +794,8 @@ export struct TurnstileDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.widget?.name ?? 'Turnstile')
+    .titleBar({ content: { title: { mainTitle: this.widget?.name ?? 'Turnstile' }, menu: { value: this.canWrite ? [{ content: { icon: $r('sys.symbol.square_and_pencil'), label: '编辑', action: () => { this.openEditor(); } } }] : [] } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .menus(this.canWrite ? [{
-      value: '编辑',
-      action: () => {
-        this.openEditor();
-      },
-    }] as NavigationMenuItem[] : [])
     .bindSheet(this.showEditor, this.editorSheet(), ocSheet(() => {
       this.showEditor = false;
     }))

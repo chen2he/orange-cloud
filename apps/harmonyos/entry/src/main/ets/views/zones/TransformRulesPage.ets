@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Transform 规则：三个 phase 切换（URL 重写 / 请求头 / 响应头），动作恒为 rewrite。
 // 对齐 Android ZoneTransformScreen。
 import {
@@ -255,7 +256,7 @@ export struct TransformRulesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         Column() {
@@ -331,7 +332,7 @@ export struct TransformRulesPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · Transform`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · Transform` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

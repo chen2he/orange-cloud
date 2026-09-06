@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 实时日志 tail：创建会话 → WebSocket 流；条目展平成日志行后滚动展示。
 // 对齐 iOS WorkerTailView：关键词搜索 + 级别筛选 + 暂停（只冻结画面、日志照收）
 // + 长按复制整行 + 点按看完整详情 + 清屏。
@@ -330,7 +331,7 @@ export struct WorkerTailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Column() {
@@ -411,7 +412,7 @@ export struct WorkerTailPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.scriptName} · 日志`)
+    .titleBar({ content: { title: { mainTitle: `${this.scriptName} · 日志` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.detailVisible, this.detailSheet(), ocSheet(() => {
       this.detailVisible = false;

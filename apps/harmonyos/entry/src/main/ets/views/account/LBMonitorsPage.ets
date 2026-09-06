@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 负载均衡·健康监测（account 级）：列表 + 新建 / 编辑（类型 http/https/tcp、路径、方法、期望码、
 // 间隔 / 超时 / 重试、跟随重定向、允许不安全证书）+ 长按删除。对齐 iOS MonitorListView；LB_POOLS_WRITE 门控。
 import { LBMonitor, LBMonitorPayload, LoadBalancerService } from '../../services/LoadBalancerService';
@@ -376,7 +377,7 @@ export struct LBMonitorsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -441,7 +442,7 @@ export struct LBMonitorsPage {
       .width('100%')
       .height('100%')
     }
-    .title('健康监测')
+    .titleBar({ content: { title: { mainTitle: '健康监测' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

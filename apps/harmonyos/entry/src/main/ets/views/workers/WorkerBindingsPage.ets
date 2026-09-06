@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 变量与密钥（对照 iOS WorkerSecretsView / WorkerBindingsViewModel）：
 // 密钥（secret_text，专用端点）+ 环境变量（plain_text，PATCH settings）+ 只读绑定清单
 // + D1/KV/R2 快速绑定。
@@ -885,7 +886,7 @@ export struct WorkerBindingsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.loaded) {
@@ -935,7 +936,7 @@ export struct WorkerBindingsPage {
       .width('100%')
       .height('100%')
     }
-    .title('变量与密钥')
+    .titleBar({ content: { title: { mainTitle: '变量与密钥' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.secretSheetVisible, this.secretSheet(), ocSheet(() => {
       this.secretSheetVisible = false;

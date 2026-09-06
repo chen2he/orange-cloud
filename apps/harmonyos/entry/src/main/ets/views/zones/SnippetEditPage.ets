@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Snippet 编辑：新建（命名 + 代码）或改正文，multipart 上传（对齐 Android SnippetEdit 屏）。
 import { SnippetEditParam } from '../../models/Routes';
 import { SnippetService } from '../../services/SnippetService';
@@ -43,7 +44,7 @@ export struct SnippetEditPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.isLoading) {
@@ -98,7 +99,7 @@ export struct SnippetEditPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.isNew ? '新建 Snippet' : this.snippetName)
+    .titleBar({ content: { title: { mainTitle: this.isNew ? '新建 Snippet' : this.snippetName } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

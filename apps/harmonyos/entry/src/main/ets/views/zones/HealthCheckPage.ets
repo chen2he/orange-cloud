@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 独立健康检查：源站是否在线（/zones/{id}/healthchecks，healthcheck.read/.write）。
 // 与负载均衡的监控器不同源——LB monitor 只在负载均衡语境生效，这里独立监控单个源站。
 // 移动端定位是「看状态 + 临时干预」，创建检查字段多、属桌面场景，暂不提供。
@@ -128,7 +129,7 @@ export struct HealthCheckPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Column() {
@@ -228,7 +229,7 @@ export struct HealthCheckPage {
         .height('100%')
       }
     }
-    .title('健康检查')
+    .titleBar({ content: { title: { mainTitle: '健康检查' } } })
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
       const param = context.pathInfo.param as ZoneRouteParam;

@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Bulk Redirects：重定向列表（查看/新建/删除）→ 条目查看（对齐 Android RedirectScreens）。
 import { RedirectList, RedirectListItem } from '../../models/AccountModels';
 import { Routes, IdNameParam } from '../../models/Routes';
@@ -119,7 +120,7 @@ export struct RedirectListsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.lists.length === 0) {
@@ -201,7 +202,7 @@ export struct RedirectListsPage {
       .width('100%')
       .height('100%')
     }
-    .title('批量重定向')
+    .titleBar({ content: { title: { mainTitle: '批量重定向' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
@@ -335,7 +336,7 @@ export struct RedirectItemsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -424,7 +425,7 @@ export struct RedirectItemsPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.listName)
+    .titleBar({ content: { title: { mainTitle: this.listName } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showAdd, this.addSheet(), ocSheet(() => {
       this.showAdd = false;

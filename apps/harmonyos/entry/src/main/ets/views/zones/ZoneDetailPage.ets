@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zone 详情 hub（对照 iOS ZoneDetailView）：Hero 卡（头像+名字+状态+套餐）+
 // 分组（小标签 + 玻璃岛行入口）+ 缓存清除。
 import { Zone, zoneDisplayStatus } from '../../models/Models';
@@ -271,7 +272,7 @@ export struct ZoneDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Scroll() {
         Column({ space: 22 }) {
           // Hero / 分析 / 各分组岛按视觉顺序错峰浮现
@@ -318,7 +319,7 @@ export struct ZoneDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.zoneName)
+    .titleBar({ content: { title: { mainTitle: this.zoneName } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

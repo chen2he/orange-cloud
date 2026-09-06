@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // WAF 自定义规则（Rulesets http_request_firewall_custom）：列表 / 启停 / 新建 / 编辑 / 删除。
 // 对齐 Android WafRulesScreen（AI 表达式生成为安卓云端能力，此处提供表达式直编）。
 import { RulesetPhases, RulesetRule, RulesetRuleCreate } from '../../models/RulesetModels';
@@ -167,7 +168,7 @@ export struct WafRulesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -237,7 +238,7 @@ export struct WafRulesPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · WAF`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · WAF` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

@@ -1,5 +1,6 @@
 // 根页面：按登录态切换 登录页 / 主壳（5 Tab + 单栈下钻）。
 // pageMap 是全应用路由表；各批次模块落地后在此登记，未登记路由走 ComingSoonPage 兜底。
+import { HdsNavigation } from '@kit.UIDesignKit';
 import { authManager } from '../core/auth/AuthManager';
 import { entitlement } from '../core/purchase/EntitlementStore';
 import { Routes } from '../models/Routes';
@@ -283,7 +284,7 @@ struct Index {
         // 兜底天色：Tab 页由 MainShell 自绘天，下钻二级页各自不透明 oc_bg 兜底；
         // 这层是 push/pop 过渡瞬间的最底垫，避免透明页在动画中露出上一页（画面重叠）。
         OCSkyBackground()
-        Navigation(this.pathStack) {
+        HdsNavigation(this.pathStack) {
           MainShell({ pathStack: this.pathStack })
         }
         .navDestination(this.pageMap)

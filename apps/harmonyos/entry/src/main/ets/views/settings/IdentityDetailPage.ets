@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 身份详情：重命名 / 已授权 scope 列表 / 升级授权（补齐缺失模块）/ 退出该身份
 //（对齐 iOS IdentityDetailView 的「升级授权」区 + Android IdentityDetailScreen）。
 import { common } from '@kit.AbilityKit';
@@ -137,7 +138,7 @@ export struct IdentityDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Scroll() {
@@ -327,7 +328,7 @@ export struct IdentityDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title('身份管理')
+    .titleBar({ content: { title: { mainTitle: '身份管理' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

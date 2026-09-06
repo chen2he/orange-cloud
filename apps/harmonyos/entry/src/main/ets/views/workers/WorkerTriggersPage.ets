@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 定时触发器（对照 iOS WorkerTriggersView）：Cron 查看 + 增删。
 // Cron 走 UTC，5 字段标准表达式；端点是**整组 PUT**，加/删都要回写全集。
 import { NameParam } from '../../models/Routes';
@@ -164,7 +165,7 @@ export struct WorkerTriggersPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.loaded) {
@@ -231,17 +232,7 @@ export struct WorkerTriggersPage {
       .width('100%')
       .height('100%')
     }
-    .title('触发器')
-    .menus([{
-      value: '添加',
-      icon: $r('sys.media.ohos_ic_public_add'),
-      action: () => {
-        if (this.canWrite()) {
-          this.fCron = '0 * * * *';
-          this.sheetVisible = true;
-        }
-      },
-    }])
+    .titleBar({ content: { title: { mainTitle: '触发器' }, menu: { value: [{ content: { icon: $r('sys.symbol.plus'), label: '添加', action: () => { if (this.canWrite()) { this.fCron = '0 * * * *'; this.sheetVisible = true; } } } }] } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.sheetVisible, this.cronSheet(), ocSheetCompact(() => {
       this.sheetVisible = false;

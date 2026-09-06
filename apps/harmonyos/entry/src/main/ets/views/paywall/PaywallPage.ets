@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 付费墙（对齐 iOS Views/Paywall/PaywallView）：场景触发推入本页，也可从设置页常驻入口进。
 // 价格一律取自 queryProducts 的 Product.price，**不硬编码任何价格**；
 // 权益清单只写鸿蒙版真正实现了的能力（Live Activity / 系统「文件」挂载等 iOS 专属项不列）。
@@ -262,7 +263,7 @@ export struct PaywallPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Scroll() {
@@ -354,7 +355,7 @@ export struct PaywallPage {
       .width('100%')
       .height('100%')
     }
-    .title('Orange Cloud Pro')
+    .titleBar({ content: { title: { mainTitle: 'Orange Cloud Pro' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as PaywallParam | undefined;

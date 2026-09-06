@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 负载均衡·源站池（account 级）：列表（健康状态 / 源站数 / 监测）+ 新建 / 编辑（名称、多源站行、
 // 最少可用源站、健康监测选择）+ 长按删除。对齐 iOS PoolListView；写操作按 LB_POOLS_WRITE 门控。
 // origins 是整组字段：编辑时把现有 origin 的 port / header / vnet 原样带回，避免 PATCH 丢配置。
@@ -412,7 +413,7 @@ export struct LBPoolsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -477,7 +478,7 @@ export struct LBPoolsPage {
       .width('100%')
       .height('100%')
     }
-    .title('源站池')
+    .titleBar({ content: { title: { mainTitle: '源站池' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

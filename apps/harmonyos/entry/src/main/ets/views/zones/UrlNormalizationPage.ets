@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // URL 规范化（对照 iOS URLNormalizationView）：GET 与 PUT /zones/{id}/url_normalization。
 // 规范化类型 cloudflare/rfc3986 单选 + 作用范围 incoming/both（含 none 只读兜底），改动即时 PUT。
 import { UrlNormalizationSetting } from '../../models/RulesetModels';
@@ -170,7 +171,7 @@ export struct UrlNormalizationPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -214,7 +215,7 @@ export struct UrlNormalizationPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · URL 规范化`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · URL 规范化` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as ZoneRouteParam;

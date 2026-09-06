@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Page Rules（传统）：列表 + 启停（PATCH status）+ 长按删除，不做新建编辑（与 iOS 一致）。
 // Cloudflare 建议迁移到新的规则产品，已有规则在此查看维护。
 import { PageRule } from '../../models/RulesetModels';
@@ -173,7 +174,7 @@ export struct PageRulesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -228,7 +229,7 @@ export struct PageRulesPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · Page Rules`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · Page Rules` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as ZoneRouteParam;

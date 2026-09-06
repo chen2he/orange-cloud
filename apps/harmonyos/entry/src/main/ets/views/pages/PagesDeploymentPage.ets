@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Pages 部署详情：概览 + 构建阶段时间线 + 操作（重试 / 回滚 / 删除，对齐 iOS PagesDeploymentDetailView）。
 // 路由参数 PagesDeploymentParam；写操作按 page.write 门控，均先确认弹窗再执行。
 import { PagesDeploymentParam } from '../../models/Routes';
@@ -244,7 +245,7 @@ export struct PagesDeploymentPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -432,7 +433,7 @@ export struct PagesDeploymentPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.vm.deployment?.short_id ?? '部署')
+    .titleBar({ content: { title: { mainTitle: this.vm.deployment?.short_id ?? '部署' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

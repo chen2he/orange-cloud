@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Cloudflare Tunnel：列表（状态/活跃连接）+ 详情（公共主机名 CRUD / 连接令牌 / 清理失活连接）
 // + 新建 + 删除（对齐 iOS Views/Tunnels）。
 import { pasteboard } from '@kit.BasicServicesKit';
@@ -168,7 +169,7 @@ export struct TunnelListPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.tunnels.length === 0) {
@@ -248,7 +249,7 @@ export struct TunnelListPage {
       .width('100%')
       .height('100%')
     }
-    .title('Cloudflare Tunnel')
+    .titleBar({ content: { title: { mainTitle: 'Cloudflare Tunnel' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
@@ -643,7 +644,7 @@ export struct TunnelDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -899,7 +900,7 @@ export struct TunnelDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.tunnelName)
+    .titleBar({ content: { title: { mainTitle: this.tunnelName } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.routeSheetVisible, this.routeSheet(), ocSheet(() => {
       this.routeSheetVisible = false;

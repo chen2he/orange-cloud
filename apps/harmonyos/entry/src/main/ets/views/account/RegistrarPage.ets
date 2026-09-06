@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 在 Cloudflare 注册的域名：到期日、自动续费、转移锁（只读）。
 // 域名注册是花钱操作，移动端不做。
 import { DomainRegistration, RegistrarService } from '../../services/RegistrarService';
@@ -93,7 +94,7 @@ export struct RegistrarPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.loaded) {
@@ -182,7 +183,7 @@ export struct RegistrarPage {
         }
       }
     }
-    .title('域名注册')
+    .titleBar({ content: { title: { mainTitle: '域名注册' } } })
     .onReady(() => {
       this.vm.load().catch(() => {
       });

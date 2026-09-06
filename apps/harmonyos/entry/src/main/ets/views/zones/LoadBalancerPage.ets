@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 负载均衡（zone 级）：LB 列表 + 启停开关 + 详情 sheet（转向策略 / 会话保持 / 代理 / TTL / 默认+回退池，池解析为名称与健康）
 // + 新建 / 编辑 sheet + 长按删除（对齐 iOS LoadBalancerListView 完整 CRUD），页顶入口跳「源站池 / 健康监测」。
 import { LoadBalancer, Pool, PoolOrigin } from '../../models/AccountModels';
@@ -569,7 +570,7 @@ export struct LoadBalancerPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         Column() {
@@ -686,7 +687,7 @@ export struct LoadBalancerPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · 负载均衡`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 负载均衡` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.detailVisible, this.detailSheet(), ocSheet(() => {
       this.detailVisible = false;

@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Cloudflare 官方状态页（cloudflarestatus.com 公开 API）：总体状态 → 进行中的事件 →
 // 计划维护 → 产品服务 → 边缘网络（按大区汇总）→ 最近事件历史。事件点按看更新时间线（sheet）。
 import {
@@ -314,7 +315,7 @@ export struct StatusPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.hasSummary) {
@@ -484,7 +485,7 @@ export struct StatusPage {
       .width('100%')
       .height('100%')
     }
-    .title('Cloudflare 状态')
+    .titleBar({ content: { title: { mainTitle: 'Cloudflare 状态' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.detailVisible, this.detailSheet(), ocSheet(() => {
       this.detailVisible = false;

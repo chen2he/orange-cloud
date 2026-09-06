@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 添加账号：应用内无痕 Web 授权（对齐 Android WebAuthActivity）。
 // incognito 模式不共享系统浏览器 Cookie，避免复用上一身份；
 // onLoadIntercept 拦截 orangecloud:// 回跳直接喂给 AuthManager。
@@ -37,7 +38,7 @@ export struct WebAuthPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack() {
         if (this.authURL !== '') {
           Web({ src: this.authURL, controller: this.controller, incognitoMode: true })
@@ -82,7 +83,7 @@ export struct WebAuthPage {
         }
       }))
     }
-    .title('添加账号')
+    .titleBar({ content: { title: { mainTitle: '添加账号' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

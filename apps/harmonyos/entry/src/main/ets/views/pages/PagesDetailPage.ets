@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Pages 项目详情：信息 + 构建配置（可编辑）+ 环境变量（只读）+ 部署记录（点按进部署详情）
 // + 自定义域名 + 删除项目（对齐 iOS PagesProjectDetailView）。
 import { PagesDeployment, PagesDomain } from '../../models/WorkerModels';
@@ -392,7 +393,7 @@ export struct PagesDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -614,7 +615,7 @@ export struct PagesDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.projectName)
+    .titleBar({ content: { title: { mainTitle: this.projectName } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showDeploy, this.deploySheet(), ocSheet(() => {
       this.showDeploy = false;

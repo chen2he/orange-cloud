@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Cloudflare Pages 项目列表 + 新建（对齐 Android PagesScreens）。
 import { PagesProject } from '../../models/WorkerModels';
 import { Routes, NameParam } from '../../models/Routes';
@@ -144,7 +145,7 @@ export struct PagesListPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.projects.length === 0) {
@@ -227,7 +228,7 @@ export struct PagesListPage {
       .width('100%')
       .height('100%')
     }
-    .title('Pages')
+    .titleBar({ content: { title: { mainTitle: 'Pages' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;

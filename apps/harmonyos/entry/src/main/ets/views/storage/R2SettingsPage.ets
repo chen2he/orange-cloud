@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // R2 桶设置：公开访问（r2.dev 托管域）/ 自定义域 / CORS 规则（对齐 iOS R2BucketSettingsView）。
 // 入口：R2 对象列表右上角齿轮。写操作按 workers-r2.write 门控 + 确认弹窗。
 import {
@@ -738,7 +739,7 @@ export struct R2SettingsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -1018,7 +1019,7 @@ export struct R2SettingsPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.bucket} · 桶设置`)
+    .titleBar({ content: { title: { mainTitle: `${this.bucket} · 桶设置` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showAddDomain, this.addDomainSheet(), ocSheet(() => {
       this.showAddDomain = false;

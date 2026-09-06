@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // KV：命名空间列表 → 键列表（游标分页）+ 读/写/删值（对齐 Android KVScreens）。
 import { KVKey, KVNamespace } from '../../models/StorageModels';
 import { Routes, IdNameParam } from '../../models/Routes';
@@ -103,7 +104,7 @@ export struct KVNamespacesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.namespaces.length === 0) {
@@ -184,7 +185,7 @@ export struct KVNamespacesPage {
       .width('100%')
       .height('100%')
     }
-    .title('KV 命名空间')
+    .titleBar({ content: { title: { mainTitle: 'KV 命名空间' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
@@ -366,7 +367,7 @@ export struct KVKeysPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.keys.length === 0) {
@@ -465,7 +466,7 @@ export struct KVKeysPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.nsTitle)
+    .titleBar({ content: { title: { mainTitle: this.nsTitle } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

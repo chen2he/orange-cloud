@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // URL 安全扫描：提交链接，看归属、状态与风险判定。需账号，故不在免登录工具箱里。
 import { URLScannerService, URLScanResult } from '../../services/URLScannerService';
 import { accountStore } from '../../core/store/AccountStore';
@@ -87,7 +88,7 @@ export struct URLScannerPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Scroll() {
@@ -162,6 +163,6 @@ export struct URLScannerPage {
         .height('100%')
       }
     }
-    .title('URL 扫描')
+    .titleBar({ content: { title: { mainTitle: 'URL 扫描' } } })
   }
 }

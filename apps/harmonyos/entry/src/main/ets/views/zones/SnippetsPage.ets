@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Snippets：片段列表（点入编辑、长按删除）+ 规则整组管理（对齐 Android SnippetsScreens）。
 import { Snippet, SnippetRule, SnippetService } from '../../services/SnippetService';
 import { Routes, SnippetEditParam, ZoneRouteParam } from '../../models/Routes';
@@ -203,7 +204,7 @@ export struct SnippetsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -343,7 +344,7 @@ export struct SnippetsPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · Snippets`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · Snippets` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.ruleSheetVisible, this.addRuleSheet(), ocSheet(() => {
       this.ruleSheetVisible = false;

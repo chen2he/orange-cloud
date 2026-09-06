@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Workers 脚本列表：点入详情，右下角新建（对齐 Android WorkerListScreen）。
 import { WorkerScript } from '../../models/WorkerModels';
 import { Routes, NameParam } from '../../models/Routes';
@@ -73,7 +74,7 @@ export struct WorkerListPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.scripts.length === 0) {
@@ -156,7 +157,7 @@ export struct WorkerListPage {
       .width('100%')
       .height('100%')
     }
-    .title('Workers')
+    .titleBar({ content: { title: { mainTitle: 'Workers' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

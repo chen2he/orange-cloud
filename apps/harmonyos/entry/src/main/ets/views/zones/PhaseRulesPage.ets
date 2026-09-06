@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Rulesets phase 泛化列表页（对照 iOS ZonePhaseRulesListView + ZoneRuleEditorView）：
 // 列表 / 启停 / 删除 / 新建 / 编辑，编辑器按 phase 给出对应 action 参数表单。
 // 支持 phase：单条重定向（redirect）/ 源站规则（route）/ 配置规则（set_config）/
@@ -774,7 +775,7 @@ export struct PhaseRulesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -859,7 +860,7 @@ export struct PhaseRulesPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · ${this.pageTitle}`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · ${this.pageTitle}` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

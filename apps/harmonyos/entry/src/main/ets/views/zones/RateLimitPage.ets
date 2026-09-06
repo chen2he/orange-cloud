@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 速率限制（Rulesets http_ratelimit）：列表 / 启停 / 新建 / 编辑 / 删除。
 // 计数特征固定 ip.src + cf.colo.id（免费套餐可用组合，对齐 Android ZoneRateLimitScreen）。
 import { RateLimitConfig, RulesetPhases, RulesetRule, RulesetRuleCreate } from '../../models/RulesetModels';
@@ -190,7 +191,7 @@ export struct RateLimitPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -269,7 +270,7 @@ export struct RateLimitPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · 速率限制`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 速率限制` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

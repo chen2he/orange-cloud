@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zone 设置：开发模式 / Under Attack 模式 / 暂停 Cloudflare + 按目标清缓存（URL / 前缀 / 主机 /
 // 缓存标签四模式，对照 iOS PurgeCacheSheet；POST /zones/{id}/purge_cache 的 files/prefixes/hosts/tags）。
 // 注意暂停与另两个开关不同源：开发模式 / Under Attack 走 zone settings（zone-settings.*），
@@ -339,7 +340,7 @@ export struct ZoneSettingsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -584,7 +585,7 @@ export struct ZoneSettingsPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · 设置`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 设置` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as ZoneRouteParam;

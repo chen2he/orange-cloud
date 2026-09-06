@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 流量分析：24h/7d/30d 切换 + 汇总卡 + 请求柱状图 + 国家/地区排行（对齐 Android ZoneAnalyticsScreen）。
 import { AnalyticsRange, CountryTraffic, TrafficDataPoint } from '../../models/AnalyticsModels';
 import { ZoneRouteParam } from '../../models/Routes';
@@ -534,7 +535,7 @@ export struct ZoneAnalyticsPage {
   @Local pathStack: NavPathStack | null = null;
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Scroll() {
@@ -552,7 +553,7 @@ export struct ZoneAnalyticsPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · 分析`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 分析` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 「这个请求为什么被拦了」——模拟一条请求打过 Cloudflare，看它逐步走了哪些规则。
 import {
   FlatTraceStep, flattenTrace, RequestTracerService, stepTitle, TraceResult,
@@ -58,7 +59,7 @@ export struct RequestTracerPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Scroll() {
@@ -170,6 +171,6 @@ export struct RequestTracerPage {
         .height('100%')
       }
     }
-    .title('请求追踪')
+    .titleBar({ content: { title: { mainTitle: '请求追踪' } } })
   }
 }

@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 边缘证书：证书包列表 + Universal SSL 开关 + 删除高级包（对齐 Android SslCerts 屏）。
 import { ZoneRouteParam } from '../../models/Routes';
 import { SSLService, SslCertificatePack } from '../../services/SSLService';
@@ -137,7 +138,7 @@ export struct SslCertsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -217,7 +218,7 @@ export struct SslCertsPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · 证书`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 证书` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as ZoneRouteParam;

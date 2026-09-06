@@ -1,6 +1,7 @@
 // 登录后的主壳：底部 5 Tab（总览/域名/开发/存储/设置），下钻页共用一条 NavPathStack。
 // API 23+ 走 HarmonyOS Design 悬浮式材质页签栏（backgroundBlurStyle 材质 + 圆角内缩 + 阴影，
 // 内容从浮栏下方穿过）；低版本回退经典底部 Tab 栏（.tabBar + barHeight）。
+import { DividerMode, HdsTabs, HdsTabsController } from '@kit.UIDesignKit';
 import { DashboardView } from './dashboard/DashboardView';
 import { ZoneListView } from './zones/ZoneListView';
 import { DevHubView } from './devhub/DevHubView';
@@ -8,7 +9,7 @@ import { StorageHubView } from './storage/StorageHubView';
 import { SettingsView } from './settings/SettingsView';
 import { BRAND_ORANGE, BRAND_ORANGE_BG } from './common/Components';
 import { OCSkyBackground } from './common/OCSky';
-import { USE_FLOATING_TABBAR, FLOATING_BAR_HEIGHT, FLOATING_BAR_BOTTOM_INSET, FLOATING_BAR_SIDE_INSET, TABBAR_CONTENT_CLEARANCE, tabBarScroll } from './common/PlatformCompat';
+import { tabBarScroll } from './common/PlatformCompat';
 import { WhatsNewGate, WhatsNewItem, WhatsNewStore } from '../core/whatsnew/WhatsNew';
 import { WhatsNewSheet, whatsNewSheetOptions } from './whatsnew/WhatsNewSheet';
 import { RatingPrompt } from '../core/rating/RatingPrompt';
@@ -33,7 +34,7 @@ export struct MainShell {
   /// 「新功能」：登录后评估一次，有未看过的条目才弹（口径见 core/whatsnew/WhatsNew.ets）
   @Local whatsNewItems: WhatsNewItem[] = [];
   @Local whatsNewVisible: boolean = false;
-  private controller: TabsController = new TabsController();
+  private controller: HdsTabsController = new HdsTabsController();
 
   aboutToAppear(): void {
     // MainShell 只在登录后出现 → 挂载即一次「已登录启动」，作为评分邀请的参与度信号
@@ -106,60 +107,13 @@ export struct MainShell {
     .justifyContent(FlexAlign.Center)
   }
 
-  // HarmonyOS Design 悬浮式材质页签栏（API 23+）
-  @Builder
-  floatingBar() {
-    Row() {
-      ForEach(TABS, (tab: TabSpec, index: number) => {
-        // 外层占权重、居中；内层「胶囊」随内容收缩，选中时染品牌橙底
-        Column() {
-          Column({ space: 3 }) {
-            SymbolGlyph(tab.symbol)
-              .fontSize(23)
-              .fontColor([this.currentTab === index ? BRAND_ORANGE : $r('sys.color.font_secondary')])
-            Text(tab.label)
-              .fontSize(10)
-              .fontWeight(this.currentTab === index ? FontWeight.Medium : FontWeight.Normal)
-              .fontColor(this.currentTab === index ? BRAND_ORANGE : $r('sys.color.font_secondary'))
-          }
-          .padding({ left: 16, right: 16, top: 6, bottom: 6 })
-          .borderRadius(20)
-          .backgroundColor(this.currentTab === index ? BRAND_ORANGE_BG : Color.Transparent)
-          .animation({ duration: 200, curve: Curve.EaseOut })
-        }
-        .layoutWeight(1)
-        .height('100%')
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
-          this.currentTab = index;
-          this.controller.changeIndex(index);
-        })
-      }, (tab: TabSpec) => tab.label)
-    }
-    .height(FLOATING_BAR_HEIGHT)
-    .margin({
-      left: FLOATING_BAR_SIDE_INSET,
-      right: FLOATING_BAR_SIDE_INSET,
-      bottom: FLOATING_BAR_BOTTOM_INSET,
-    })
-    .borderRadius(FLOATING_BAR_HEIGHT / 2)
-    // 材质：组件级厚材质，内容从浮栏下方透出（毛玻璃）
-    .backgroundBlurStyle(BlurStyle.COMPONENT_THICK)
-    .border({ width: 0.5, color: $r('sys.color.comp_divider') })
-    .shadow({ radius: 24, color: '#26000000', offsetY: 8 })
-    .clip(true)
-    // 动态显隐：下滑平移出屏 + 淡出，上滑/回顶复位
-    .translate({ y: tabBarScroll.hidden ? (FLOATING_BAR_HEIGHT + FLOATING_BAR_BOTTOM_INSET + 8) : 0 })
-    .opacity(tabBarScroll.hidden ? 0 : 1)
-    .animation({ duration: 250, curve: Curve.EaseInOut })
-  }
 
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
       // 晨昏天色背景（暖 surface + 双辉光），Tab 内容透明让其透出
       OCSkyBackground()
 
-      Tabs({ barPosition: BarPosition.End, index: this.currentTab, controller: this.controller }) {
+      HdsTabs({ barPosition: BarPosition.End, index: this.currentTab, controller: this.controller }) {
         TabContent() {
           DashboardView({ pathStack: this.pathStack })
         }
@@ -188,20 +142,17 @@ export struct MainShell {
       .scrollable(false)
       .animationDuration(0)
       // 悬浮模式：隐藏内置栏（barHeight 0）、内容占满、让浮栏叠在其上；经典模式保留内置栏
-      .barHeight(USE_FLOATING_TABBAR ? 0 : 56)
-      .barBackgroundColor(USE_FLOATING_TABBAR ? Color.Transparent : $r('sys.color.background_secondary'))
+      // 页签栏交给 UI Design Kit：系统悬浮材质 + 分割线随滚动动态显隐（HDS 光效仅真机渲染）
+      .barFloatingStyle({})
+      .barBackgroundStyle({})
+      .divider({ mode: DividerMode.FOLLOW_SCROLL })
       .onChange((index: number) => {
         this.currentTab = index;
         tabBarScroll.reveal();
       })
-      // 悬浮模式给内容预留底部净空，让最后一行不被浮栏盖住（浮栏叠在这段留白上）
-      .padding({ bottom: TABBAR_CONTENT_CLEARANCE })
       .width('100%')
       .height('100%')
 
-      if (USE_FLOATING_TABBAR) {
-        this.floatingBar()
-      }
     }
     .width('100%')
     .height('100%')

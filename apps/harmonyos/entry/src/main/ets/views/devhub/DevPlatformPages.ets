@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 开发者平台各资源只读列表页（Queues / AI Gateway / Durable Objects / Hyperdrive）
 // + Workers AI 模型目录与试运行（对齐 Android DevPlatformScreens）。
 import {
@@ -149,7 +150,7 @@ export struct QueuesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.items.length === 0) {
@@ -231,7 +232,7 @@ export struct QueuesPage {
       .width('100%')
       .height('100%')
     }
-    .title('Queues')
+    .titleBar({ content: { title: { mainTitle: 'Queues' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
@@ -577,7 +578,7 @@ export struct QueueDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -766,7 +767,7 @@ export struct QueueDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.queueName !== '' ? this.queueName : 'Queue')
+    .titleBar({ content: { title: { mainTitle: this.queueName !== '' ? this.queueName : 'Queue' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showRename, this.renameSheet(), ocSheet(() => {
       this.showRename = false;
@@ -934,7 +935,7 @@ export struct AIGatewayPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.items.length === 0) {
@@ -1016,7 +1017,7 @@ export struct AIGatewayPage {
       .width('100%')
       .height('100%')
     }
-    .title('AI Gateway')
+    .titleBar({ content: { title: { mainTitle: 'AI Gateway' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
@@ -1100,7 +1101,7 @@ export struct AIGatewayDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -1191,7 +1192,7 @@ export struct AIGatewayDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.gatewayName !== '' ? this.gatewayName : 'AI Gateway')
+    .titleBar({ content: { title: { mainTitle: this.gatewayName !== '' ? this.gatewayName : 'AI Gateway' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as IdNameParam;
@@ -1230,7 +1231,7 @@ export struct DurableObjectsPage {
   @Local pathStack: NavPathStack | null = null;
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -1282,7 +1283,7 @@ export struct DurableObjectsPage {
       .width('100%')
       .height('100%')
     }
-    .title('Durable Objects')
+    .titleBar({ content: { title: { mainTitle: 'Durable Objects' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
@@ -1399,7 +1400,7 @@ export struct DurableObjectDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.loaded) {
@@ -1500,7 +1501,7 @@ export struct DurableObjectDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.namespaceName !== '' ? this.namespaceName : 'Durable Object')
+    .titleBar({ content: { title: { mainTitle: this.namespaceName !== '' ? this.namespaceName : 'Durable Object' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as IdNameParam;
@@ -1681,7 +1682,7 @@ export struct HyperdrivePage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.items.length === 0) {
@@ -1762,7 +1763,7 @@ export struct HyperdrivePage {
       .width('100%')
       .height('100%')
     }
-    .title('Hyperdrive')
+    .titleBar({ content: { title: { mainTitle: 'Hyperdrive' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
@@ -2155,7 +2156,7 @@ export struct HyperdriveDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.config !== null) {
@@ -2247,7 +2248,7 @@ export struct HyperdriveDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.config?.name ?? 'Hyperdrive')
+    .titleBar({ content: { title: { mainTitle: this.config?.name ?? 'Hyperdrive' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCaching, this.cachingSheet(), ocSheet(() => {
       this.showCaching = false;
@@ -2550,7 +2551,7 @@ export struct WorkersAIPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -2645,7 +2646,7 @@ export struct WorkersAIPage {
       .width('100%')
       .height('100%')
     }
-    .title('Workers AI')
+    .titleBar({ content: { title: { mainTitle: 'Workers AI' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.detailVisible, this.detailSheet(), ocSheet(() => {
       this.detailVisible = false;

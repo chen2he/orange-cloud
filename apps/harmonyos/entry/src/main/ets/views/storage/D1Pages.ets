@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // D1：数据库列表 + 新建 → SQL 查询控制台（对齐 Android D1Screens）。
 import { D1Database, D1QueryResult } from '../../models/StorageModels';
 import { Routes, IdNameParam, D1TableParam } from '../../models/Routes';
@@ -347,7 +348,7 @@ export struct D1DatabasesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.databases.length === 0) {
@@ -428,7 +429,7 @@ export struct D1DatabasesPage {
       .width('100%')
       .height('100%')
     }
-    .title('D1 数据库')
+    .titleBar({ content: { title: { mainTitle: 'D1 数据库' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
@@ -682,7 +683,7 @@ export struct D1QueryPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         Column({ space: 10 }) {
@@ -844,7 +845,7 @@ export struct D1QueryPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.dbName} · 查询`)
+    .titleBar({ content: { title: { mainTitle: `${this.dbName} · 查询` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
@@ -1475,7 +1476,7 @@ export struct D1TablePage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -1634,7 +1635,7 @@ export struct D1TablePage {
       .width('100%')
       .height('100%')
     }
-    .title(this.table)
+    .titleBar({ content: { title: { mainTitle: this.table } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editVisible, this.editSheet(), ocSheet(() => {
       this.editVisible = false;

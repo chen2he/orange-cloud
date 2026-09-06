@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 的 CI 构建记录：状态、分支/commit、日志、取消。
 import { IdNameParam } from '../../models/Routes';
 import {
@@ -102,7 +103,7 @@ export struct WorkerBuildsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.loaded) {
@@ -194,7 +195,7 @@ export struct WorkerBuildsPage {
         }
       }
     }
-    .title('构建')
+    .titleBar({ content: { title: { mainTitle: '构建' } } })
     .bindSheet(this.vm.logsOpen, this.logsSheet(), {
       detents: [SheetSize.MEDIUM, SheetSize.LARGE],
       onDisappear: () => {

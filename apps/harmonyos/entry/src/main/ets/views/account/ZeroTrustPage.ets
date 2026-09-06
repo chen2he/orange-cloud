@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zero Trust：Access 应用（建/编辑/删）+ Gateway 规则（建/删），双分区一页（对齐 iOS Views/ZeroTrust）。
 import { AccessApp, AccessPolicySummary, GatewayRule } from '../../models/AccountModels';
 import { Routes, IdNameParam } from '../../models/Routes';
@@ -398,7 +399,7 @@ export struct ZeroTrustPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -576,7 +577,7 @@ export struct ZeroTrustPage {
       .width('100%')
       .height('100%')
     }
-    .title('Zero Trust')
+    .titleBar({ content: { title: { mainTitle: 'Zero Trust' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.ruleSheetVisible, this.ruleSheet(), ocSheet(() => {
       this.ruleSheetVisible = false;
@@ -692,7 +693,7 @@ export struct AccessAppDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -806,7 +807,7 @@ export struct AccessAppDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.appName !== '' ? this.appName : 'Access 应用')
+    .titleBar({ content: { title: { mainTitle: this.appName !== '' ? this.appName : 'Access 应用' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as IdNameParam;

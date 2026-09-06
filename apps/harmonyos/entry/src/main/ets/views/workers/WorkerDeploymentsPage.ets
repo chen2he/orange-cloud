@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 部署历史（对照 iOS WorkerDeploymentsView）：列表 + 删除。
 // 列表首项为当前活跃部署，Cloudflare 拒绝删除活跃部署，故活跃项不给删除入口。
 import { NameParam } from '../../models/Routes';
@@ -145,7 +146,7 @@ export struct WorkerDeploymentsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.loaded) {
@@ -212,7 +213,7 @@ export struct WorkerDeploymentsPage {
       .width('100%')
       .height('100%')
     }
-    .title('部署历史')
+    .titleBar({ content: { title: { mainTitle: '部署历史' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as NameParam;

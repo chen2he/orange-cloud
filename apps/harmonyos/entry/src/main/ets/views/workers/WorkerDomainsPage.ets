@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 域名与路由（对照 iOS WorkerRoutesView）：
 // workers.dev 子域开关 + 自定义域（挂/卸）+ Zone 路由（加/删）。
 //
@@ -332,7 +333,7 @@ export struct WorkerDomainsPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && !this.vm.loaded) {
@@ -495,7 +496,7 @@ export struct WorkerDomainsPage {
       .width('100%')
       .height('100%')
     }
-    .title('域名')
+    .titleBar({ content: { title: { mainTitle: '域名' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.domainSheetVisible, this.domainSheet(), ocSheetCompact(() => {
       this.domainSheetVisible = false;

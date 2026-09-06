@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 审计日志：最近 30 天操作记录 + 游标分页续接（对齐 iOS AuditLogViewModel，只读）。
 import { AuditLogEntry } from '../../models/AccountModels';
 import { AccountModuleService, AuditLogPageResult } from '../../services/AccountModuleService';
@@ -176,7 +177,7 @@ export struct AuditLogPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading && this.vm.entries.length === 0) {
@@ -284,7 +285,7 @@ export struct AuditLogPage {
         title: { title: '变更历史' },
       })
     }
-    .title('审计日志')
+    .titleBar({ content: { title: { mainTitle: '审计日志' } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady(() => {
       this.vm.load().catch(() => {

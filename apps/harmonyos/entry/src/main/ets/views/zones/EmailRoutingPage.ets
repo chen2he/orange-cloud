@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // 邮件路由：状态开关 + 路由规则（自定义地址 → 转发/丢弃）+ 目标地址管理。
 // 对齐 Android EmailRoutingScreen。
 import {
@@ -404,7 +405,7 @@ export struct EmailRoutingPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -678,7 +679,7 @@ export struct EmailRoutingPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · 邮件路由`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · 邮件路由` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.ruleSheetVisible, this.addRuleSheet(), ocSheet(() => {
       this.ruleSheetVisible = false;

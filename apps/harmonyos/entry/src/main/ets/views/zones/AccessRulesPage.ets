@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // IP 访问规则：列表 / 新建 / 改动作 / 删除（对齐 Android ZoneAccessRulesScreen）。
 // configuration 创建后不可改，编辑仅开放 mode + notes。
 import { FirewallAccessRule, FirewallService } from '../../services/FirewallService';
@@ -289,7 +290,7 @@ export struct AccessRulesPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -345,7 +346,7 @@ export struct AccessRulesPage {
       .width('100%')
       .height('100%')
     }
-    .title(`${this.zoneName} · IP 访问规则`)
+    .titleBar({ content: { title: { mainTitle: `${this.zoneName} · IP 访问规则` } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;

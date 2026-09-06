@@ -1,3 +1,4 @@
+import { HdsNavDestination } from '@kit.UIDesignKit';
 // Worker 详情 hub（对照 iOS WorkerDetailView）：信息 + 指标 + 管理入口 + 调试入口 + 删除。
 // 各子模块拆成独立页面（变量与密钥 / 触发器 / 部署历史 / 域名 / 实时日志），本页只做导航与概览。
 //
@@ -660,7 +661,7 @@ export struct WorkerDetailPage {
   }
 
   build() {
-    NavDestination() {
+    HdsNavDestination() {
       Stack({ alignContent: Alignment.TopStart }) {
         OCSkyBackground()
         if (this.vm.isLoading) {
@@ -727,7 +728,7 @@ export struct WorkerDetailPage {
       .width('100%')
       .height('100%')
     }
-    .title(this.scriptName)
+    .titleBar({ content: { title: { mainTitle: this.scriptName } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.codeSheetVisible, this.codeSheet(), ocSheet(() => {
       this.codeSheetVisible = false;
