@@ -1,3 +1,4 @@
+import { OC_TAB_BAR_CLEARANCE } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 // 总览 Tab：身份/账户切换 + 域名概况 + 账号级模块入口（对齐 Android DashboardScreen）。
 import { Account, Zone, DNSRecord } from '../../models/Models';
@@ -1162,6 +1163,8 @@ export struct DashboardView {
         .width('100%')
         .layoutWeight(1)
         .scrollBar(BarState.Off)
+        // 悬浮页签栏叠在内容上，底部留出净空免遮挡
+        .padding({ bottom: OC_TAB_BAR_CLEARANCE })
       }
     }
     .width('100%')

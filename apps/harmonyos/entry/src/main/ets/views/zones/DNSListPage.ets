@@ -469,14 +469,17 @@ export struct DNSListPage {
                   customItemBuilder: () => {
                     this.recordCard(record)
                   },
-                  // swipeActionOptions 接受 HdsSwipeActionOptions | SwipeActionOptions 联合类型。
-                  // HDS 的 deleteIconOptions 只给样式、没有点击回调（删除动作只有全滑的
-                  // onFullDeleteAction），而删 DNS 记录不可撤销、必须二次确认，
-                  // 所以这里传标准 SwipeActionOptions，保留原有的「删除」按钮 + 确认弹窗。
+                  // 用 HDS 自己的横滑配置：标准 SwipeActionOptions 挂在 HdsListItem 上
+                  // 真机实测拉不动，换成 HdsSwipeActionOptions 才有系统的横滑删除样式与动效。
+                  // 全滑删除会触发 onFullDeleteAction——删 DNS 记录不可撤销，
+                  // 所以这里仍然走二次确认弹窗，用户点「取消」即中止。
                   swipeActionOptions: {
-                    end: {
-                      builder: () => {
-                        this.deleteAction(record);
+                    deleteIconOptions: { backgroundColor: $r('app.color.oc_danger') },
+                    fullDeleteOptions: {
+                      isFullDelete: true,
+                      enableVibration: true,
+                      onFullDeleteAction: () => {
+                        this.confirmDelete(record);
                       },
                     },
                   },

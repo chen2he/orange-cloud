@@ -1,4 +1,4 @@
-import { systemMaterial } from './common/Effects';
+import { adaptHandedness, systemMaterial } from './common/Effects';
 // 登录后的主壳：底部 5 Tab（总览/域名/开发/存储/设置），下钻页共用一条 NavPathStack。
 // API 23+ 走 HarmonyOS Design 悬浮式材质页签栏（backgroundBlurStyle 材质 + 圆角内缩 + 阴影，
 // 内容从浮栏下方穿过）；低版本回退经典底部 Tab 栏（.tabBar + barHeight）。
@@ -151,6 +151,8 @@ export struct MainShell {
         barSideMargin: 16,
         barBottomMargin: 12,
         systemMaterialEffect: systemMaterial(),
+        // 智感握姿：系统按握持手自动把栏靠向可达侧（API 23+，低版本该字段被忽略）
+        adaptToHandedness: adaptHandedness(),
       })
       .barOverlap(true)
       .barBackgroundColor(Color.Transparent)

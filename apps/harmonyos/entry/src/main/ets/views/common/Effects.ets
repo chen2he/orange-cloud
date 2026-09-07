@@ -35,3 +35,16 @@ export function systemMaterial(): SystemMaterialParams | undefined {
 
 /// HDS 标题栏（MINI 模式）高度。标题栏浮在内容上层，页面内容需要让出这段高度。
 export const OC_TITLE_BAR_INSET: number = 56;
+
+
+/// 悬浮页签栏占用的底部净空：栏高 56 + 底部外边距 12 + 余量 16。
+/// barOverlap 为 true 时内容会从栏下透出，各 Tab 页的可滚动内容必须在底部留出这段，
+/// 否则最后一行会被页签栏压住。
+export const OC_TAB_BAR_CLEARANCE: number = 84;
+
+
+/// 智感握姿开关：HdsTabsFloatingStyle.adaptToHandedness 自 6.1.0(23) 起提供。
+/// 低版本返回 undefined，组件按默认（不自适应）走。
+export function adaptHandedness(): boolean | undefined {
+  return deviceInfo.sdkApiVersion >= 23 ? true : undefined;
+}

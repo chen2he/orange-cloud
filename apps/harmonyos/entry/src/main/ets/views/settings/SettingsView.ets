@@ -1,3 +1,4 @@
+import { OC_TAB_BAR_CLEARANCE } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 // 设置 Tab：身份管理（切换/添加/详情）+ 偏好（外观/用量口径）+ 帮助与反馈 + 关于
 //（对齐 iOS SettingsView 的分区结构）。
@@ -496,6 +497,8 @@ export struct SettingsView {
       .align(Alignment.Top)
       .onDidScroll((dx: number, dy: number) => { tabBarScroll.notifyScroll(dy); })
       .scrollBar(BarState.Off)
+        // 悬浮页签栏叠在内容上，底部留出净空免遮挡
+        .padding({ bottom: OC_TAB_BAR_CLEARANCE })
       .layoutWeight(1)
     }
     .width('100%')

@@ -267,6 +267,15 @@ export struct ZoneDetailPage {
     .width('100%')
   }
 
+  /// 标题栏副标题：状态 · 套餐（原 Hero 卡里的两条信息）
+  private zoneSubtitle(): string {
+    const status: string = this.zoneStatus !== '' ? statusLabel(this.zoneStatus) : '';
+    if (this.zonePlan === '') {
+      return status;
+    }
+    return status !== '' ? `${status} · ${this.zonePlan}` : this.zonePlan;
+  }
+
   build() {
     HdsNavDestination() {
       // 与 WorkerDetailPage 一致：Stack 包背景 + 内容，让位挂在 Stack 上
@@ -274,10 +283,6 @@ export struct ZoneDetailPage {
         OCSkyBackground()
         Scroll() {
         Column({ space: 22 }) {
-          // Hero / 分析 / 各分组岛按视觉顺序错峰浮现
-          RevealBox({ idx: 0 }) {
-            this.heroCard()
-          }
 
           // 内嵌流量分析（对照 iOS ZoneDetailView 的 ZoneAnalyticsSection）
           RevealBox({ idx: 1 }) {
@@ -322,7 +327,24 @@ export struct ZoneDetailPage {
       // HDS 标题栏浮在内容上层，内容要让出标题栏高度
       .padding({ top: OC_TITLE_BAR_INSET })
     }
-    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.zoneName } } })
+    .titleBar({
+      style: { systemMaterialEffect: systemMaterial() },
+      content: {
+        // Hero 卡取消后，域名状态与套餐并入标题栏副标题，置顶改挂标题栏菜单
+        title: { mainTitle: this.zoneName, subTitle: this.zoneSubtitle() },
+        menu: {
+          value: [{
+            content: {
+              icon: this.pins.isPinned(this.zoneId) ? $r('sys.symbol.pin_fill') : $r('sys.symbol.pin'),
+              label: this.pins.isPinned(this.zoneId) ? '取消置顶' : '置顶',
+              action: () => {
+                this.pins.toggle(accountStore.selectedId, this.zoneId);
+              },
+            },
+          }],
+        },
+      },
+    })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

@@ -1,3 +1,4 @@
+import { OC_TAB_BAR_CLEARANCE } from '../common/Effects';
 // 开发 Tab（对照 iOS DeveloperHubView）：大标题「开发者平台」+ 分组玻璃岛列表。
 // 分组顺序与 iOS 一致：计算 / 数据与消息 / AI。
 // Workers 免费（只按 scope 门控），其余入口均为 Pro——与 iOS DeveloperHubView 的
@@ -138,6 +139,8 @@ export struct DevHubView {
       .align(Alignment.Top)
       .onDidScroll((dx: number, dy: number) => { tabBarScroll.notifyScroll(dy); })
       .scrollBar(BarState.Off)
+        // 悬浮页签栏叠在内容上，底部留出净空免遮挡
+        .padding({ bottom: OC_TAB_BAR_CLEARANCE })
       .layoutWeight(1)
     }
     .width('100%')

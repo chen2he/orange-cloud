@@ -1,3 +1,4 @@
+import { OC_TAB_BAR_CLEARANCE } from '../common/Effects';
 // 存储 Tab（对照 iOS StorageView）：大标题「存储」+ 玻璃岛入口列表。
 // 整个 Tab 是 Pro 功能：非 Pro 时列表换成锁定态，不做半截可用的假象。
 import { Routes } from '../../models/Routes';
@@ -65,6 +66,8 @@ export struct StorageHubView {
     .align(Alignment.Top)
     .onDidScroll((dx: number, dy: number) => { tabBarScroll.notifyScroll(dy); })
     .scrollBar(BarState.Off)
+        // 悬浮页签栏叠在内容上，底部留出净空免遮挡
+        .padding({ bottom: OC_TAB_BAR_CLEARANCE })
     .layoutWeight(1)
   }
 
