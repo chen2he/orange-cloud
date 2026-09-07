@@ -1,5 +1,4 @@
-import { ActionBarButton, HdsActionBar } from '@kit.UIDesignKit';
-import { LengthMetrics } from '@kit.ArkUI';
+import { OCAddActionBar, OC_ACTION_BAR_CLEARANCE } from '../common/ActionBar';
 import { OC_TAB_BAR_CLEARANCE } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 // 域名 Tab（对照 iOS ZoneListView）：大标题「域名」+ 副标题统计 + 搜索 +
@@ -227,28 +226,6 @@ export struct ZoneListView {
     .width('100%')
   }
 
-  /// 操作栏主按钮内容（HdsActionBar 的 primaryButtonBuilder）
-  @Builder
-  addZoneButton() {
-    Row({ space: 6 }) {
-      SymbolGlyph($r('sys.symbol.plus'))
-        .fontSize(18)
-        .fontColor([Color.White])
-      Text('添加域名')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(Color.White)
-    }
-    .justifyContent(FlexAlign.Center)
-    .width(220)
-    .height(44)
-    .backgroundColor($r('app.color.oc_brand_cta'))
-    .borderRadius(22)
-    .onClick(() => {
-      this.vm.createError = '';
-      this.showAddSheet = true;
-    })
-  }
 
   build() {
     Stack({ alignContent: Alignment.BottomEnd }) {
@@ -315,7 +292,7 @@ export struct ZoneListView {
             .onDidScroll((dx: number, dy: number) => { tabBarScroll.notifyScroll(dy); })
             .scrollBar(BarState.Off)
         // 悬浮页签栏叠在内容上，底部留出净空免遮挡
-        .padding({ bottom: OC_TAB_BAR_CLEARANCE })
+        .padding({ bottom: OC_TAB_BAR_CLEARANCE + OC_ACTION_BAR_CLEARANCE })
             .width('100%')
             .height('100%')
           }
@@ -334,14 +311,14 @@ export struct ZoneListView {
       .width('100%')
       .height('100%')
 
-      // 主操作用 HDS 核心操作栏：贴底、宽按钮，落在悬浮页签栏之上，不会被遮住
+      // 主操作：贴底核心操作栏，落在悬浮页签栏之上
       Column() {
-        HdsActionBar({
-          primaryButton: new ActionBarButton({ }),
-          primaryButtonBuilder: () => {
-            this.addZoneButton()
+        OCAddActionBar({
+          label: '添加域名',
+          onTap: () => {
+            this.vm.createError = '';
+            this.showAddSheet = true;
           },
-          primaryButtonBuilderWidth: LengthMetrics.vp(220),
         })
       }
       .width('100%')

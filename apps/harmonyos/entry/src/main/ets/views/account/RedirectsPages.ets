@@ -1,3 +1,4 @@
+import { OCAddActionBar, OC_ACTION_BAR_CLEARANCE } from '../common/ActionBar';
 import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
@@ -175,6 +176,8 @@ export struct RedirectListsPage {
             .width('100%')
             .height('100%')
             .scrollBar(BarState.Off)
+            // 贴底操作栏叠在内容上，底部留出净空
+            .padding({ bottom: OC_ACTION_BAR_CLEARANCE })
           }
           .width('100%')
           .height('100%')
@@ -188,17 +191,13 @@ export struct RedirectListsPage {
           })
         }
 
-        Button('+')
-          .width(52)
-          .height(52)
-          .fontSize(26)
-          .fontColor(Color.White)
-          .backgroundColor($r('app.color.oc_brand_cta'))
-          .borderRadius(26)
-          .margin({ right: 20, bottom: 28 })
-          .onClick(() => {
+        // 主操作：贴底核心操作栏（替代右下角 FAB，拇指可达）
+        OCAddActionBar({
+          label: '新建',
+          onTap: () => {
             this.showCreate = true;
-          })
+          },
+        })
       }
       // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
       .padding({ top: OC_TITLE_BAR_INSET })
@@ -412,17 +411,13 @@ export struct RedirectItemsPage {
           .scrollBar(BarState.Off)
         }
 
-        Button('+')
-          .width(52)
-          .height(52)
-          .fontSize(26)
-          .fontColor(Color.White)
-          .backgroundColor($r('app.color.oc_brand_cta'))
-          .borderRadius(26)
-          .margin({ right: 20, bottom: 28 })
-          .onClick(() => {
+        // 主操作：贴底核心操作栏（替代右下角 FAB，拇指可达）
+        OCAddActionBar({
+          label: '新建',
+          onTap: () => {
             this.showAdd = true;
-          })
+          },
+        })
       }
       // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
       .padding({ top: OC_TITLE_BAR_INSET })
