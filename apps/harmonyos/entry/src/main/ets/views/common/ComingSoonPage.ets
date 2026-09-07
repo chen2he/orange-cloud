@@ -12,6 +12,7 @@ export struct ComingSoonPage {
       }
       .width('100%')
       .height('100%')
+      .padding({ top: OC_TITLE_BAR_INSET })
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '开发中' } } })
     // HDS 标题栏是层叠布局（浮在内容之上，供滑动动态模糊），

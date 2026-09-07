@@ -308,6 +308,8 @@ export struct ZoneDetailPage {
         .width('100%')
         .padding(OCLayout.pagePadding)
       }
+      // HDS 标题栏浮在内容上层，内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
       .align(Alignment.Top)
       .scrollBar(BarState.Off)
       .width('100%')
