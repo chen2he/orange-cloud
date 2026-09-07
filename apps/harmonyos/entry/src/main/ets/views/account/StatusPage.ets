@@ -483,7 +483,6 @@ export struct StatusPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'Cloudflare 状态' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.detailVisible, this.detailSheet(), ocSheet(() => {
       this.detailVisible = false;
     }))

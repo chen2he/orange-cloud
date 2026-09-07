@@ -88,7 +88,6 @@ export struct WebAuthPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '添加账号' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
       // SettingsView 传入的预构建全量 URL 不再直接使用——先弹权限选择、按所选 scope 重建

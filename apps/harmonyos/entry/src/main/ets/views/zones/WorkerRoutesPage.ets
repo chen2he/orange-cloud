@@ -201,7 +201,6 @@ export struct WorkerRoutesPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.zoneName} · Worker 路由` } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
     }))

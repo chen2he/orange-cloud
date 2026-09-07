@@ -350,7 +350,6 @@ export struct CacheRulesPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.zoneName} · 缓存规则` } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.editorVisible, this.editorSheet(), ocSheet(() => {
       this.editorVisible = false;
     }))

@@ -398,7 +398,6 @@ export struct TurnstileListPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'Turnstile' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showEditor, this.editorSheet(), ocSheet(() => {
       this.showEditor = false;
     }))
@@ -798,7 +797,6 @@ export struct TurnstileDetailPage {
       .height('100%')
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.widget?.name ?? 'Turnstile' }, menu: { value: this.canWrite ? [{ content: { icon: $r('sys.symbol.square_and_pencil'), label: '编辑', action: () => { this.openEditor(); } } }] : [] } } })
-    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showEditor, this.editorSheet(), ocSheet(() => {
       this.showEditor = false;

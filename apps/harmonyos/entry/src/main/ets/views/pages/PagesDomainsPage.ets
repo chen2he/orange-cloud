@@ -655,7 +655,6 @@ export struct PagesDomainsPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '自定义域名' }, menu: { value: [{ content: { icon: $r('sys.symbol.plus'), label: '添加', action: () => { if (this.canWrite()) { this.fDomain = ''; this.addSheetVisible = true; } } } }] } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.addSheetVisible, this.addSheet(), ocSheetCompact(() => {
       this.addSheetVisible = false;
     }))

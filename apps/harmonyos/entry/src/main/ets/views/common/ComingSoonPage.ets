@@ -15,10 +15,6 @@ export struct ComingSoonPage {
       .padding({ top: OC_TITLE_BAR_INSET })
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '开发中' } } })
-    // HDS 标题栏是层叠布局（浮在内容之上，供滑动动态模糊），
-    // 内容必须自己让出标题栏高度，否则首屏会被标题压住。
-    .padding({ top: OC_TITLE_BAR_INSET })
-    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
   }
 }

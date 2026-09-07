@@ -145,7 +145,15 @@ export struct MainShell {
       // 悬浮模式：隐藏内置栏（barHeight 0）、内容占满、让浮栏叠在其上；经典模式保留内置栏
       // 页签栏交给 UI Design Kit：系统悬浮材质 + 分割线随滚动动态显隐（HDS 光效仅真机渲染）
       // 沉浸光感材质：等级设 ADAPTIVE，由系统按设备算力自适应（低算力设备自动降档，避免发热卡顿）
-      .barFloatingStyle({ systemMaterialEffect: systemMaterial() })
+      // 悬浮式页签栏：留侧边距与底部间距，内容从栏下透出（barOverlap），
+      // 背景交给系统材质，不再自绘胶囊
+      .barFloatingStyle({
+        barSideMargin: 16,
+        barBottomMargin: 12,
+        systemMaterialEffect: systemMaterial(),
+      })
+      .barOverlap(true)
+      .barBackgroundColor(Color.Transparent)
       .barBackgroundStyle({})
       .divider({ mode: DividerMode.FOLLOW_SCROLL })
       .onChange((index: number) => {
@@ -158,6 +166,9 @@ export struct MainShell {
     }
     .width('100%')
     .height('100%')
+    // 页面底色铺进底部安全区，否则导航条那一条会露出系统底色（真机上是一条白边）
+    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
+    .backgroundColor($r('sys.color.background_secondary'))
     // 「新功能」：下拉收起也算看过（onDisappear 里写 lastSeen），不靠按钮保证只弹一次
     .bindSheet(this.whatsNewVisible, this.whatsNewContent(), whatsNewSheetOptions(() => {
       this.whatsNewVisible = false;

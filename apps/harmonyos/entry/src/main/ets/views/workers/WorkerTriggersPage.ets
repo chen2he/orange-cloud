@@ -236,7 +236,6 @@ export struct WorkerTriggersPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '触发器' }, menu: { value: [{ content: { icon: $r('sys.symbol.plus'), label: '添加', action: () => { if (this.canWrite()) { this.fCron = '0 * * * *'; this.sheetVisible = true; } } } }] } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.sheetVisible, this.cronSheet(), ocSheetCompact(() => {
       this.sheetVisible = false;
     }))

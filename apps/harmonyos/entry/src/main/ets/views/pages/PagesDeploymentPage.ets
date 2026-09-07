@@ -436,7 +436,6 @@ export struct PagesDeploymentPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.vm.deployment?.short_id ?? '部署' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
       const param = context.pathInfo.param as PagesDeploymentParam;

@@ -362,7 +362,6 @@ export struct AlertingPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '通知告警' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.sheetVisible, this.webhookSheet(), ocSheet(() => {
       this.sheetVisible = false;
     }))

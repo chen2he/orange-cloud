@@ -207,7 +207,6 @@ export struct RedirectListsPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '批量重定向' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
     }))
@@ -431,7 +430,6 @@ export struct RedirectItemsPage {
       .height('100%')
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.listName } } })
-    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showAdd, this.addSheet(), ocSheet(() => {
       this.showAdd = false;

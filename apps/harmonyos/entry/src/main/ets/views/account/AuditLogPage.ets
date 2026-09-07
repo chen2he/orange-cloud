@@ -290,7 +290,6 @@ export struct AuditLogPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '审计日志' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .onReady(() => {
       this.vm.load().catch(() => {
       });

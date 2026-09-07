@@ -167,8 +167,8 @@ export struct ZonePerformancePage {
                         });
                       })
                   }
-                  .width('100%')
-                  .padding({ left: 16, right: 16, top: 6, bottom: 6 })
+                  // 不要再写 width('100%')：与 margin 叠加会比其它设置卡片宽出两侧边距
+                  .padding({ left: 16, right: 16, top: 10, bottom: 10 })
                   .backgroundColor($r('sys.color.comp_background_list_card'))
                   .borderRadius(14)
                   .margin({ left: 16, right: 16 })
@@ -193,7 +193,6 @@ export struct ZonePerformancePage {
       .height('100%')
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.zoneName} · 性能` } } })
-    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as ZoneRouteParam;

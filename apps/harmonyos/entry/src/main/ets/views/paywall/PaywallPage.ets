@@ -359,7 +359,6 @@ export struct PaywallPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'Orange Cloud Pro' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as PaywallParam | undefined;
       this.feature = param?.feature ?? '';

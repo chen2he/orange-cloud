@@ -722,7 +722,6 @@ export struct WorkerDetailPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.scriptName } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.codeSheetVisible, this.codeSheet(), ocSheet(() => {
       this.codeSheetVisible = false;
     }))

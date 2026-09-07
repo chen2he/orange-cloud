@@ -605,7 +605,6 @@ export struct PagesDetailPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.projectName } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showDeploy, this.deploySheet(), ocSheet(() => {
       this.showDeploy = false;
     }))

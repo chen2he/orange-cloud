@@ -1,3 +1,4 @@
+import { OCSkyBackground } from '../common/OCSky';
 import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
@@ -268,7 +269,10 @@ export struct ZoneDetailPage {
 
   build() {
     HdsNavDestination() {
-      Scroll() {
+      // 与 WorkerDetailPage 一致：Stack 包背景 + 内容，让位挂在 Stack 上
+      Stack({ alignContent: Alignment.TopStart }) {
+        OCSkyBackground()
+        Scroll() {
         Column({ space: 22 }) {
           // Hero / 分析 / 各分组岛按视觉顺序错峰浮现
           RevealBox({ idx: 0 }) {
@@ -307,19 +311,18 @@ export struct ZoneDetailPage {
         }
         .width('100%')
         .padding(OCLayout.pagePadding)
+        }
+        .align(Alignment.Top)
+        .scrollBar(BarState.Off)
+        .width('100%')
+        .height('100%')
       }
-      // HDS 标题栏浮在内容上层，内容要让出标题栏高度
-      .padding({ top: OC_TITLE_BAR_INSET })
-      .align(Alignment.Top)
-      .scrollBar(BarState.Off)
       .width('100%')
       .height('100%')
+      // HDS 标题栏浮在内容上层，内容要让出标题栏高度
+      .padding({ top: OC_TITLE_BAR_INSET })
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.zoneName } } })
-    // HDS 标题栏是层叠布局（浮在内容之上，供滑动动态模糊），
-    // 内容必须自己让出标题栏高度，否则首屏会被标题压住。
-    .padding({ top: OC_TITLE_BAR_INSET })
-    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

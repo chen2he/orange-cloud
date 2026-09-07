@@ -502,7 +502,6 @@ export struct WorkerDomainsPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '域名' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.domainSheetVisible, this.domainSheet(), ocSheetCompact(() => {
       this.domainSheetVisible = false;
     }))

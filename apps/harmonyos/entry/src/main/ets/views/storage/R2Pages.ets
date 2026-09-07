@@ -222,7 +222,6 @@ export struct R2BucketsPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'R2 存储桶' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showCreate, this.createSheet(), ocSheet(() => {
       this.showCreate = false;
     }))
@@ -982,7 +981,6 @@ export struct R2ObjectsPage {
       .height('100%')
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: this.bucket }, menu: { value: [{ content: { icon: $r('sys.symbol.gearshape'), label: '桶设置', action: () => { const param: IdNameParam = { id: this.bucket, name: this.bucket }; this.pathStack?.pushPathByName(Routes.R2_SETTINGS, param); } } }] } } })
-    .backgroundColor($r('sys.color.background_secondary'))
     .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.viewerVisible, this.viewerSheet(), ocSheet(() => {
       this.viewerVisible = false;

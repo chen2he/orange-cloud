@@ -1021,7 +1021,6 @@ export struct R2SettingsPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: `${this.bucket} · 桶设置` } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.showAddDomain, this.addDomainSheet(), ocSheet(() => {
       this.showAddDomain = false;
     }))

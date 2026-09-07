@@ -1,3 +1,4 @@
+import { promptAction } from '@kit.ArkUI';
 import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Workers 脚本列表：点入详情，右下角新建（对齐 Android WorkerListScreen）。
@@ -53,25 +54,22 @@ export struct WorkerListPage {
     return this.vm.scripts;
   }
 
-  @Builder
-  sortBar() {
-    Row({ space: 8 }) {
-      Blank()
-      SymbolGlyph($r('sys.symbol.sort'))
-        .fontSize(14)
-        .fontColor([$r('sys.color.font_secondary')])
-      Select(SORT_KEYS.map((k: string): SelectOption => ({ value: sortLabel(k) })))
-        .selected(SORT_KEYS.indexOf(this.sortKey))
-        .value(sortLabel(this.sortKey))
-        .font({ size: 12 })
-        .onSelect((index: number) => {
-          this.sortKey = SORT_KEYS[index];
-          saveSortKey('workers', this.sortKey).catch(() => {
-          });
-        })
-    }
-    .width('100%')
-    .padding({ left: 16, right: 16, top: 4 })
+  /// 排序改挂标题栏菜单：点图标弹系统操作菜单选排序方式
+  private pickSort(): void {
+    const buttons: promptAction.Button[] = SORT_KEYS.map((k: string): promptAction.Button => {
+      const b: promptAction.Button = { text: sortLabel(k), color: '#000000' };
+      return b;
+    });
+    const options: promptAction.ActionMenuOptions = { title: '排序方式', buttons: buttons as [promptAction.Button] };
+    this.getUIContext().getPromptAction().showActionMenu(options)
+      .then((result: promptAction.ActionMenuSuccessResponse) => {
+        this.sortKey = SORT_KEYS[result.index];
+        saveSortKey('workers', this.sortKey).catch(() => {
+        });
+      })
+      .catch(() => {
+        // 用户取消
+      });
   }
 
   build() {
@@ -104,7 +102,6 @@ export struct WorkerListPage {
           .height('100%')
         } else {
           Column() {
-          this.sortBar()
           Refresh({ refreshing: this.refreshing }) {
             List() {
               ForEach(this.sortedScripts(), (script: WorkerScript) => {
@@ -159,8 +156,7 @@ export struct WorkerListPage {
       .width('100%')
       .height('100%')
     }
-    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'Workers' } } })
-    .backgroundColor($r('sys.color.background_secondary'))
+    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: 'Workers' }, menu: { value: [{ content: { icon: $r('sys.symbol.sort'), label: '排序', action: () => { this.pickSort(); } } }] } } })
     .backgroundColor($r('sys.color.background_secondary'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;

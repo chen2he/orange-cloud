@@ -941,7 +941,6 @@ export struct WorkerBindingsPage {
     }
     .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '变量与密钥' } } })
     .backgroundColor($r('sys.color.background_secondary'))
-    .backgroundColor($r('sys.color.background_secondary'))
     .bindSheet(this.secretSheetVisible, this.secretSheet(), ocSheet(() => {
       this.secretSheetVisible = false;
     }))
