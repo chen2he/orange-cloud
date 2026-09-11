@@ -42,3 +42,6 @@ price/
 
 # 独立子仓库（自有 git，单独发布到 chen2he/orange-cloud-push-server）
 orange-cloud-push/
+
+# 鸿蒙 hvigor 在仓库根留下的构建日志残留（apps/harmonyos/.gitignore 的 /.hvigor 只管子目录）
+/.hvigor/
