@@ -12,8 +12,6 @@ const PATH = `/guides/${guide.slug}`;
 
 const DOCS_526 =
 	"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-526/";
-const DOCS_525 =
-	"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-525/";
 const DOCS_5XX = "https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/";
 const DOCS_SSL_MODES = "https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/";
 const DOCS_FULL = "https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full/";
@@ -54,6 +52,11 @@ const RELATED: RelatedLink[] = [
 		href: "/guides/cloudflare-ssl-tls-encryption-modes",
 		label: "Which Cloudflare SSL/TLS encryption mode should you use?",
 		note: "The setting that decides whether Cloudflare validates your origin certificate at all — and so whether a 526 is even possible.",
+	},
+	{
+		href: "/guides/cloudflare-error-525-ssl-handshake-failed",
+		label: "Cloudflare error 525: SSL handshake failed",
+		note: "One gate earlier on the same hop: the handshake never finished, so no certificate was ever exchanged.",
 	},
 	{
 		href: "/guides/cloudflare-error-521-web-server-is-down",
@@ -429,9 +432,7 @@ export default async function Error526Guide({ params }: { params: Promise<{ loca
 							</tr>
 							<tr>
 								<th scope="row">
-									<a href={DOCS_525} target="_blank" rel="noopener noreferrer">
-										525
-									</a>
+									<Link href="/guides/cloudflare-error-525-ssl-handshake-failed">525</Link>
 								</th>
 								<td>TCP connected, TLS handshake failed</td>
 							</tr>
