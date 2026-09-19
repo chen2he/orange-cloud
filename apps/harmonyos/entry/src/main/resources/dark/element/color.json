@@ -1,0 +1,28 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#000000"
+    },
+    {
+      "name": "oc_brand",
+      "value": "#FF9A45"
+    },
+    {
+      "name": "oc_brand_text",
+      "value": "#FFB27A"
+    },
+    {
+      "name": "oc_brand_bg",
+      "value": "#26F48120"
+    },
+    {
+      "name": "oc_danger",
+      "value": "#FF6B5A"
+    },
+    {
+      "name": "oc_brand_cta",
+      "value": "#B35500"
+    }
+  ]
+}

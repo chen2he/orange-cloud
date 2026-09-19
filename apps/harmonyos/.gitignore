@@ -1,0 +1,28 @@
+/node_modules
+/oh_modules
+/local.properties
+/.idea
+**/build
+/.hvigor
+.cxx
+/.clangd
+/.clang-format
+/.clang-tidy
+**/.test
+/.appanalyzer
+
+.DS_Store
+*.hap
+*.app
+
+# 签名私钥与证书材料（p12 / csr / profile / DevEco material）——绝不入库
+/cert
+
+# AGC 配置（含 client_secret、api_key 密文）
+/agconnect-services.json
+
+# 上架大图由 orange-cloud/appstore 流水线生成，体积大不入库（对齐 iOS fastlane 截图的处理）
+/appgallery/marketing
+
+# 含测试账号凭据的审核备注（可直接粘贴进 AGC），仓库公开，绝不入库
+/appgallery/*.local.md

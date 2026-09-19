@@ -1,0 +1,106 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "/Users/zhe/.ohos/config/default_harmonyos_TLWBuFTrfUK02lfX4xvYfq4SohZIDwuEjWn83pm3Hx8=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B03EDA2A27D2726314F02F75B60400EE2F09756BE0CBAEA41C83E36F33825A6C084CDD139A0CD4B",
+          "profile": "/Users/zhe/.ohos/config/default_harmonyos_TLWBuFTrfUK02lfX4xvYfq4SohZIDwuEjWn83pm3Hx8=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "/Users/zhe/.ohos/config/default_harmonyos_TLWBuFTrfUK02lfX4xvYfq4SohZIDwuEjWn83pm3Hx8=.p12",
+          "storePassword": "0000001B4C1EC281843756B989B181968F8C6541E2B920CA664DD4569B9AECE0219AC8E41EAC5669F663E4"
+        }
+      },
+      {
+        "name": "prod",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "/Users/zhe/keys/zhe_ltd.p12",
+          "storePassword": "00000019A061CBE3FB7909B7D9F78BB31E4D1EDE597EF44D8C288CFF28D54B20F455A7B2E659B4AAC2",
+          "keyAlias": "zhe_ltd",
+          "keyPassword": "00000019034BDEC33CA11C778EC99477CE819D178A6C2C806B499559DA2B20B6B28FF0E17FC81086AD",
+          "signAlg": "SHA256withECDSA",
+          "profile": "/Users/zhe/keys/orange_cloud_prodRelease.p7b",
+          "certpath": "/Users/zhe/keys/zhe_ltd.cer"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "targetSdkVersion": "6.1.1(24)",
+        "compatibleSdkVersion": "6.0.0(20)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      },
+      {
+        "name": "prod",
+        "signingConfig": "prod",
+        "targetSdkVersion": "6.1.1(24)",
+        "compatibleSdkVersion": "6.0.0(20)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug"
+      },
+      {
+        "name": "release"
+      }
+    ],
+    "capabilities": [
+      {
+        "bundleName": "ltd.zhe.orange_cloud",
+        "config": [
+          {
+            "name": "Push Kit",
+            "capability": "com.huawei.service.push.base_service"
+          },
+          {
+            "name": "Device status detection",
+            "capability": "com.huawei.service.device_security.device_verify"
+          },
+          {
+            "name": "Map Kit",
+            "capability": "com.huawei.service.mapkit"
+          },
+          {
+            "name": "Safety Detect",
+            "capability": "com.huawei.service.device_security.safety_detect"
+          }
+        ]
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default",
+            "prod"
+          ]
+        }
+      ]
+    }
+  ]
+}
