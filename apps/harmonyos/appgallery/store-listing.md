@@ -1,7 +1,7 @@
 # Orange Cloud — AppGallery 上架素材（HarmonyOS）
 
 > 图标：同目录 `icon_216.png` / `icon_512.png` / `icon_1024.png`（AGC 表单按要求的尺寸取用）。
-> 截图：`marketing/zh-CN/`（设计稿成品，不入库）；`shots/` 为真机裸截图备查。⚠️ 两套都出自 2026-07 旧版晨昏 UI，2026-09 改用系统色 + UI Design Kit 后需按新界面重拍。
+> 截图：`screenshots/720x1280/`（AGC 手机竖屏规范 9:16、720×1280，5 张，按顺序上传：概览 / 域名 / 分析 / DNS / 开发者平台）；`screenshots/1080x1920/` 为同图高清版。2026-09-20 用 Mate 80 真机 + mock 虚构数据（Sunrise Studio / sunrise.dev 等）出图，已去掉状态栏，无任何真实账号信息。
 > 可直接粘贴的完整审核备注（含测试账号凭据）：`review-notes.local.md`（本地，不入库）。
 > 隐私政策 https://o-c.do/privacy ｜ 使用条款 https://o-c.do/terms
 
