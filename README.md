@@ -162,6 +162,6 @@ orange-cloud/
 
 <div align="center">
 
-© 2026 [chen2he](https://github.com/chen2he) · AGPL-3.0 + Commons Clause
+© 2026 柘家科技有限公司 (Zhe Tech Co., Ltd.) · AGPL-3.0 + Commons Clause
 
 </div>

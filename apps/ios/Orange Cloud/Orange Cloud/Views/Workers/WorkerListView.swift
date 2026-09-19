@@ -75,14 +75,18 @@ struct WorkerListView: View {
                 }
             }
             .toolbar {
+                // 竖轴空间不够时系统默认从下往上收项目，主动作会先被收走；
+                // 标了优先级后「新建」留到最后，排序 / 刷新先进溢出菜单（见 OCToolbarPriority）。
                 ToolbarItem(placement: .topBarTrailing) {
                     ResourceSortMenu(sort: $sort)
                 }
+                .ocPriority(.secondary)
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("新建 Worker", systemImage: "plus") {
                         if canWrite { showCreate = true } else { createDenied = true }
                     }
                 }
+                .ocPriority(.primary)
                 ToolbarItem(placement: .topBarTrailing) {
                     RefreshButton(
                         isLoading: viewModel.isLoading,
@@ -90,6 +94,7 @@ struct WorkerListView: View {
                         action: { Task { await refresh() } }
                     )
                 }
+                .ocPriority(.secondary)
             }
             .sheet(isPresented: $showCreate) {
                 WorkerUploadView(mode: .create, viewModel: uploadViewModel) {

@@ -28,6 +28,12 @@ struct ZoneListView: View {
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var selectedZone: CachedZone?
+    /// 分栏的边栏可见性。**必须显式给 `.doubleColumn`**：`.automatic` 下系统会按宽高组合
+    /// 自行决定，实测 744×1133（iPad mini 竖屏 / 折叠机内屏一档）会把边栏整个折起来，
+    /// 整屏只剩「选择一个域名」占位——域名页开屏即空。956×440（iPhone 横屏，同为 regular）
+    /// 却正常展开，所以这是宽高组合相关、默认值靠不住。用 @State 而非常量绑定，
+    /// 用户仍可手动收起边栏。
+    @State private var columnVisibility: NavigationSplitViewVisibility = .doubleColumn
     /// zoom 转场源（列表行）在 ZoneListContent 里标记，namespace 由外壳持有传入，
     /// 让栈根 navdest 的目的页能引用同一命名空间。
     @Namespace private var zoomNamespace
@@ -40,7 +46,7 @@ struct ZoneListView: View {
 
     var body: some View {
         if sizeClass == .regular {
-            NavigationSplitView {
+            NavigationSplitView(columnVisibility: $columnVisibility) {
                 ZoneListContent(session: session, isSplit: true, selectedZone: $selectedZone, zoomNamespace: zoomNamespace)
                     .id(session.selectedAccount?.id)
                     // 选中态住在外壳，账号切换时手动清空，否则 detail 栏残留旧账号的域名
@@ -58,6 +64,8 @@ struct ZoneListView: View {
                     ContentUnavailableView("选择一个域名", systemImage: "globe", description: Text("从左侧列表选择域名查看详情"))
                 }
             }
+            // 窄画布（744pt 这一档）下 .automatic 会偏向详情栏、把边栏挤没；balanced 让两栏平权
+            .navigationSplitViewStyle(.balanced)
         } else {
             NavigationStack {
                 ZoneListContent(session: session, isSplit: false, selectedZone: .constant(nil), zoomNamespace: zoomNamespace)
@@ -184,9 +192,11 @@ private struct ZoneListContent: View {
             ToolbarItem(placement: .topBarTrailing) {
                 refreshButton
             }
+            .ocPriority(.secondary)
             ToolbarItem(placement: .topBarTrailing) {
                 addButton
             }
+            .ocPriority(.primary)
         }
         .navigationSplitViewColumnWidth(min: 300, ideal: 340)
     }
@@ -215,9 +225,11 @@ private struct ZoneListContent: View {
             ToolbarItem(placement: .topBarTrailing) {
                 refreshButton
             }
+            .ocPriority(.secondary)
             ToolbarItem(placement: .topBarTrailing) {
                 addButton
             }
+            .ocPriority(.primary)
         }
     }
 

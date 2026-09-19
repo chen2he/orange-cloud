@@ -41,7 +41,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 	const cfg = env as CloudflareEnv & PlayEnv;
 
 	// 未配置 audience 一律 fail-closed：宁可不收，也不裸奔接受任何 POST。
-	if (!cfg.PLAY_PUSH_AUDIENCE) {
+	// 服务账号邮箱同样必须配置：只验 aud 的话，任何 Google 账号都能对本端点 URL 签一枚
+	// OIDC token（gcloud auth print-identity-token --audiences=…）往账本里塞 play 行。
+	if (!cfg.PLAY_PUSH_AUDIENCE || !cfg.PLAY_PUSH_SA_EMAIL) {
 		return NextResponse.json({ error: "not configured" }, { status: 503 });
 	}
 

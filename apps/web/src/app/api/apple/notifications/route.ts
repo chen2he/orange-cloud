@@ -4,6 +4,12 @@ import { NotificationVerifyError, verifyNotification } from "@/lib/appstore/veri
 import { APPLE_FORWARD_URL, forwardRawNotification } from "@/lib/appstore/forward";
 import { processNotification } from "@/lib/appstore/store";
 import { notifyAppleEvent } from "@/lib/appstore/notify";
+import {
+	PREFERENCE_LABEL,
+	recordConsumptionRequest,
+	recordRefundOutcome,
+	type Suggestion,
+} from "@/lib/appstore/refund-review";
 import type { DecodedNotification } from "@/lib/appstore/types";
 
 // App Store Server Notifications V2 入口 —— Apple 服务器在购买 / 续订 / 退款 / 流失时
@@ -53,7 +59,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 		decoded.payload.data?.bundleId ??
 		decoded.payload.summary?.bundleId ??
 		decoded.transaction?.bundleId;
-	if (bundleId && bundleId !== EXPECTED_BUNDLE_ID) {
+	// 带交易的通知一定带 bundleId；缺失即视为伪造（TEST 等无交易通知可以没有）。
+	if ((bundleId && bundleId !== EXPECTED_BUNDLE_ID) || (!bundleId && decoded.transaction)) {
 		return NextResponse.json({ error: "unexpected bundleId" }, { status: 401 });
 	}
 
@@ -77,12 +84,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 	try {
 		const result = await processNotification(env.IAP_DB, decoded);
 
+		// 5b) 退款审核：CONSUMPTION_REQUEST 入 refund_reviews（规则给默认倾向，等管理员或 cron 发给 Apple）；
+		//     REFUND / REFUND_DECLINED 回填结果。两者都幂等；失败只记日志，不让 Apple 因此重试整条通知。
+		let suggestion: Suggestion | null = null;
+		try {
+			suggestion = await recordConsumptionRequest(env.IAP_DB, decoded);
+			await recordRefundOutcome(env.IAP_DB, decoded);
+		} catch (err) {
+			console.error("[apple-notifications] refund review error", err);
+		}
+
 		// 6) 入库成功后推一条 Bark 到作者 iPhone（fire-and-forget，不阻塞对 Apple 的 200）。
 		//    跳过重复通知（Apple 会重发）以免刷屏；未配置 BARK_KEY 则静默跳过。
 		//    BARK_KEY / 可选 BARK_SERVER 经 wrangler secret / .dev.vars 注入（不在生成的 env 类型里，故 cast）。
 		if (!result.duplicate) {
 			const cfg = env as { BARK_KEY?: string; BARK_SERVER?: string };
-			ctx.waitUntil(notifyAppleEvent(cfg.BARK_KEY, decoded, cfg.BARK_SERVER));
+			const extra = suggestion
+				? {
+						note: `默认倾向：${PREFERENCE_LABEL[suggestion.preference]}（${suggestion.reason}）· 10 小时内可在后台改`,
+						url: "https://o-c.do/admin#refund-reviews",
+					}
+				: undefined;
+			ctx.waitUntil(notifyAppleEvent(cfg.BARK_KEY, decoded, cfg.BARK_SERVER, extra));
 		}
 
 		return NextResponse.json(

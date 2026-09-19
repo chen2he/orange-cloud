@@ -81,6 +81,11 @@ const RELATED: RelatedLink[] = [
     external: true,
   },
   {
+    href: "/guides/cloudflare-error-codes",
+    label: "Cloudflare error codes: 5xx vs 1xxx",
+    note: "The whole map: which range describes which hop, and the four codes that could be either side.",
+  },
+  {
     href: "/contact",
     label: "Something wrong on this page?",
     note: "Corrections and questions are welcome — we read every message.",

@@ -49,6 +49,11 @@ const FAQ: Array<{ q: string; a: string }> = [
 
 const RELATED: RelatedLink[] = [
 	{
+		href: "/guides/cloudflare-block-ai-crawlers",
+		label: "How do you block AI crawlers on Cloudflare?",
+		note: "Uncached crawler traffic lands on your origin — which is why cacheability and crawler policy end up on the same bill.",
+	},
+	{
 		href: "/guides/what-is-the-orange-cloud-in-cloudflare",
 		label: "What does the orange cloud mean in Cloudflare?",
 		note: "The prerequisite: nothing is cached at all on a record that is set to DNS only.",

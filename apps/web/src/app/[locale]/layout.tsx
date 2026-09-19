@@ -4,7 +4,6 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
-import Head from "next/head";
 import Script from "next/script";
 
 const SITE_URL = "https://o-c.do";
@@ -75,6 +74,8 @@ export async function generateMetadata({
 				"x-default": "/",
 			},
 		},
+		// Bing Webmaster 站点验证。App Router 里 next/head 不渲染，必须走 metadata。
+		verification: { other: { "msvalidate.01": "D37E43E607B99CBD72EB0FAFBB58FF89" } },
 		icons: {
 			icon: [
 				{ url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },
@@ -140,12 +141,13 @@ export default async function LocaleLayout({
 
 	return (
 		<html lang={locale} dir={RTL_LOCALES.has(locale) ? "rtl" : "ltr"}>
-			<Head>
-				<meta name="msvalidate.01" content="D37E43E607B99CBD72EB0FAFBB58FF89" />
-				<Script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "dfe9d89898c447bea839ca39f7769bae"}' />
-			</Head>
-
 			<body className="antialiased">
+				{/* Cloudflare Web Analytics 信标。以前包在 next/head 里，App Router 会整块丢弃、页面上从没出现过。 */}
+				<Script
+					strategy="afterInteractive"
+					src="https://static.cloudflareinsights.com/beacon.min.js"
+					data-cf-beacon='{"token": "dfe9d89898c447bea839ca39f7769bae"}'
+				/>
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

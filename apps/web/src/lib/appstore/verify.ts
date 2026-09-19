@@ -10,7 +10,7 @@
 // 纯 WebCrypto（jose + @peculiar/x509），无 node:crypto 依赖，Workers 边缘可用。
 
 import { compactVerify, decodeProtectedHeader } from "jose";
-import { cryptoProvider, X509Certificate } from "@peculiar/x509";
+import { BasicConstraintsExtension, cryptoProvider, X509Certificate } from "@peculiar/x509";
 import { APPLE_ROOT_CA_G3_PEM } from "./apple-root-ca";
 import type {
 	DecodedNotification,
@@ -61,6 +61,15 @@ export interface VerifyOptions {
 	trustedRoot?: X509Certificate;
 }
 
+/**
+ * Apple 给证书打的「用途」标记（与 Apple 官方 app-store-server-library 的 ChainVerifier 一致）：
+ * 叶子必须是 App Store Server Notifications 专用证书，中间证书必须是 WWDR 签发用 CA。
+ * 只 pin 根不够——任何持有 Apple 签发的 P-256 证书（例如人人可申请的 Apple Pay 处理证书）
+ * 的人都能链到 Apple Root CA G3，没有这层检查就能伪造入账通知。
+ */
+const APPLE_LEAF_OID = "1.2.840.113635.100.6.11.1";
+const APPLE_INTERMEDIATE_OID = "1.2.840.113635.100.6.2.1";
+
 /** 校验并解码一段 x5c-signed JWS（外层通知 / 内层交易 / 内层续订通用）。 */
 export async function verifyAndDecodeJws<T>(jws: string, opts: VerifyOptions = {}): Promise<T> {
 	ensureCrypto();
@@ -99,6 +108,19 @@ export async function verifyAndDecodeJws<T>(jws: string, opts: VerifyOptions = {
 		if (!ok) throw new NotificationVerifyError("证书链未锚定到 Apple Root CA G3");
 	}
 
+	// 2b) 证书用途：叶子带通知专用 OID；根以下的每一级都必须是 CA 且带 WWDR 中间 CA 标记
+	if (!certs[0].getExtension(APPLE_LEAF_OID)) {
+		throw new NotificationVerifyError("叶子证书不是 App Store Server Notifications 专用证书");
+	}
+	const lastIntermediate = sameDer(top, root) ? certs.length - 1 : certs.length;
+	for (let i = 1; i < lastIntermediate; i++) {
+		const bc = certs[i].getExtension(BasicConstraintsExtension);
+		if (!bc?.ca) throw new NotificationVerifyError(`证书链第 ${i} 段不是 CA 证书`);
+		if (!certs[i].getExtension(APPLE_INTERMEDIATE_OID)) {
+			throw new NotificationVerifyError(`证书链第 ${i} 段不是 Apple WWDR 中间证书`);
+		}
+	}
+
 	// 3) 用叶子公钥验 JWS 签名并取 payload
 	const leafKey = await certs[0].publicKey.export({ name: "ECDSA", namedCurve: "P-256" }, ["verify"]);
 	let payloadBytes: Uint8Array;
@@ -115,14 +137,14 @@ export async function verifyAndDecodeJws<T>(jws: string, opts: VerifyOptions = {
 		throw new NotificationVerifyError("JWS payload 不是合法 JSON");
 	}
 
-	// 4) 用 payload.signedDate 校验证书有效期（签名时点必须落在窗口内）
+	// 4) 用 payload.signedDate 校验证书有效期（签名时点必须落在窗口内）；
+	//    payload 由发送方控制，没带 signedDate 时退回按当前时刻校验，不能整段跳过。
 	const signedDate = (decoded as { signedDate?: number }).signedDate;
-	if (typeof signedDate === "number" && Number.isFinite(signedDate)) {
-		const at = new Date(signedDate);
-		for (const cert of certs) {
-			if (at < cert.notBefore || at > cert.notAfter) {
-				throw new NotificationVerifyError("证书在签名时点不在有效期内");
-			}
+	const at =
+		typeof signedDate === "number" && Number.isFinite(signedDate) ? new Date(signedDate) : new Date();
+	for (const cert of certs) {
+		if (at < cert.notBefore || at > cert.notAfter) {
+			throw new NotificationVerifyError("证书在签名时点不在有效期内");
 		}
 	}
 

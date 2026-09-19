@@ -152,6 +152,15 @@ private struct QueueDetailSheet: View {
     private var queue: CFQueue? { viewModel.queues.first { $0.queueId == queueId } }
     private var isPaused: Bool { queue?.settings?.deliveryPaused ?? false }
 
+    /// 队列的次级动作。iOS 27+ 并入系统溢出菜单，以下版本走自建 ellipsis 菜单。
+    @ViewBuilder private var queueActions: some View {
+        Button("重命名", systemImage: "pencil") { showRename = true }
+        Button("编辑设置", systemImage: "slider.horizontal.3") { showSettings = true }
+        Button("清空消息", systemImage: "trash.slash", role: .destructive) { showPurge = true }
+        Divider()
+        Button("删除队列", systemImage: "trash", role: .destructive) { showDelete = true }
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -162,19 +171,21 @@ private struct QueueDetailSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("完成") { dismiss() } }
-                if canWrite {
+                // 这组动作在 iOS 27+ 并入系统溢出菜单（见下方 ocOverflowActions）——
+                // HIG 要求 ellipsis 只留给系统溢出菜单，App 别再自建一个；
+                // iOS 26 及以下没有系统菜单，仍挂自建 ellipsis，两条路共用同一份 queueActions。
+                if canWrite, !ProcessInfo.usesSystemToolbarOverflow {
                     ToolbarItem(placement: .topBarLeading) {
                         Menu {
-                            Button("重命名", systemImage: "pencil") { showRename = true }
-                            Button("编辑设置", systemImage: "slider.horizontal.3") { showSettings = true }
-                            Button("清空消息", systemImage: "trash.slash", role: .destructive) { showPurge = true }
-                            Divider()
-                            Button("删除队列", systemImage: "trash", role: .destructive) { showDelete = true }
+                            queueActions
                         } label: {
-                            Image(systemName: "ellipsis.circle")
+                            Label("更多", systemImage: "ellipsis.circle")
                         }
                     }
                 }
+            }
+            .ocOverflowActions {
+                if canWrite { queueActions }
             }
             .sheet(isPresented: $showRename) {
                 if let queue { QueueRenameSheet(viewModel: viewModel, queueId: queueId, currentName: queue.name) }

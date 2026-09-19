@@ -3,8 +3,8 @@
 Thank you for your interest in contributing to Orange Cloud (the
 "Project"). This Contributor License Agreement ("Agreement") clarifies
 the intellectual-property rights granted with Contributions from any
-person or entity to Zhe Chen (陳柘), the Project's licensor (the
-"Licensor").
+person or entity to Zhe Tech Co., Ltd. (柘家科技有限公司), the
+Project's licensor (the "Licensor").
 
 **Why this is required:** the Project is dual-licensed. The public
 repository is licensed under AGPL-3.0 + Commons Clause, while the

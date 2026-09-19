@@ -76,7 +76,11 @@ final class ZoneAnalyticsViewModel {
     // MARK: - 加载
 
     func load(force: Bool = false) async {
-        if !force, let cached = cache[selectedRange] {
+        // 把范围钉在发起时刻：视图在 onChange(of: selectedRange) 里起的是不取消的 Task，
+        // 快速 24h→7d→30d 会有多个请求在飞；以前 await 之后再读 selectedRange，
+        // 慢到的 7d 数据会写进 .last30d 的缓存、图表也跟着错位，直到下拉刷新才纠正。
+        let range = selectedRange
+        if !force, let cached = cache[range] {
             points = cached.current
             previousPoints = cached.previous
             return
@@ -85,37 +89,42 @@ final class ZoneAnalyticsViewModel {
         error = nil
         do {
             // 当前与前一周期并发拉取；前一周期失败不阻塞主数据（趋势显示为空）
-            async let currentTask = analyticsService.zoneTraffic(zoneId: zoneId, range: selectedRange)
-            async let previousTask = analyticsService.zoneTrafficPrevious(zoneId: zoneId, range: selectedRange)
+            async let currentTask = analyticsService.zoneTraffic(zoneId: zoneId, range: range)
+            async let previousTask = analyticsService.zoneTrafficPrevious(zoneId: zoneId, range: range)
 
             let current = try await currentTask
             let previous = (try? await previousTask) ?? []
 
-            cache[selectedRange] = (current, previous)
+            cache[range] = (current, previous)
+            guard range == selectedRange else { return }   // 用户已切走：只进缓存，不上屏
             points = current
             previousPoints = previous
         } catch {
+            guard range == selectedRange, !error.isCancellation else { return }
             self.error = error.localizedDescription
         }
-        isLoading = false
+        if range == selectedRange { isLoading = false }
     }
 
     /// 全球流量地图数据（Pro）。地图卡 .task 调用；当前范围已有缓存则直接复用。
     /// 失败仅置空，不写主 error（地图是看板级增强，不应打断主分析区）。
     func loadCountries(force: Bool = false) async {
-        if !force, let cached = countryCache[selectedRange] {
+        let range = selectedRange
+        if !force, let cached = countryCache[range] {
             countries = cached
             return
         }
         isLoadingCountries = true
         do {
-            let result = try await analyticsService.zoneCountryTraffic(zoneId: zoneId, range: selectedRange)
-            countryCache[selectedRange] = result
+            let result = try await analyticsService.zoneCountryTraffic(zoneId: zoneId, range: range)
+            countryCache[range] = result
+            guard range == selectedRange else { return }
             countries = result
         } catch {
+            guard range == selectedRange, !error.isCancellation else { return }
             countries = []
         }
-        isLoadingCountries = false
+        if range == selectedRange { isLoadingCountries = false }
     }
 
     /// 下拉刷新：清空缓存重新拉取

@@ -408,7 +408,9 @@ final class DashboardViewModel {
         guard force || idSet != loadedZoneIds else { return }
         if let trafficTask {
             await trafficTask.value
-            return
+            // 等待期间 zone 集合可能又变了（冷启动首批 zone 落库 / 用户置顶）：
+            // 集合已是最新就结束，否则接着为新集合发请求，别让新卡片一直空着到下拉刷新。
+            guard force || idSet != loadedZoneIds else { return }
         }
         let task = Task { [weak self] in
             guard let self else { return }

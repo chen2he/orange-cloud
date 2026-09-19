@@ -1,5 +1,185 @@
 [
   {
+    "version": "2.1.4",
+    "date": "2026.09.19",
+    "channel": "App Store",
+    "inApp": false,
+    "items": [
+      {
+        "icon": "creditcard",
+        "title": {
+          "zh-Hans": "付费页的试用说明更准确",
+          "en": "Accurate trial info on the paywall",
+          "zh-Hant": "付費頁的試用說明更準確",
+          "zh-HK": "付費頁的試用說明更準確",
+          "ja": "購入画面の無料トライアル表示を正確に",
+          "es-MX": "Información de prueba precisa en la pantalla de compra",
+          "ko": "결제 화면의 무료 체험 안내가 정확해졌습니다",
+          "pt-BR": "Informações de teste corretas na tela de compra",
+          "pt-PT": "Informações de avaliação corretas no ecrã de compra",
+          "de": "Korrekte Testphasen-Angaben im Kaufbildschirm",
+          "fr": "Infos d’essai exactes sur l’écran d’achat",
+          "ar": "معلومات تجربة دقيقة في شاشة الشراء",
+          "tr": "Satın alma ekranında doğru deneme bilgisi"
+        },
+        "detail": {
+          "zh-Hans": "已用过试用的账户不会再看到「免费试用」，避免误以为不扣费；试用时长与续订周期改为直接读取 App Store 配置。",
+          "en": "Accounts that already used the free trial no longer see a trial offer they can't get, so nobody is charged by surprise. Trial length and renewal period now come straight from the App Store.",
+          "zh-Hant": "已用過試用的帳號不會再看到「免費試用」，避免誤以為不會扣款；試用長度與續訂週期改為直接讀取 App Store 設定。",
+          "zh-HK": "已用過試用的帳戶不會再看到「免費試用」，避免誤以為不會扣款；試用長度與續訂週期改為直接讀取 App Store 設定。",
+          "ja": "すでに無料トライアルを利用したアカウントには、受けられないトライアルを表示しないようにしました。トライアル期間と更新周期は App Store の設定から直接取得します。",
+          "es-MX": "Las cuentas que ya usaron la prueba gratuita dejan de ver una oferta que no pueden obtener, para que nadie reciba un cargo inesperado. La duración de la prueba y el periodo de renovación se leen directamente de App Store.",
+          "ko": "이미 무료 체험을 사용한 계정에는 받을 수 없는 체험 안내를 더 이상 표시하지 않아 예상치 못한 결제를 막습니다. 체험 기간과 갱신 주기는 App Store 설정에서 바로 가져옵니다.",
+          "pt-BR": "Contas que já usaram o teste grátis não veem mais uma oferta que não podem receber, evitando cobranças inesperadas. A duração do teste e o período de renovação agora vêm direto da App Store.",
+          "pt-PT": "As contas que já usaram a avaliação gratuita deixam de ver uma oferta a que não têm direito, evitando cobranças inesperadas. A duração da avaliação e o período de renovação vêm agora diretamente da App Store.",
+          "de": "Konten, die die kostenlose Testphase schon genutzt haben, sehen kein Angebot mehr, das sie nicht bekommen – so gibt es keine überraschende Abbuchung. Testdauer und Verlängerungszeitraum kommen jetzt direkt aus dem App Store.",
+          "fr": "Les comptes ayant déjà profité de l’essai gratuit ne voient plus une offre à laquelle ils n’ont pas droit, pour éviter tout prélèvement surprise. La durée d’essai et la période de renouvellement proviennent désormais directement de l’App Store.",
+          "ar": "لم تعد الحسابات التي استخدمت التجربة المجانية ترى عرضًا لا يحق لها، تجنبًا لأي خصم مفاجئ. وتُقرأ مدة التجربة وفترة التجديد الآن مباشرة من App Store.",
+          "tr": "Ücretsiz denemeyi zaten kullanmış hesaplar artık alamayacakları bir deneme teklifi görmüyor, böylece sürpriz ücret olmuyor. Deneme süresi ve yenileme dönemi doğrudan App Store'dan okunuyor."
+        }
+      },
+      {
+        "icon": "wrench.and.screwdriver",
+        "title": {
+          "zh-Hans": "更稳",
+          "en": "Steadier",
+          "zh-Hant": "更穩定",
+          "zh-HK": "更穩定",
+          "ja": "安定性の向上",
+          "es-MX": "Más estable",
+          "ko": "안정성 향상",
+          "pt-BR": "Mais estável",
+          "pt-PT": "Mais estável",
+          "de": "Stabiler",
+          "fr": "Plus fiable",
+          "ar": "ثبات أكبر",
+          "tr": "Daha sağlam"
+        },
+        "detail": {
+          "zh-Hans": "Snippet 代码没加载成功时不再允许保存，避免覆盖线上代码；KV 与 R2 列表翻页不再出现重复或卡住；实时日志反复进出不再残留会话。",
+          "en": "Snippets can no longer be saved when their code failed to load, so live code is never overwritten. KV and R2 lists no longer duplicate entries or get stuck while paging, and leaving live logs early no longer leaves a session behind.",
+          "zh-Hant": "Snippet 程式碼未載入成功時不再允許儲存，避免覆蓋線上程式碼；KV 與 R2 列表翻頁不再重複或卡住；即時日誌反覆進出不再殘留工作階段。",
+          "zh-HK": "Snippet 程式碼未載入成功時不再允許儲存，避免覆蓋線上程式碼；KV 與 R2 列表翻頁不再重複或卡住；即時日誌反覆進出不再殘留工作階段。",
+          "ja": "コードを読み込めなかった Snippet は保存できないようにし、本番コードの上書きを防ぎます。KV と R2 の一覧でページ送り中の重複や停止がなくなり、ライブログをすぐ閉じてもセッションが残らなくなりました。",
+          "es-MX": "Los Snippets ya no se pueden guardar si su código no cargó, para no sobrescribir el código en producción. Las listas de KV y R2 ya no duplican elementos ni se atascan al paginar, y salir pronto de los registros en vivo ya no deja una sesión abierta.",
+          "ko": "코드를 불러오지 못한 Snippet은 저장할 수 없어 운영 코드가 덮어써지지 않습니다. KV와 R2 목록에서 페이지를 넘길 때 항목이 중복되거나 멈추지 않으며, 실시간 로그를 바로 나가도 세션이 남지 않습니다.",
+          "pt-BR": "Snippets não podem mais ser salvos quando o código não carregou, evitando sobrescrever o código em produção. As listas de KV e R2 não duplicam itens nem travam ao paginar, e sair cedo dos logs ao vivo não deixa mais uma sessão aberta.",
+          "pt-PT": "Os Snippets já não podem ser guardados quando o código não carregou, evitando substituir o código em produção. As listas de KV e R2 já não duplicam itens nem ficam presas ao paginar, e sair cedo dos registos em direto já não deixa uma sessão aberta.",
+          "de": "Snippets lassen sich nicht mehr speichern, wenn ihr Code nicht geladen wurde – Live-Code wird so nie überschrieben. KV- und R2-Listen zeigen beim Blättern keine Duplikate mehr und bleiben nicht hängen, und ein frühes Verlassen der Live-Logs hinterlässt keine Sitzung mehr.",
+          "fr": "Un Snippet dont le code n’a pas pu être chargé ne peut plus être enregistré, pour ne jamais écraser le code en production. Les listes KV et R2 ne dupliquent plus d’éléments et ne se bloquent plus en pagination, et quitter tôt les journaux en direct ne laisse plus de session ouverte.",
+          "ar": "لم يعد بالإمكان حفظ Snippet إذا تعذّر تحميل شيفرته، فلا تُستبدل الشيفرة المنشورة. ولم تعد قوائم KV وR2 تكرر العناصر أو تتوقف أثناء التصفح، ولم يعد الخروج المبكر من السجلات المباشرة يترك جلسة مفتوحة.",
+          "tr": "Kodu yüklenemeyen Snippet artık kaydedilemiyor, böylece canlı kodun üzerine yazılmıyor. KV ve R2 listeleri sayfalama sırasında öğeleri tekrarlamıyor veya takılmıyor; canlı günlüklerden erken çıkmak artık açık oturum bırakmıyor."
+        }
+      }
+    ]
+  },
+  {
+    "version": "2.1.3",
+    "date": "2026.09.16",
+    "channel": "App Store",
+    "items": [
+      {
+        "icon": "rectangle.landscape.rotate",
+        "title": {
+          "zh-Hans": "横屏与大屏适配",
+          "en": "Landscape and wide screens",
+          "zh-Hant": "橫向與大螢幕適配",
+          "zh-HK": "橫向與大屏幕適配",
+          "ja": "横向き・大画面に対応",
+          "es-MX": "Horizontal y pantallas amplias",
+          "ko": "가로 모드와 넓은 화면 지원",
+          "pt-BR": "Modo paisagem e telas largas",
+          "pt-PT": "Modo paisagem e ecrãs largos",
+          "de": "Querformat und breite Bildschirme",
+          "fr": "Paysage et grands écrans",
+          "ar": "الوضع الأفقي والشاشات العريضة",
+          "tr": "Yatay mod ve geniş ekranlar"
+        },
+        "detail": {
+          "zh-Hans": "App 现在可以横过来用，宽屏上内容会收在舒适的阅读宽度里，不再被拉得很长；顺带修好了域名页偶尔打开是一片空白的问题。",
+          "en": "You can now use the app in landscape. On wide screens, content stays at a comfortable reading width instead of stretching edge to edge. We also fixed the Domains page sometimes opening blank.",
+          "zh-Hant": "App 現在可以橫向使用，寬螢幕上內容會收在舒適的閱讀寬度裡，不再被拉得很長；順帶修好了網域頁偶爾開啟是一片空白的問題。",
+          "zh-HK": "App 現在可以橫向使用，闊屏幕上內容會收在舒適的閱讀寬度內，不再被拉得很長；順帶修好了域名頁偶爾打開是一片空白的問題。",
+          "ja": "アプリを横向きでも使えるようになりました。画面が広いときは読みやすい幅に収まり、横いっぱいに間延びしません。ドメイン画面がたまに真っ白で開く問題も修正しました。",
+          "es-MX": "Ahora puedes usar la app en horizontal. En pantallas amplias, el contenido mantiene un ancho cómodo de lectura en lugar de estirarse de lado a lado. También corregimos que la página de dominios a veces abriera en blanco.",
+          "ko": "이제 앱을 가로로도 쓸 수 있습니다. 넓은 화면에서는 내용이 끝까지 늘어나지 않고 읽기 편한 폭으로 정리됩니다. 도메인 화면이 가끔 빈 화면으로 열리던 문제도 고쳤습니다.",
+          "pt-BR": "Agora você pode usar o app na horizontal. Em telas largas, o conteúdo mantém uma largura confortável de leitura em vez de se esticar de ponta a ponta. Também corrigimos a página de domínios que às vezes abria em branco.",
+          "pt-PT": "Agora pode usar a app na horizontal. Em ecrãs largos, o conteúdo mantém uma largura de leitura confortável em vez de se esticar de ponta a ponta. Corrigimos também a página de domínios que por vezes abria em branco.",
+          "de": "Die App lässt sich jetzt im Querformat nutzen. Auf breiten Bildschirmen bleibt der Inhalt in einer angenehmen Lesebreite, statt sich über die ganze Breite zu ziehen. Außerdem haben wir behoben, dass die Domains-Seite manchmal leer öffnete.",
+          "fr": "Vous pouvez désormais utiliser l’app en mode paysage. Sur les grands écrans, le contenu garde une largeur de lecture confortable au lieu de s’étirer d’un bord à l’autre. La page Domaines ne s’ouvre plus parfois à vide.",
+          "ar": "يمكنك الآن استخدام التطبيق في الوضع الأفقي. على الشاشات العريضة يبقى المحتوى بعرض مريح للقراءة بدل أن يمتد من طرف إلى آخر. وأصلحنا أيضًا ظهور صفحة النطاقات فارغةً أحيانًا عند فتحها.",
+          "tr": "Uygulamayı artık yatay modda da kullanabilirsiniz. Geniş ekranlarda içerik kenardan kenara uzamak yerine rahat bir okuma genişliğinde kalır. Alan adları sayfasının bazen boş açılması sorunu da giderildi."
+        }
+      },
+      {
+        "icon": "list.bullet",
+        "title": {
+          "zh-Hans": "长列表不再漏项",
+          "en": "Long lists show everything",
+          "zh-Hant": "長列表不再漏項",
+          "zh-HK": "長列表不再漏項",
+          "ja": "長いリストも全件表示",
+          "es-MX": "Las listas largas ya muestran todo",
+          "ko": "긴 목록도 빠짐없이 표시",
+          "pt-BR": "Listas longas mostram tudo",
+          "pt-PT": "Listas longas mostram tudo",
+          "de": "Lange Listen zeigen alles",
+          "fr": "Les longues listes affichent tout",
+          "ar": "القوائم الطويلة تعرض كل شيء",
+          "tr": "Uzun listeler artık eksiksiz"
+        },
+        "detail": {
+          "zh-Hans": "R2 存储桶超过 100 个，或邮件路由规则、目标地址、Durable Objects、Hyperdrive 超过 20 条时，后面的内容以前看不到，现在会全部列出；刚添加、还没验证的邮件目标地址也会显示出来。",
+          "en": "If you had more than 100 R2 buckets, or more than 20 email routing rules, destination addresses, Durable Objects or Hyperdrive configs, the rest never showed up. They're all listed now, and newly added email addresses that aren't verified yet appear too.",
+          "zh-Hant": "R2 儲存貯體超過 100 個，或郵件路由規則、目標地址、Durable Objects、Hyperdrive 超過 20 筆時，後面的內容以前看不到，現在會全部列出；剛新增、還沒驗證的郵件目標地址也會顯示出來。",
+          "zh-HK": "R2 存儲桶超過 100 個，或郵件路由規則、目標地址、Durable Objects、Hyperdrive 超過 20 項時，後面的內容以前看不到，現在會全部列出；剛新增、尚未驗證的郵件目標地址也會顯示出來。",
+          "ja": "R2 バケットが 100 個を超える場合や、メールルーティングのルール・転送先アドレス、Durable Objects、Hyperdrive が 20 件を超える場合、以前はそれ以降が表示されませんでした。今はすべて表示され、追加したばかりで未確認のメールアドレスも出てきます。",
+          "es-MX": "Si tenías más de 100 buckets de R2, o más de 20 reglas de enrutamiento de correo, direcciones de destino, Durable Objects o configuraciones de Hyperdrive, el resto no aparecía. Ahora se muestran todos, incluidas las direcciones de correo recién agregadas que aún no se verifican.",
+          "ko": "R2 버킷이 100개를 넘거나 이메일 라우팅 규칙·대상 주소, Durable Objects, Hyperdrive가 20개를 넘으면 그 뒤 항목이 보이지 않았습니다. 이제 모두 표시되며, 방금 추가해 아직 인증되지 않은 이메일 주소도 나타납니다.",
+          "pt-BR": "Se você tinha mais de 100 buckets do R2, ou mais de 20 regras de roteamento de e-mail, endereços de destino, Durable Objects ou configurações do Hyperdrive, o restante não aparecia. Agora tudo é listado, incluindo endereços de e-mail recém-adicionados ainda não verificados.",
+          "pt-PT": "Se tinha mais de 100 buckets do R2, ou mais de 20 regras de encaminhamento de e-mail, endereços de destino, Durable Objects ou configurações do Hyperdrive, o resto não aparecia. Agora tudo é listado, incluindo endereços de e-mail acabados de adicionar e ainda não verificados.",
+          "de": "Bei mehr als 100 R2-Buckets oder mehr als 20 E-Mail-Routing-Regeln, Zieladressen, Durable Objects oder Hyperdrive-Konfigurationen fehlte bisher der Rest. Jetzt wird alles aufgelistet, auch frisch hinzugefügte, noch nicht bestätigte E-Mail-Adressen.",
+          "fr": "Au-delà de 100 buckets R2, ou de 20 règles de routage d’e-mails, adresses de destination, Durable Objects ou configurations Hyperdrive, le reste n’apparaissait pas. Tout est désormais listé, y compris les adresses e-mail tout juste ajoutées et pas encore vérifiées.",
+          "ar": "إذا كان لديك أكثر من 100 حاوية R2، أو أكثر من 20 قاعدة لتوجيه البريد أو عنوان وجهة أو Durable Objects أو إعداد Hyperdrive، لم يكن الباقي يظهر. الآن تُعرض كلها، بما فيها عناوين البريد المضافة حديثًا التي لم يُتحقق منها بعد.",
+          "tr": "100'den fazla R2 kovanız ya da 20'den fazla e-posta yönlendirme kuralı, hedef adres, Durable Object veya Hyperdrive yapılandırmanız varsa geri kalanı görünmüyordu. Artık hepsi listeleniyor; yeni eklenen ve henüz doğrulanmamış e-posta adresleri de görünüyor."
+        }
+      },
+      {
+        "icon": "checkmark.shield",
+        "title": {
+          "zh-Hans": "更稳，少打扰",
+          "en": "Steadier, fewer interruptions",
+          "zh-Hant": "更穩，少打擾",
+          "zh-HK": "更穩，少打擾",
+          "ja": "より安定、邪魔が減りました",
+          "es-MX": "Más estable, menos interrupciones",
+          "ko": "더 안정적으로, 덜 번거롭게",
+          "pt-BR": "Mais estável, menos interrupções",
+          "pt-PT": "Mais estável, menos interrupções",
+          "de": "Stabiler, weniger Unterbrechungen",
+          "fr": "Plus stable, moins d’interruptions",
+          "ar": "ثبات أكثر وإزعاج أقل",
+          "tr": "Daha kararlı, daha az kesinti"
+        },
+        "detail": {
+          "zh-Hans": "网络被拦截时（比如公共 Wi-Fi 登录页、WAF 挑战页）不再被误退出登录；修复一处偶发的启动闪退；下拉刷新或快速切换时间范围时，不再提示「已取消」或显示错位的数据。",
+          "en": "A blocked network, such as a public Wi-Fi sign-in page or a WAF challenge, no longer signs you out by mistake. We fixed an occasional crash on launch, and pulling to refresh or quickly switching time ranges no longer shows “Cancelled” or mismatched data.",
+          "zh-Hant": "網路被攔截時（例如公共 Wi-Fi 登入頁、WAF 驗證頁）不再被誤登出；修正一處偶發的啟動閃退；下拉重新整理或快速切換時間範圍時，不再提示「已取消」或顯示錯位的資料。",
+          "zh-HK": "網絡被攔截時（例如公共 Wi-Fi 登入頁、WAF 驗證頁）不再被誤登出；修正一處偶發的啟動閃退；下拉刷新或快速切換時間範圍時，不再提示「已取消」或顯示錯位的數據。",
+          "ja": "公衆 Wi-Fi のログイン画面や WAF のチャレンジ画面などで通信が遮られても、誤ってログアウトされなくなりました。まれに起動時に落ちる問題を修正し、引っ張って更新したり期間をすばやく切り替えたりしても「キャンセルされました」やずれたデータが出なくなりました。",
+          "es-MX": "Una red bloqueada, como la página de acceso de un Wi-Fi público o un desafío de WAF, ya no cierra tu sesión por error. Corregimos un cierre inesperado ocasional al abrir la app, y al deslizar para actualizar o cambiar rápido el rango de tiempo ya no aparece «Cancelado» ni datos desfasados.",
+          "ko": "공용 Wi-Fi 로그인 페이지나 WAF 챌린지처럼 네트워크가 가로막혀도 더 이상 잘못 로그아웃되지 않습니다. 가끔 실행 중 앱이 종료되던 문제를 고쳤고, 당겨서 새로고침하거나 기간을 빠르게 바꿔도 「취소됨」이나 어긋난 데이터가 표시되지 않습니다.",
+          "pt-BR": "Uma rede bloqueada, como a página de login de um Wi-Fi público ou um desafio do WAF, não encerra mais sua sessão por engano. Corrigimos um fechamento ocasional ao abrir o app, e puxar para atualizar ou trocar rápido o período não mostra mais “Cancelado” nem dados trocados.",
+          "pt-PT": "Uma rede bloqueada, como a página de início de sessão de um Wi-Fi público ou um desafio do WAF, já não termina a sua sessão por engano. Corrigimos um encerramento ocasional ao abrir a app, e puxar para atualizar ou mudar depressa o período já não mostra “Cancelado” nem dados trocados.",
+          "de": "Ein blockiertes Netzwerk, etwa die Anmeldeseite eines öffentlichen WLANs oder eine WAF-Challenge, meldet dich nicht mehr versehentlich ab. Ein gelegentlicher Absturz beim Start ist behoben, und beim Aktualisieren per Ziehen oder schnellem Wechsel des Zeitraums erscheinen kein „Abgebrochen“ und keine vertauschten Daten mehr.",
+          "fr": "Un réseau bloqué, comme la page de connexion d’un Wi-Fi public ou un défi WAF, ne vous déconnecte plus par erreur. Un plantage occasionnel au lancement est corrigé, et tirer pour actualiser ou changer vite de période n’affiche plus « Annulé » ni des données décalées.",
+          "ar": "لم يعد حجب الشبكة، مثل صفحة تسجيل الدخول لشبكة Wi-Fi عامة أو تحدي WAF، يسجّل خروجك بالخطأ. وأصلحنا تعطّلًا عرضيًا عند التشغيل، ولم يعد السحب للتحديث أو التبديل السريع للفترة الزمنية يعرض «أُلغي» أو بيانات غير متطابقة.",
+          "tr": "Genel Wi-Fi giriş sayfası veya WAF doğrulaması gibi engellenen bir ağ artık oturumunuzu yanlışlıkla kapatmıyor. Açılışta ara sıra yaşanan çökme giderildi; aşağı çekerek yenilerken veya zaman aralığını hızla değiştirirken artık “İptal edildi” ya da karışık veriler görünmüyor."
+        }
+      }
+    ]
+  },
+  {
     "version": "2.1.2",
     "date": "2026.09.04",
     "channel": "App Store",

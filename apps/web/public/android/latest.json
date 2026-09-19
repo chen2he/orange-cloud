@@ -1,7 +1,7 @@
 {
-  "versionCode": 25,
-  "versionName": "2.1.1",
+  "versionCode": 27,
+  "versionName": "2.1.3",
   "minVersionCode": 1,
   "url": "https://o-c.do/orange-cloud.apk",
-  "note": "本次更新：修复域名设置页无法滚动；账号用量不再因单个时间窗无权限而整块空白；R2 存储桶里的文件夹恢复显示。"
+  "note": "本次更新：Snippet 触发规则可直接增删改、启停；修复 WAF 规则开关点了没反应、多个请求同时刷新时被意外退出登录、URL 扫描提交失败、邮件抑制列表不显示；Snippet 正文未加载时禁止保存，实时日志反复进出不再失败。"
 }

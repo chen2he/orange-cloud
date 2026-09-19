@@ -113,8 +113,9 @@ export async function verifyPushRequest(
 	await verifyPushToken(authorization, opts);
 	const decoded = decodeEnvelope(envelope);
 	const pkg = decoded.notification.packageName;
-	if (pkg && pkg !== opts.packageName) {
-		throw new PlayVerifyError(`unexpected packageName ${pkg}`);
+	// 没带包名的信封也拒：留空就绕过包名 pin，等于没校验。
+	if (!pkg || pkg !== opts.packageName) {
+		throw new PlayVerifyError(`unexpected packageName ${pkg ?? "(missing)"}`);
 	}
 	return decoded;
 }

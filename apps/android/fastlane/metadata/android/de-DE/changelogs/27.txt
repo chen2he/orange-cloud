@@ -1,0 +1,6 @@
+• Behoben: Der Schalter in der WAF-Regelliste reagierte nicht
+• Behoben: unerwartete Abmeldungen, wenn mehrere Anfragen gleichzeitig die Sitzung erneuerten; offline wird das Konto nicht mehr entfernt
+• Behoben: Übermittlungen im URL Scanner schlugen fehl
+• Behoben: Die Unterdrückungsliste von Email Routing lud nicht
+• Snippets werden nicht gespeichert, wenn der Code nicht geladen wurde – nie mehr eine leere Datei live
+• Live-Logs erneut öffnen klappt wieder; „Anfragen heute“ lädt schneller

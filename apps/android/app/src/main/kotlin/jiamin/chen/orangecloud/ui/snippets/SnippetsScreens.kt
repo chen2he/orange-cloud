@@ -140,6 +140,7 @@ fun SnippetEditorScreen(
     val onSky = phase.onSky
     val snackbarHostState = remember { SnackbarHostState() }
     val savedMsg = stringResource(R.string.dns_saved)
+    val contentUnavailableMsg = stringResource(R.string.snippet_content_unavailable)
     val deletedMsg = stringResource(R.string.dns_deleted)
     val genericErr = stringResource(R.string.error_generic)
     val ruleSavedMsg = stringResource(R.string.snippets_rule_saved)
@@ -150,6 +151,7 @@ fun SnippetEditorScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
+                SnippetEditEvent.ContentUnavailable -> snackbarHostState.showSnackbar(contentUnavailableMsg)
                 SnippetEditEvent.Saved -> { snackbarHostState.showSnackbar(savedMsg); onClosed() }
                 SnippetEditEvent.Deleted -> { snackbarHostState.showSnackbar(deletedMsg); onClosed() }
                 SnippetEditEvent.RuleSaved -> snackbarHostState.showSnackbar(ruleSavedMsg)

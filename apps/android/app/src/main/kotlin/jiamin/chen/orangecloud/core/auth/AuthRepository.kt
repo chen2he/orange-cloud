@@ -22,6 +22,10 @@ import kotlinx.serialization.json.Json
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /** 认证 UI 状态（sessions + 当前身份）。 */
 data class AuthState(
@@ -118,7 +122,9 @@ class AuthRepository @Inject constructor(
 
     /** 处理 orangecloud://oauth/callback：验 state → 换 token → 新增身份并切到它。 */
     suspend fun handleRedirect(uri: Uri): Result<Unit> {
-        val result = runCatching { performRedirect(uri) }
+        // authorization code 一次性：换 token 过程中 Activity 重建（转屏）取消了 lifecycleScope，
+        // code 已被消费、token 却没存下，用户只能再授权一次。整个交换放进 NonCancellable。
+        val result = runCatching { withContext(NonCancellable) { performRedirect(uri) } }
         result.exceptionOrNull()?.let { e ->
             val reason = (e as? OAuthRedirectException)?.reason ?: e.message ?: "error"
             _state.value = _state.value.copy(redirectError = reason)
@@ -165,29 +171,64 @@ class AuthRepository @Inject constructor(
         return if (secondsLeft < 60) refreshAccessToken() else token.accessToken
     }
 
+    /**
+     * 刷新单飞锁。Dashboard 一次 refresh 会并发十几个请求，access token 临期时它们会同时进来刷新：
+     * refresh token 单次有效，Cloudflare 检测到复用会吊销整条令牌链，后来的请求全部 4xx，
+     * 以前的 catch 再把身份删掉——用户就这么被静默登出（与 iOS 侧 RefreshGate 同一根因）。
+     */
+    private val refreshMutex = Mutex()
+
     override suspend fun refreshAccessToken(): String {
-        val sessionId = _state.value.currentSessionId
-        val stored = sessionId?.let { tokenStore.load(it) }
-        val refresh = stored?.refreshToken
-        if (sessionId == null || stored == null || refresh == null) {
-            sessionId?.let { removeSession(it) }
-            throw ApiError.Unauthorized
+        val sessionId = _state.value.currentSessionId ?: throw ApiError.Unauthorized
+        val seenRefresh = tokenStore.load(sessionId)?.refreshToken
+        return refreshMutex.withLock {
+            val stored = tokenStore.load(sessionId)
+            val refresh = stored?.refreshToken
+            if (stored == null || refresh == null) {
+                removeSession(sessionId)
+                throw ApiError.Unauthorized
+            }
+            // 排队期间别的调用已经换过一轮（refresh token 变了）：直接用新 access token，
+            // 别再拿已作废的旧 refresh token 去换。
+            if (seenRefresh != null && refresh != seenRefresh) return@withLock stored.accessToken
+            // 交换 + 落盘不可被调用方取消：端点已把旧 refresh token 作废，半路取消就会丢掉新令牌、卡死会话。
+            withContext(NonCancellable) {
+                try {
+                    val newToken = oauthApi.requestToken(
+                        mapOf(
+                            "grant_type" to "refresh_token",
+                            "client_id" to OAuthConfig.clientId,
+                            "refresh_token" to refresh,
+                        ),
+                    ).toStoredToken(previousScope = stored.scope, previousRefresh = refresh)
+                    tokenStore.save(sessionId, newToken)
+                    newToken.accessToken
+                } catch (e: TokenExchangeException) {
+                    if (isRefreshTokenRejected(e)) {
+                        // 服务端明确拒绝该刷新令牌（invalid_grant）：移除该身份（其他身份不受影响）
+                        removeSession(sessionId)
+                        throw ApiError.Unauthorized
+                    }
+                    // 5xx / 429 / WAF 挑战页之类：保留身份，按网络错误上抛
+                    throw ApiError.Network(e)
+                } catch (e: ApiError) {
+                    throw e
+                } catch (e: Exception) {
+                    // 断网 / 超时 / DNS：绝不是「刷新令牌失效」，不能删会话
+                    throw ApiError.Network(e)
+                }
+            }
         }
-        return try {
-            val newToken = oauthApi.requestToken(
-                mapOf(
-                    "grant_type" to "refresh_token",
-                    "client_id" to OAuthConfig.clientId,
-                    "refresh_token" to refresh,
-                ),
-            ).toStoredToken(previousScope = stored.scope, previousRefresh = refresh)
-            tokenStore.save(sessionId, newToken)
-            newToken.accessToken
-        } catch (e: Exception) {
-            // refresh_token 失效：移除该身份（其他身份不受影响）
-            removeSession(sessionId)
-            throw ApiError.Unauthorized
-        }
+    }
+
+    /**
+     * token 端点回 400/401 且带 OAuth 错误体（{"error":"invalid_grant",…}）才算刷新令牌确已失效。
+     * 其它状态（403 的 WAF 页、5xx、429）都是瞬时问题。
+     */
+    private fun isRefreshTokenRejected(e: TokenExchangeException): Boolean {
+        val msg = e.message ?: return false
+        val status = Regex("^HTTP (\\d{3})").find(msg)?.groupValues?.get(1)?.toIntOrNull() ?: return false
+        return status in setOf(400, 401) && "\"error\"" in msg
     }
 
     // MARK: - 身份管理
@@ -208,7 +249,8 @@ class AuthRepository @Inject constructor(
         externalScope.launch { persist() }
     }
 
-    suspend fun logout(sessionId: String, revoke: Boolean = true) {
+    suspend fun logout(sessionId: String, revoke: Boolean = true) = withContext(NonCancellable) {
+        // 调用方多半是 viewModelScope（设置页）：撤销请求发到一半页面关了不能把「本地删身份」也一起取消
         if (revoke) {
             tokenStore.load(sessionId)?.let { token ->
                 oauthApi.revoke(

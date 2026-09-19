@@ -103,12 +103,15 @@ export async function notifyAppleEvent(
 	deviceKey: string | undefined,
 	decoded: DecodedNotification,
 	server?: string,
+	/** 附加信息（如退款申请的规则建议）：追加到正文，可带点击跳转 url。 */
+	extra?: { note?: string; url?: string },
 ): Promise<void> {
 	if (!deviceKey) return;
 	const msg = buildBarkMessage(decoded);
 	const push: BarkPush = {
 		title: msg.title,
-		body: msg.body,
+		body: extra?.note ? `${msg.body}\n${extra.note}` : msg.body,
+		...(extra?.url ? { url: extra.url } : {}),
 		group: msg.group,
 		icon: "https://o-c.do/icons/icon-64.png",
 		// 级别在 buildBarkMessage 里决定：仅「入账且金额>0」穿透专注模式。

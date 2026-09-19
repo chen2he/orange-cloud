@@ -46,6 +46,14 @@
 			"name": "EMAIL"
 		}
 	],
+	// ISR 页面缓存（open-next.config.ts 的 r2IncrementalCache）。
+	// deploy 时 opennextjs-cloudflare 会把预渲染产物灌进这个桶。
+	"r2_buckets": [
+		{
+			"binding": "NEXT_INC_CACHE_R2_BUCKET",
+			"bucket_name": "orange-cloud-web-cache"
+		}
+	],
 	"services": [
 		{
 			// Self-reference service binding, the service name must match the worker name
@@ -57,11 +65,20 @@
 	"observability": {
 		"enabled": true
 	},
-	// 每天 UTC 08:00 触发 custom-worker.ts 的 scheduled()，抓 App Store 各地区榜单名次。
+	// custom-worker.ts 的 scheduled() 按 cron 分派：
+	//   "0 8 * * *"    每天 UTC 08:00 抓 App Store 各地区榜单名次 + IndexNow
+	//   "*/30 * * * *" 每 30 分钟兜底发送 Apple 退款申请的消费信息（12h 截止）
 	"triggers": {
 		"crons": [
-			"0 8 * * *"
+			"0 8 * * *",
+			"*/30 * * * *"
 		]
+	},
+	// App Store Server API（Send Consumption Information）的 key id / issuer id，非机密。
+	// 私钥走 secret：`wrangler secret put APPLE_IAP_PRIVATE_KEY`（.p8 PEM 原文）。
+	"vars": {
+		"APPLE_IAP_KEY_ID": "74BV6L26PQ",
+		"APPLE_IAP_ISSUER_ID": "47160a61-3441-4d7d-b300-c7b2f62f6e29"
 	},
 	"routes": [
 		{

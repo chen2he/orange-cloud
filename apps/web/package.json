@@ -26,7 +26,7 @@
 		"@orange-cloud/changelog": "workspace:*",
 		"@peculiar/x509": "^1.14.3",
 		"jose": "^6.2.3",
-		"next": "16.2.11",
+		"next": "16.3.3",
 		"next-intl": "^4.13.0",
 		"react": "^19.1.7",
 		"react-dom": "^19.1.7"
@@ -34,14 +34,14 @@
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
 		"@tailwindcss/postcss": "^4",
-		"@types/node": "^20",
+		"@types/node": "^22",
 		"@types/react": "^19.1.7",
 		"@types/react-dom": "^19.1.7",
 		"eslint": "^9",
 		"eslint-config-next": "16.2.11",
 		"tailwindcss": "^4",
 		"typescript": "^5.7.4",
-		"vitest": "^4.1.9",
+		"vitest": "^4.1.11",
 		"wrangler": "^4.86.0"
 	}
 }

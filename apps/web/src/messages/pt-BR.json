@@ -142,7 +142,7 @@
 		"privacy": "Política de Privacidade",
 		"terms": "Termos de Serviço",
 		"contact": "Contato",
-		"copyright": "© 2026 Orange Cloud",
+		"copyright": "© 2026 <company>Zhe Tech Co., Ltd.</company>",
 		"disclaimer": "O Orange Cloud é um cliente independente de terceiros e não tem vínculo, endosso ou patrocínio da Cloudflare, Inc. Cloudflare é uma marca registrada da Cloudflare, Inc."
 	},
 	"contact": {
@@ -158,7 +158,7 @@
 	},
 	"privacy": {
 		"title": "Política de Privacidade",
-		"updated": "Última atualização: junho de 2026",
+		"updated": "Última atualização: setembro de 2026",
 		"sections": [
 			{
 				"h": "Coleta de dados",
@@ -171,6 +171,10 @@
 			{
 				"h": "Serviços de terceiros",
 				"p": "O Orange Cloud se comunica exclusivamente com os endpoints oficiais da API da Cloudflare (api.cloudflare.com e dash.cloudflare.com). Nenhum outro serviço de terceiros é usado."
+			},
+			{
+				"h": "Compras e reembolsos",
+				"p": "As assinaturas Pro e a compra vitalícia são feitas pela App Store da Apple. A Apple processa seus dados de pagamento e nós nunca temos acesso a eles. A Apple envia ao nosso servidor os registros de compras, renovações e reembolsos (ID da transação, produto, valor e região da loja, sem seu nome ou sua Conta Apple), que usamos apenas para controle financeiro. Ao pedir um reembolso à Apple, você concorda que informemos à Apple se a compra foi entregue e compartilhemos nossa opinião sobre o reembolso para ajudar na decisão. Essas informações não são usadas para rastrear você."
 			}
 		]
 	},

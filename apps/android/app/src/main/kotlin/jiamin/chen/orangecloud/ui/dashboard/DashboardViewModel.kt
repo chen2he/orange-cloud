@@ -45,6 +45,8 @@ import jiamin.chen.orangecloud.core.widget.OrangeCloudWidget
 import jiamin.chen.orangecloud.core.widget.WidgetSnapshot
 import jiamin.chen.orangecloud.core.widget.WidgetSnapshotStore
 import javax.inject.Inject
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 data class DashboardUiState(
     val accounts: List<Account> = emptyList(),
@@ -492,12 +494,19 @@ class DashboardViewModel @Inject constructor(
     private suspend fun sumRequests(zones: List<Zone>): String? {
         if (!authRepository.hasScope(Scopes.ANALYTICS_READ) || zones.isEmpty()) return null
         return try {
-            var total = 0L
-            for (zone in zones.take(12)) {
-                val points = runCatching { analyticsRepository.zoneTraffic(zone.id, AnalyticsTimeRange.LAST_24H) }.getOrNull()
-                total += points?.sumOf { it.requests.toLong() } ?: 0L
+            // 以前 12 个域名串行各查一次 GraphQL，每次几百毫秒，「今日请求」要等好几秒才出现；并发发出
+            val total = coroutineScope {
+                zones.take(12).map { zone ->
+                    async {
+                        runCatching { analyticsRepository.zoneTraffic(zone.id, AnalyticsTimeRange.LAST_24H) }
+                            .getOrElse { if (it is CancellationException) throw it; null }
+                            ?.sumOf { it.requests.toLong() } ?: 0L
+                    }
+                }.awaitAll().sum()
             }
             formatCount(total)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             null
         }

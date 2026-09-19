@@ -120,14 +120,19 @@ private struct StorageContent: View {
                 }
             }
         }
+        // 三个创建表单与列表共用同一个 VM 并渲染 viewModel.error：列表加载失败后直接点「创建」，
+        // 表单会先顶着一条列表的旧错误——打开前清掉。
         .sheet(isPresented: $showR2Create) {
             R2CreateView(viewModel: r2ViewModel, accountId: session.selectedAccount?.id ?? "")
+                .onAppear { r2ViewModel.error = nil }
         }
         .sheet(isPresented: $showD1Create) {
             D1CreateView(viewModel: d1ViewModel, accountId: session.selectedAccount?.id ?? "")
+                .onAppear { d1ViewModel.error = nil }
         }
         .sheet(isPresented: $showKVCreate) {
             KVCreateView(viewModel: kvViewModel, accountId: session.selectedAccount?.id ?? "")
+                .onAppear { kvViewModel.error = nil }
         }
         .sheet(item: $bucketToDelete) { bucket in
             R2BucketDeleteConfirmView(bucket: bucket, viewModel: r2ViewModel, accountId: session.selectedAccount?.id ?? "")
@@ -169,6 +174,8 @@ private struct StorageContent: View {
                     .frame(maxHeight: .infinity)
             }
         }
+        // 宽画布下收进可读宽度并居中（分段控件与列表一起收）
+        .ocReadableWidth()
         .task(id: kind) {
             await load()
         }
@@ -189,6 +196,8 @@ private struct StorageContent: View {
     private var r2List: some View {
         if r2ViewModel.buckets.isEmpty && r2ViewModel.isLoading {
             loadingView
+        } else if r2ViewModel.buckets.isEmpty, let error = r2ViewModel.error {
+            loadErrorView(error)
         } else if r2ViewModel.buckets.isEmpty {
             ContentUnavailableView {
                 Label("没有存储桶", systemImage: "archivebox")
@@ -246,6 +255,8 @@ private struct StorageContent: View {
     private var d1List: some View {
         if d1ViewModel.databases.isEmpty && d1ViewModel.isLoading {
             loadingView
+        } else if d1ViewModel.databases.isEmpty, let error = d1ViewModel.error {
+            loadErrorView(error)
         } else if d1ViewModel.databases.isEmpty {
             ContentUnavailableView {
                 Label("没有数据库", systemImage: "cylinder")
@@ -294,6 +305,8 @@ private struct StorageContent: View {
     private var kvList: some View {
         if kvViewModel.namespaces.isEmpty && kvViewModel.isLoading {
             loadingView
+        } else if kvViewModel.namespaces.isEmpty, let error = kvViewModel.error {
+            loadErrorView(error)
         } else if kvViewModel.namespaces.isEmpty {
             ContentUnavailableView {
                 Label("没有命名空间", systemImage: "key")
@@ -346,6 +359,19 @@ private struct StorageContent: View {
         case .r2: showR2Create = true
         case .d1: showD1Create = true
         case .kv: showKVCreate = true
+        }
+    }
+
+    /// 列表加载失败（403 / 断网）以前没有任何展示，看起来跟「账号里没有资源」一模一样，
+    /// 创建表单反而会替它显示这条错误。这里给一个带重试的失败态。
+    private func loadErrorView(_ message: String) -> some View {
+        ContentUnavailableView {
+            Label("加载失败", systemImage: "exclamationmark.triangle")
+        } description: {
+            Text(message)
+        } actions: {
+            Button("重试") { Task { await load() } }
+                .buttonStyle(.borderedProminent)
         }
     }
 

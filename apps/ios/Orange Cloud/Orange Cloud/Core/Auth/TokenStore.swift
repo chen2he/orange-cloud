@@ -55,6 +55,17 @@ nonisolated enum TokenStore {
     private static func save(_ token: StoredToken, account: String) -> Bool {
         guard let data = try? JSONEncoder().encode(token) else { return false }
 
+        // 先原地更新：「删后加」之间有一个无 token 的窗口，File Provider 扩展 / Widget 并发读会读到
+        // "token missing"（Files.app 里表现为一次鉴权失败）。只更新纯本机 + 共享组这一种正规形态，
+        // 更新成功即返回；历史遗留的可同步条目等形态仍走下面的删后加归一。
+        var updateQuery = baseQuery(account: account)
+        updateQuery[kSecAttrSynchronizable as String] = false
+        updateQuery[kSecAttrAccessGroup as String] = sharedAccessGroup
+        let updateAttrs: [String: Any] = [kSecValueData as String: data]
+        if SecItemUpdate(updateQuery as CFDictionary, updateAttrs as CFDictionary) == errSecSuccess {
+            return true
+        }
+
         // 删除时匹配本机与（历史遗留的）可同步两种形态，确保统一改回纯本机条目
         SecItemDelete(anyQuery(account: account) as CFDictionary)
 

@@ -28,12 +28,7 @@ extension WorkerScript {
 
     /// CF 返回 6 位小数的 ISO8601（如 2026-03-22T20:05:13.916883Z）
     nonisolated static func parseDate(_ string: String?) -> Date? {
-        guard let string else { return nil }
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = formatter.date(from: string) { return date }
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter.date(from: string)
+        ISO8601Parse.date(string)
     }
 
     var modifiedDate: Date? { Self.parseDate(modifiedOn) }

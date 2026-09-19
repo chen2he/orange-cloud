@@ -56,6 +56,11 @@ const RELATED: RelatedLink[] = [
 		note: "The setting that decides whether Cloudflare validates your origin certificate at all — and so whether a 526 is even possible.",
 	},
 	{
+		href: "/guides/cloudflare-error-525-ssl-handshake-failed",
+		label: "Cloudflare error 525: SSL handshake failed",
+		note: "The closest neighbour: the handshake failing outright rather than a certificate being rejected \u2014 and the reason relaxing the mode fixes one but not the other.",
+	},
+	{
 		href: "/guides/cloudflare-error-521-web-server-is-down",
 		label: "Cloudflare error 521: web server is down",
 		note: "One step earlier on the same hop: the origin refused the connection before any certificate was exchanged.",
@@ -75,6 +80,11 @@ const RELATED: RelatedLink[] = [
 		label: "Cloudflare docs: Error 526",
 		note: "The official reference, including the Zero Trust and Workers variants of the same error.",
 		external: true,
+	},
+	{
+		href: "/guides/cloudflare-error-codes",
+		label: "Cloudflare error codes: 5xx vs 1xxx",
+		note: "The wider map of Cloudflare error codes, and what each range already tells you.",
 	},
 	{
 		href: "/contact",

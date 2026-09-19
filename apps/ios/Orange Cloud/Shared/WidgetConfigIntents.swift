@@ -157,20 +157,34 @@ nonisolated struct WidgetZoneEntityQuery: EntityQuery {
         guard let token = SharedAuth.currentValidAccessToken() else { return [] }
         struct Envelope: Decodable {
             let result: [Zone]?
+            let resultInfo: Info?
             struct Zone: Decodable {
                 let id: String
                 let name: String
             }
+            struct Info: Decodable {
+                let totalPages: Int?
+                enum CodingKeys: String, CodingKey { case totalPages = "total_pages" }
+            }
+            enum CodingKeys: String, CodingKey { case result; case resultInfo = "result_info" }
         }
-        var request = URLRequest(
-            url: URL(string: "https://api.cloudflare.com/client/v4/zones?per_page=50&order=name")!
-        )
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.timeoutInterval = 10
-        guard let (data, response) = try? await URLSession.shared.data(for: request),
-              (response as? HTTPURLResponse)?.statusCode == 200,
-              let decoded = try? JSONDecoder().decode(Envelope.self, from: data) else { return [] }
-        return (decoded.result ?? []).map { WidgetZoneEntity(id: $0.id, name: $0.name) }
+        // 以前只取一页 50 个：域名多的身份在 App 还没打开过时，选择器里挑不到后面的域名。翻页到底（最多 10 页）。
+        var zones: [WidgetZoneEntity] = []
+        var page = 1
+        while page <= 10 {
+            var request = URLRequest(
+                url: URL(string: "https://api.cloudflare.com/client/v4/zones?per_page=100&order=name&page=\(page)")!
+            )
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            request.timeoutInterval = 10
+            guard let (data, response) = try? await URLSession.shared.data(for: request),
+                  (response as? HTTPURLResponse)?.statusCode == 200,
+                  let decoded = try? JSONDecoder().decode(Envelope.self, from: data) else { break }
+            zones.append(contentsOf: (decoded.result ?? []).map { WidgetZoneEntity(id: $0.id, name: $0.name) })
+            guard page < (decoded.resultInfo?.totalPages ?? 1) else { break }
+            page += 1
+        }
+        return zones
     }
 
     func entities(for identifiers: [WidgetZoneEntity.ID]) async throws -> [WidgetZoneEntity] {

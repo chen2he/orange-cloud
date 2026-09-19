@@ -27,7 +27,13 @@ enum CacheSync {
             for cached in existing where !fetchedIDs.contains(cached.id) {
                 context.delete(cached)
             }
-            let existingByID = Dictionary(uniqueKeysWithValues: existing.map { ($0.id, $0) })
+            // 去掉 @Attribute(.unique) 后唯一性只是尽力而为：同 id 的重复行（前台 save 失败残留 + 后台
+            // 另一个 ModelContext 写入）会让 uniqueKeysWithValues 直接 fatalError，且每次启动必崩。
+            // 撞上就把多余的那行删掉，留第一行。
+            let existingByID = Dictionary(existing.map { ($0.id, $0) }, uniquingKeysWith: { first, duplicate in
+                context.delete(duplicate)
+                return first
+            })
             for zone in zones {
                 if let cached = existingByID[zone.id] {
                     cached.update(from: zone)
@@ -60,7 +66,13 @@ enum CacheSync {
             for cached in existing where !fetchedIDs.contains(cached.id) {
                 context.delete(cached)
             }
-            let existingByID = Dictionary(uniqueKeysWithValues: existing.map { ($0.id, $0) })
+            // 去掉 @Attribute(.unique) 后唯一性只是尽力而为：同 id 的重复行（前台 save 失败残留 + 后台
+            // 另一个 ModelContext 写入）会让 uniqueKeysWithValues 直接 fatalError，且每次启动必崩。
+            // 撞上就把多余的那行删掉，留第一行。
+            let existingByID = Dictionary(existing.map { ($0.id, $0) }, uniquingKeysWith: { first, duplicate in
+                context.delete(duplicate)
+                return first
+            })
             for script in scripts {
                 if let cached = existingByID[script.id] {
                     cached.update(from: script)

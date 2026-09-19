@@ -142,7 +142,7 @@
 		"privacy": "隐私政策",
 		"terms": "使用条款",
 		"contact": "联系我们",
-		"copyright": "© 2026 Orange Cloud",
+		"copyright": "© 2026 <company>柘家科技有限公司</company>",
 		"disclaimer": "Orange Cloud 是独立的第三方客户端，与 Cloudflare, Inc. 无隶属、背书或赞助关系。Cloudflare 是 Cloudflare, Inc. 的商标。"
 	},
 	"contact": {
@@ -158,7 +158,7 @@
 	},
 	"privacy": {
 		"title": "隐私政策",
-		"updated": "最后更新：2026 年 6 月",
+		"updated": "最后更新：2026 年 9 月",
 		"sections": [
 			{
 				"h": "数据收集",
@@ -171,6 +171,10 @@
 			{
 				"h": "第三方服务",
 				"p": "Orange Cloud 仅与 Cloudflare 官方 API 端点（api.cloudflare.com 与 dash.cloudflare.com）通信，不使用任何其他第三方服务。"
+			},
+			{
+				"h": "购买与退款",
+				"p": "Pro 订阅与买断通过 Apple App Store 完成，付款信息由 Apple 处理，我们无法接触。Apple 会把购买、续订与退款的交易记录（交易编号、商品、金额、商店地区，不含你的姓名或 Apple 账户）发送到我们的服务器，仅用于对账。当你向 Apple 申请退款时，你同意我们向 Apple 提供这笔购买的交付情况以及我们对退款的意见，供 Apple 作出退款决定；这些信息不会用于追踪你。"
 			}
 		]
 	},

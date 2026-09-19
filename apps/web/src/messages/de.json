@@ -177,7 +177,7 @@
 		"privacy": "Datenschutzerklärung",
 		"terms": "Nutzungsbedingungen",
 		"contact": "Kontakt",
-		"copyright": "© 2026 Orange Cloud",
+		"copyright": "© 2026 <company>Zhe Tech Co., Ltd.</company>",
 		"disclaimer": "Orange Cloud ist ein unabhängiger Drittanbieter-Client und steht in keiner Verbindung zu Cloudflare, Inc., wird von dieser weder unterstützt noch gesponsert. Cloudflare ist eine Marke von Cloudflare, Inc."
 	},
 	"contact": {
@@ -202,7 +202,7 @@
 	},
 	"privacy": {
 		"title": "Datenschutzerklärung",
-		"updated": "Zuletzt aktualisiert: Juni 2026",
+		"updated": "Zuletzt aktualisiert: September 2026",
 		"sections": [
 			{
 				"h": "Datenerfassung",
@@ -215,6 +215,10 @@
 			{
 				"h": "Drittanbieter-Dienste",
 				"p": "Orange Cloud kommuniziert ausschließlich mit Cloudflares offiziellen API-Endpunkten (api.cloudflare.com und dash.cloudflare.com). Es werden keine anderen Drittanbieter-Dienste verwendet."
+			},
+			{
+				"h": "Käufe und Rückerstattungen",
+				"p": "Pro-Abos und der Einmalkauf werden über den Apple App Store abgewickelt. Deine Zahlungsdaten verarbeitet Apple, wir sehen sie nie. Apple übermittelt unserem Server Datensätze zu Käufen, Verlängerungen und Rückerstattungen (Transaktions-ID, Produkt, Betrag und Store-Region, jedoch nicht deinen Namen oder deinen Apple Account), die wir ausschließlich für die Buchhaltung verwenden. Wenn du bei Apple eine Rückerstattung beantragst, stimmst du zu, dass wir Apple mitteilen, ob der Kauf bereitgestellt wurde, und unsere Einschätzung zur Rückerstattung übermitteln, damit Apple entscheiden kann. Diese Informationen werden nicht zum Tracking verwendet."
 			}
 		]
 	},

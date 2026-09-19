@@ -141,8 +141,10 @@ final class EmailRoutingViewModel {
     func removeSuppression(_ item: EmailSuppression) async {
         await mutate {
             try await service.deleteSuppression(zoneId: zoneId, id: item.id)
+            // 只有服务端确认删除才从本地移除；以前写在 mutate 外面，接口失败 / 正在进行别的
+            // 变更被跳过时行也会消失，下次加载又冒出来。
+            suppressions.removeAll { $0.id == item.id }
         }
-        suppressions.removeAll { $0.id == item.id }
     }
 
 }

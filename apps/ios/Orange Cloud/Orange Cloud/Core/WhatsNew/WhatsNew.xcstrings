@@ -1,6 +1,82 @@
 {
   "sourceLanguage": "zh-Hans",
   "strings": {
+    "App 现在可以横过来用，宽屏上内容会收在舒适的阅读宽度里，不再被拉得很长；顺带修好了域名页偶尔打开是一片空白的问题。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can now use the app in landscape. On wide screens, content stays at a comfortable reading width instead of stretching edge to edge. We also fixed the Domains page sometimes opening blank."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 現在可以橫向使用，寬螢幕上內容會收在舒適的閱讀寬度裡，不再被拉得很長；順帶修好了網域頁偶爾開啟是一片空白的問題。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 現在可以橫向使用，闊屏幕上內容會收在舒適的閱讀寬度內，不再被拉得很長；順帶修好了域名頁偶爾打開是一片空白的問題。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アプリを横向きでも使えるようになりました。画面が広いときは読みやすい幅に収まり、横いっぱいに間延びしません。ドメイン画面がたまに真っ白で開く問題も修正しました。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora puedes usar la app en horizontal. En pantallas amplias, el contenido mantiene un ancho cómodo de lectura en lugar de estirarse de lado a lado. También corregimos que la página de dominios a veces abriera en blanco."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이제 앱을 가로로도 쓸 수 있습니다. 넓은 화면에서는 내용이 끝까지 늘어나지 않고 읽기 편한 폭으로 정리됩니다. 도메인 화면이 가끔 빈 화면으로 열리던 문제도 고쳤습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agora você pode usar o app na horizontal. Em telas largas, o conteúdo mantém uma largura confortável de leitura em vez de se esticar de ponta a ponta. Também corrigimos a página de domínios que às vezes abria em branco."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agora pode usar a app na horizontal. Em ecrãs largos, o conteúdo mantém uma largura de leitura confortável em vez de se esticar de ponta a ponta. Corrigimos também a página de domínios que por vezes abria em branco."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die App lässt sich jetzt im Querformat nutzen. Auf breiten Bildschirmen bleibt der Inhalt in einer angenehmen Lesebreite, statt sich über die ganze Breite zu ziehen. Außerdem haben wir behoben, dass die Domains-Seite manchmal leer öffnete."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous pouvez désormais utiliser l’app en mode paysage. Sur les grands écrans, le contenu garde une largeur de lecture confortable au lieu de s’étirer d’un bord à l’autre. La page Domaines ne s’ouvre plus parfois à vide."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يمكنك الآن استخدام التطبيق في الوضع الأفقي. على الشاشات العريضة يبقى المحتوى بعرض مريح للقراءة بدل أن يمتد من طرف إلى آخر. وأصلحنا أيضًا ظهور صفحة النطاقات فارغةً أحيانًا عند فتحها."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulamayı artık yatay modda da kullanabilirsiniz. Geniş ekranlarda içerik kenardan kenara uzamak yerine rahat bir okuma genişliğinde kalır. Alan adları sayfasının bazen boş açılması sorunu da giderildi."
+          }
+        }
+      }
+    },
     "Apple Watch App": {
       "localizations": {
         "en": {
@@ -909,6 +985,82 @@
           "stringUnit": {
             "state": "translated",
             "value": "R2 depolama geliştirmeleri"
+          }
+        }
+      }
+    },
+    "R2 存储桶超过 100 个，或邮件路由规则、目标地址、Durable Objects、Hyperdrive 超过 20 条时，后面的内容以前看不到，现在会全部列出；刚添加、还没验证的邮件目标地址也会显示出来。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you had more than 100 R2 buckets, or more than 20 email routing rules, destination addresses, Durable Objects or Hyperdrive configs, the rest never showed up. They're all listed now, and newly added email addresses that aren't verified yet appear too."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "R2 儲存貯體超過 100 個，或郵件路由規則、目標地址、Durable Objects、Hyperdrive 超過 20 筆時，後面的內容以前看不到，現在會全部列出；剛新增、還沒驗證的郵件目標地址也會顯示出來。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "R2 存儲桶超過 100 個，或郵件路由規則、目標地址、Durable Objects、Hyperdrive 超過 20 項時，後面的內容以前看不到，現在會全部列出；剛新增、尚未驗證的郵件目標地址也會顯示出來。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "R2 バケットが 100 個を超える場合や、メールルーティングのルール・転送先アドレス、Durable Objects、Hyperdrive が 20 件を超える場合、以前はそれ以降が表示されませんでした。今はすべて表示され、追加したばかりで未確認のメールアドレスも出てきます。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si tenías más de 100 buckets de R2, o más de 20 reglas de enrutamiento de correo, direcciones de destino, Durable Objects o configuraciones de Hyperdrive, el resto no aparecía. Ahora se muestran todos, incluidas las direcciones de correo recién agregadas que aún no se verifican."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "R2 버킷이 100개를 넘거나 이메일 라우팅 규칙·대상 주소, Durable Objects, Hyperdrive가 20개를 넘으면 그 뒤 항목이 보이지 않았습니다. 이제 모두 표시되며, 방금 추가해 아직 인증되지 않은 이메일 주소도 나타납니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se você tinha mais de 100 buckets do R2, ou mais de 20 regras de roteamento de e-mail, endereços de destino, Durable Objects ou configurações do Hyperdrive, o restante não aparecia. Agora tudo é listado, incluindo endereços de e-mail recém-adicionados ainda não verificados."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se tinha mais de 100 buckets do R2, ou mais de 20 regras de encaminhamento de e-mail, endereços de destino, Durable Objects ou configurações do Hyperdrive, o resto não aparecia. Agora tudo é listado, incluindo endereços de e-mail acabados de adicionar e ainda não verificados."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei mehr als 100 R2-Buckets oder mehr als 20 E-Mail-Routing-Regeln, Zieladressen, Durable Objects oder Hyperdrive-Konfigurationen fehlte bisher der Rest. Jetzt wird alles aufgelistet, auch frisch hinzugefügte, noch nicht bestätigte E-Mail-Adressen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Au-delà de 100 buckets R2, ou de 20 règles de routage d’e-mails, adresses de destination, Durable Objects ou configurations Hyperdrive, le reste n’apparaissait pas. Tout est désormais listé, y compris les adresses e-mail tout juste ajoutées et pas encore vérifiées."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إذا كان لديك أكثر من 100 حاوية R2، أو أكثر من 20 قاعدة لتوجيه البريد أو عنوان وجهة أو Durable Objects أو إعداد Hyperdrive، لم يكن الباقي يظهر. الآن تُعرض كلها، بما فيها عناوين البريد المضافة حديثًا التي لم يُتحقق منها بعد."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100'den fazla R2 kovanız ya da 20'den fazla e-posta yönlendirme kuralı, hedef adres, Durable Object veya Hyperdrive yapılandırmanız varsa geri kalanı görünmüyordu. Artık hepsi listeleniyor; yeni eklenen ve henüz doğrulanmamış e-posta adresleri de görünüyor."
           }
         }
       }
@@ -7981,6 +8133,82 @@
         }
       }
     },
+    "更稳，少打扰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steadier, fewer interruptions"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更穩，少打擾"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更穩，少打擾"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "より安定、邪魔が減りました"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más estable, menos interrupciones"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "더 안정적으로, 덜 번거롭게"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mais estável, menos interrupções"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mais estável, menos interrupções"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stabiler, weniger Unterbrechungen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus stable, moins d’interruptions"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ثبات أكثر وإزعاج أقل"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daha kararlı, daha az kesinti"
+          }
+        }
+      }
+    },
     "有多个 Cloudflare 账号时，App 会记住你上次选中的那一个，下次打开直接进入它，不再固定回到列表里的第一个。": {
       "localizations": {
         "en": {
@@ -9269,6 +9497,82 @@
           "stringUnit": {
             "state": "translated",
             "value": "Model deneme çalıştırması artık metinden görsele modellerini de destekliyor: bir istem yazın, görseli alın, paylaşın veya kaydedin."
+          }
+        }
+      }
+    },
+    "横屏与大屏适配": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Landscape and wide screens"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "橫向與大螢幕適配"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "橫向與大屏幕適配"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "横向き・大画面に対応"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horizontal y pantallas amplias"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가로 모드와 넓은 화면 지원"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo paisagem e telas largas"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo paisagem e ecrãs largos"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Querformat und breite Bildschirme"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paysage et grands écrans"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوضع الأفقي والشاشات العريضة"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yatay mod ve geniş ekranlar"
           }
         }
       }
@@ -10869,6 +11173,82 @@
         }
       }
     },
+    "网络被拦截时（比如公共 Wi-Fi 登录页、WAF 挑战页）不再被误退出登录；修复一处偶发的启动闪退；下拉刷新或快速切换时间范围时，不再提示「已取消」或显示错位的数据。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A blocked network, such as a public Wi-Fi sign-in page or a WAF challenge, no longer signs you out by mistake. We fixed an occasional crash on launch, and pulling to refresh or quickly switching time ranges no longer shows “Cancelled” or mismatched data."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "網路被攔截時（例如公共 Wi-Fi 登入頁、WAF 驗證頁）不再被誤登出；修正一處偶發的啟動閃退；下拉重新整理或快速切換時間範圍時，不再提示「已取消」或顯示錯位的資料。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "網絡被攔截時（例如公共 Wi-Fi 登入頁、WAF 驗證頁）不再被誤登出；修正一處偶發的啟動閃退；下拉刷新或快速切換時間範圍時，不再提示「已取消」或顯示錯位的數據。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "公衆 Wi-Fi のログイン画面や WAF のチャレンジ画面などで通信が遮られても、誤ってログアウトされなくなりました。まれに起動時に落ちる問題を修正し、引っ張って更新したり期間をすばやく切り替えたりしても「キャンセルされました」やずれたデータが出なくなりました。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una red bloqueada, como la página de acceso de un Wi-Fi público o un desafío de WAF, ya no cierra tu sesión por error. Corregimos un cierre inesperado ocasional al abrir la app, y al deslizar para actualizar o cambiar rápido el rango de tiempo ya no aparece «Cancelado» ni datos desfasados."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "공용 Wi-Fi 로그인 페이지나 WAF 챌린지처럼 네트워크가 가로막혀도 더 이상 잘못 로그아웃되지 않습니다. 가끔 실행 중 앱이 종료되던 문제를 고쳤고, 당겨서 새로고침하거나 기간을 빠르게 바꿔도 「취소됨」이나 어긋난 데이터가 표시되지 않습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma rede bloqueada, como a página de login de um Wi-Fi público ou um desafio do WAF, não encerra mais sua sessão por engano. Corrigimos um fechamento ocasional ao abrir o app, e puxar para atualizar ou trocar rápido o período não mostra mais “Cancelado” nem dados trocados."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma rede bloqueada, como a página de início de sessão de um Wi-Fi público ou um desafio do WAF, já não termina a sua sessão por engano. Corrigimos um encerramento ocasional ao abrir a app, e puxar para atualizar ou mudar depressa o período já não mostra “Cancelado” nem dados trocados."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein blockiertes Netzwerk, etwa die Anmeldeseite eines öffentlichen WLANs oder eine WAF-Challenge, meldet dich nicht mehr versehentlich ab. Ein gelegentlicher Absturz beim Start ist behoben, und beim Aktualisieren per Ziehen oder schnellem Wechsel des Zeitraums erscheinen kein „Abgebrochen“ und keine vertauschten Daten mehr."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un réseau bloqué, comme la page de connexion d’un Wi-Fi public ou un défi WAF, ne vous déconnecte plus par erreur. Un plantage occasionnel au lancement est corrigé, et tirer pour actualiser ou changer vite de période n’affiche plus « Annulé » ni des données décalées."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يعد حجب الشبكة، مثل صفحة تسجيل الدخول لشبكة Wi-Fi عامة أو تحدي WAF، يسجّل خروجك بالخطأ. وأصلحنا تعطّلًا عرضيًا عند التشغيل، ولم يعد السحب للتحديث أو التبديل السريع للفترة الزمنية يعرض «أُلغي» أو بيانات غير متطابقة."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Genel Wi-Fi giriş sayfası veya WAF doğrulaması gibi engellenen bir ağ artık oturumunuzu yanlışlıkla kapatmıyor. Açılışta ara sıra yaşanan çökme giderildi; aşağı çekerek yenilerken veya zaman aralığını hızla değiştirirken artık “İptal edildi” ya da karışık veriler görünmüyor."
+          }
+        }
+      }
+    },
     "表达式速插芯片补上 JA3/JA4 指纹字段（需 Bot Management 订阅）；带 Vary 多版本缓存的规则自动只读，避免在 App 里误改丢掉配置。": {
       "localizations": {
         "en": {
@@ -11625,6 +12005,82 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cam kartlar aynı görünümü koruyarak çok daha düşük maliyetle çiziliyor — listeler ve Genel Bakış, özellikle eski cihazlarda belirgin şekilde daha akıcı kayıyor."
+          }
+        }
+      }
+    },
+    "长列表不再漏项": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Long lists show everything"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "長列表不再漏項"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "長列表不再漏項"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "長いリストも全件表示"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las listas largas ya muestran todo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "긴 목록도 빠짐없이 표시"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listas longas mostram tudo"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listas longas mostram tudo"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lange Listen zeigen alles"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les longues listes affichent tout"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "القوائم الطويلة تعرض كل شيء"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uzun listeler artık eksiksiz"
           }
         }
       }

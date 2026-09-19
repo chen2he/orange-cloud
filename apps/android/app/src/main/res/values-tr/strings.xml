@@ -335,6 +335,8 @@
     <string name="urls_server">Sunucu</string>
     <string name="urls_status_code">Durum kodu</string>
     <string name="urls_still_scanning">Tarama sürüyor. Birazdan aynı bağlantıyla tekrar deneyin.</string>
+    <string name="urls_recently_scanned">Bu URL kısa süre önce tarandı. Cloudflare şu an yeniden gönderimi kabul etmiyor. Daha sonra tekrar deneyin.</string>
+    <string name="snippet_content_unavailable">Snippet içeriği yüklenemedi; boş içerikle üzerine yazılmasını önlemek için kaydetme engellendi. Geri dönüp tekrar deneyin.</string>
     <string name="perm_url_scanner">URL taraması</string>
     <string name="perm_url_scanner_desc">Güvenlik taraması için bir bağlantı gönderin ve raporu görün</string>
     <string name="hc_notify_me">Kaynak sunucu düşünce bildir</string>
@@ -570,6 +572,7 @@
     <string name="settings_privacy">Gizlilik politikası</string>
     <string name="settings_terms">Kullanım koşulları</string>
     <string name="settings_about_footer">Orange Cloud · üçüncü taraf Cloudflare istemcisi</string>
+    <string name="settings_about_copyright">© 2026 Zhe Tech Co., Ltd.</string>
     <string name="identity_title">Hesap</string>
     <string name="identity_not_found">Bu hesap artık mevcut değil</string>
     <string name="identity_oauth_badge">OAuth 2.0</string>

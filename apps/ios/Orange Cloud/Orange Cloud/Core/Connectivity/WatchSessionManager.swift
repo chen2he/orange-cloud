@@ -58,6 +58,12 @@ final class WatchSessionManager: NSObject {
     /// 响应 watch 的「要新 token」：iPhone 是唯一刷新点
     private func replyWithFreshToken() async -> [String: Any] {
         guard let authManager else { return ["error": "no_session"] }
+        // 手表每次前台都会来要 token。access token 还有富余就直接给，别为此轮换 refresh token：
+        // refresh token 单次有效且与 File Provider 扩展共用，多余的轮换只会放大并发窗口
+        // （与 CFAPIClient.validAccessToken 同一口径：不足 60 秒才刷新）。
+        if let token = authManager.currentToken, token.expiresAt.timeIntervalSinceNow > 60 {
+            return currentPayload().asContext()
+        }
         do {
             _ = try await authManager.refreshAccessToken()
             return currentPayload().asContext()

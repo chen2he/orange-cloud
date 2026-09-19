@@ -3,7 +3,8 @@
 //  Orange Cloud
 //
 //  场景付费墙（sheet）：从六个 Pro 闸门与设置页入口弹出。
-//  三档商品（年度主推/月度/买断）全部从 StoreKit 动态取价，不硬编码任何价格。
+//  三档商品（年度主推/月度/买断）全部从 StoreKit 动态取价，不硬编码任何价格；
+//  试用时长 / 续订周期同样取自 StoreKit，且只对仍有资格的账户展示试用（见 SubscriptionOfferText）。
 //  含恢复购买与隐私政策/使用条款链接（订阅审核硬性要求）。
 //
 
@@ -206,19 +207,17 @@ struct PaywallView: View {
         }
     }
 
+    /// 订阅：「[首次优惠 · ]续订周期」，优惠只在当前账户仍有资格时显示；时长与形式全取自 StoreKit。
     private func planDetail(_ product: Product) -> String {
-        switch product.id {
-        case EntitlementStore.ProductID.yearly:
-            product.subscription?.introductoryOffer != nil
-                ? String(localized: "7 天免费试用 · 每年自动续订")
-                : String(localized: "每年自动续订")
-        case EntitlementStore.ProductID.monthly:
-            String(localized: "每月自动续订")
-        case EntitlementStore.ProductID.lifetime:
-            String(localized: "一次性付费 · 含未来全部新模块")
-        default:
-            product.description
+        if let subscription = product.subscription {
+            let renewal = SubscriptionOfferText.renewal(subscription.subscriptionPeriod)
+            guard let offer = entitlements.eligibleIntroOffers[product.id] else { return renewal }
+            return "\(SubscriptionOfferText.offer(offer)) · \(renewal)"
         }
+        if product.id == EntitlementStore.ProductID.lifetime {
+            return String(localized: "一次性付费 · 含未来全部新模块")
+        }
+        return product.description
     }
 
     // MARK: - 购买
@@ -229,14 +228,14 @@ struct PaywallView: View {
 
     private var ctaTitle: String {
         guard let product = selectedProduct else { return String(localized: "解锁 Pro") }
-        switch product.id {
-        case EntitlementStore.ProductID.lifetime:
+        if product.id == EntitlementStore.ProductID.lifetime {
             return String(localized: "买断 Pro")
-        case EntitlementStore.ProductID.yearly where product.subscription?.introductoryOffer != nil:
-            return String(localized: "开始 7 天免费试用")
-        default:
-            return String(localized: "解锁 Pro")
         }
+        if let offer = entitlements.eligibleIntroOffers[product.id],
+           let trial = SubscriptionOfferText.freeTrialCTA(offer) {
+            return trial
+        }
+        return String(localized: "解锁 Pro")
     }
 
     private var ctaButton: some View {

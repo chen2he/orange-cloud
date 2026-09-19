@@ -42,15 +42,34 @@ struct EmailRoutingService {
 
     // MARK: - 规则（域名级）
 
-    /// 列出路由规则（不含 catch-all）
+    /// 列出路由规则（不含 catch-all）。端点默认 per_page=20（上限 50），不翻页第 21 条起就看不见。
     func rules(zoneId: String) async throws -> [EmailRoutingRule] {
-        let response: CFAPIResponseArray<EmailRoutingRule> = try await client.get(
-            "zones/\(zoneId)/email/routing/rules"
-        )
-        guard response.success else {
-            throw response.toAPIError()
+        try await allPages { page in
+            try await client.get(
+                "zones/\(zoneId)/email/routing/rules",
+                queryItems: [
+                    URLQueryItem(name: "page",     value: String(page)),
+                    URLQueryItem(name: "per_page", value: "50"),
+                ]
+            )
         }
-        return response.result ?? []
+    }
+
+    /// 页码分页取全量（上限 20 页兜底，防服务端 total_pages 异常死循环）
+    private func allPages<T: Codable & Sendable>(
+        _ fetch: (Int) async throws -> CFAPIResponseArray<T>
+    ) async throws -> [T] {
+        var all: [T] = []
+        var page = 1
+        while page <= 20 {
+            let response = try await fetch(page)
+            guard response.success else { throw response.toAPIError() }
+            all.append(contentsOf: response.result ?? [])
+            let totalPages = response.resultInfo?.totalPages ?? 1
+            guard page < totalPages else { break }
+            page += 1
+        }
+        return all
     }
 
     /// 新建规则
@@ -84,15 +103,28 @@ struct EmailRoutingService {
 
     // MARK: - 目的地址（账号级）
 
-    /// 列出账号下全部目的地址（含未验证）
+    /// 列出账号下全部目的地址（含未验证）。
+    /// OpenAPI 规范里 `verified` 查询参数默认 true（只回已验证），而 UI 有专门的「待验证」态，
+    /// 刚添加的地址必须能出现——所以已验证 / 未验证各拉一遍再合并；分页同 rules（默认 20 条）。
     func addresses(accountId: String) async throws -> [EmailDestinationAddress] {
-        let response: CFAPIResponseArray<EmailDestinationAddress> = try await client.get(
-            "accounts/\(accountId)/email/routing/addresses"
-        )
-        guard response.success else {
-            throw response.toAPIError()
+        var merged: [EmailDestinationAddress] = []
+        var seen = Set<String>()
+        for verified in ["true", "false"] {
+            let items: [EmailDestinationAddress] = try await allPages { page in
+                try await client.get(
+                    "accounts/\(accountId)/email/routing/addresses",
+                    queryItems: [
+                        URLQueryItem(name: "page",     value: String(page)),
+                        URLQueryItem(name: "per_page", value: "50"),
+                        URLQueryItem(name: "verified", value: verified),
+                    ]
+                )
+            }
+            for item in items where seen.insert(item.id).inserted {
+                merged.append(item)
+            }
         }
-        return response.result ?? []
+        return merged
     }
 
     /// 新增目的地址（提交后 Cloudflare 向该邮箱发验证信）
@@ -114,16 +146,14 @@ struct EmailRoutingService {
 
     // MARK: - 抑制列表（email-routing-suppression.read / .write）
 
-    /// 被抑制的收件地址。响应信封含 success/errors，与常规一致（另有 page/per_page 平级字段，忽略即可）。
+    /// 被抑制的收件地址。⚠️ 该端点 2xx 时**不走 CF 标准信封**：顶层是 { page, per_page, total, result }
+    /// 没有 success/errors（OpenAPI 规范如此，Sentry APPLE-IOS-AB 坐实），只能按专用页结构解。
     func suppressions(zoneId: String) async throws -> [EmailSuppression] {
-        let response: CFAPIResponseArray<EmailSuppression> = try await client.get(
+        let page: EmailSuppressionPage = try await client.get(
             "zones/\(zoneId)/email/routing/suppression",
             queryItems: [URLQueryItem(name: "per_page", value: "100")]
         )
-        guard response.success else {
-            throw response.toAPIError()
-        }
-        return response.result ?? []
+        return page.result ?? []
     }
 
     /// 手动抑制一个地址（此后不再向它转发）

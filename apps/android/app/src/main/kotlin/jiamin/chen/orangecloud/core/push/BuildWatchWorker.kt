@@ -15,6 +15,8 @@ import jiamin.chen.orangecloud.data.model.BuildDisplayState
 import jiamin.chen.orangecloud.data.repository.AccountStore
 import jiamin.chen.orangecloud.data.repository.WorkerBuildRepository
 import java.util.concurrent.TimeUnit
+import androidx.work.Constraints
+import androidx.work.NetworkType
 
 /**
  * 构建失败本地通知。
@@ -84,7 +86,10 @@ class BuildWatchWorker(
 
         /** 勾选任一脚本后调用；WorkManager 保证唯一，重复调用不叠加。 */
         fun schedule(context: Context) {
-            val request = PeriodicWorkRequestBuilder<BuildWatchWorker>(2, TimeUnit.HOURS).build()
+            // 没网时别跑：离线状态下 validAccessToken 会去刷新并失败，白白消耗一次后台预算
+            val request = PeriodicWorkRequestBuilder<BuildWatchWorker>(2, TimeUnit.HOURS)
+                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                .build()
             WorkManager.getInstance(context)
                 .enqueueUniquePeriodicWork(NAME, ExistingPeriodicWorkPolicy.KEEP, request)
         }

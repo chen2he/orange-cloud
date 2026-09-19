@@ -96,13 +96,14 @@ fun WafRulesScreen(
 
     val savedMsg = stringResource(R.string.waf_saved)
     val deletedMsg = stringResource(R.string.waf_deleted)
+    val genericErrorMsg = stringResource(R.string.error_generic)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 WafEvent.Saved -> { showForm = false; editingRule = null; snackbarHostState.showSnackbar(savedMsg) }
                 WafEvent.Deleted -> snackbarHostState.showSnackbar(deletedMsg)
-                is WafEvent.Error -> snackbarHostState.showSnackbar(event.message ?: "")
+                is WafEvent.Error -> snackbarHostState.showSnackbar(event.message?.takeIf { it.isNotBlank() } ?: genericErrorMsg)
             }
         }
     }
@@ -149,6 +150,7 @@ fun WafRulesScreen(
                             WafRuleRow(
                                 rule,
                                 canWrite = state.canWrite,
+                                isToggling = rule.id in state.togglingIds,
                                 onToggle = { viewModel.toggle(rule, it) },
                                 onDelete = { ruleToDelete = rule },
                                 onClick = {
@@ -238,6 +240,7 @@ fun WafRulesScreen(
 private fun WafRuleRow(
     rule: WafRule,
     canWrite: Boolean,
+    isToggling: Boolean,
     onToggle: (Boolean) -> Unit,
     onDelete: () -> Unit,
     onClick: () -> Unit,
@@ -276,7 +279,7 @@ private fun WafRuleRow(
                     )
                 }
             }
-            Switch(checked = rule.enabled ?: false, onCheckedChange = onToggle, enabled = canWrite)
+            Switch(checked = rule.enabled ?: false, onCheckedChange = onToggle, enabled = canWrite && !isToggling)
             if (canWrite) {
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.dns_delete), tint = MaterialTheme.colorScheme.onSurfaceVariant)

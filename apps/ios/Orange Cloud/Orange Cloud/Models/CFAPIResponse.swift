@@ -12,16 +12,24 @@ nonisolated struct CFAPIResponse<T: Codable & Sendable>: Codable, Sendable {
     let success:  Bool
     let errors:   [CFAPIError]
     let messages: [CFAPIMessage]?
+    /// 少数对象型 result 的端点也带分页信息（R2 桶列表的 cursor）
+    let resultInfo: ResultInfo?
 
-    enum CodingKeys: String, CodingKey { case result, success, errors, messages }
+    enum CodingKeys: String, CodingKey {
+        case result, success, errors, messages
+        case resultInfo = "result_info"
+    }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         result   = try c.decodeIfPresent(T.self, forKey: .result)
         success  = try c.decode(Bool.self, forKey: .success)
+        resultInfo = try? c.decodeIfPresent(ResultInfo.self, forKey: .resultInfo)
         // 部分端点（如 workers/domains）回 errors:null，宽容降级为空数组
         errors   = (try? c.decode([CFAPIError].self, forKey: .errors)) ?? []
-        messages = try c.decodeIfPresent([CFAPIMessage].self, forKey: .messages)
+        // messages 只是附加提示，形态不合预期（如 Observability 端点只回 {message} 没有 code）
+        // 绝不能拖垮整条响应（Sentry APPLE-IOS-BQ）
+        messages = try? c.decodeIfPresent([CFAPIMessage].self, forKey: .messages)
     }
 }
 
@@ -77,7 +85,8 @@ nonisolated struct CFAPIErrorSource: Codable, Sendable {
 }
 
 nonisolated struct CFAPIMessage: Codable, Sendable {
-    let code:    Int
+    /// 部分端点（Workers Observability）的 messages 项没有 code
+    let code:    Int?
     let message: String
 }
 

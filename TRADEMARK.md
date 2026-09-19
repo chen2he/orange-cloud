@@ -4,8 +4,9 @@ The source code of Orange Cloud is licensed under AGPL-3.0 + Commons
 Clause (see [LICENSE](LICENSE)). **That license covers code only. It
 does not grant any rights to the project's brand assets.**
 
-The following are reserved by the Licensor (Zhe Chen) and are NOT
-licensed for use in derivative works or redistributions:
+The following are reserved by the Licensor (Zhe Tech Co., Ltd. /
+柘家科技有限公司) and are NOT licensed for use in derivative works or
+redistributions:
 
 - The name **"Orange Cloud"** (and confusingly similar names)
 - The **app icon** and all assets under `Assets.xcassets/AppIcon.appiconset/`

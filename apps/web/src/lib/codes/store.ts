@@ -98,13 +98,26 @@ export async function redeemCode(
 	);
 
 	if (decision.ok && decision.bind) {
-		await db
+		// 上面的「数设备 → 判定」是读后写，两台新设备并发抢最后一个名额会双双通过。
+		// 把名额上限写进 INSERT 的 WHERE 里，由 SQLite 单条语句保证原子；changes=0 即没抢到。
+		const inserted = await db
 			.prepare(
-				`INSERT OR IGNORE INTO code_activations (code, install_id, activated_at, last_seen_at)
-				 VALUES (?, ?, ?, ?)`,
+				`INSERT INTO code_activations (code, install_id, activated_at, last_seen_at)
+				 SELECT ?, ?, ?, ?
+				 WHERE NOT EXISTS (SELECT 1 FROM code_activations WHERE code = ? AND install_id = ?)
+				   AND (SELECT COUNT(*) FROM code_activations WHERE code = ?) < ?`,
 			)
-			.bind(code, installId, now, now)
+			.bind(code, installId, now, now, code, installId, code, max)
 			.run();
+		if ((inserted.meta?.changes ?? 0) === 0) {
+			const mine = await db
+				.prepare(`SELECT 1 AS x FROM code_activations WHERE code = ? AND install_id = ?`)
+				.bind(code, installId)
+				.first<{ x: number }>();
+			if (!mine) {
+				return { ok: false, reason: "device_limit", product: decision.product, bind: false };
+			}
+		}
 	} else if (decision.ok) {
 		await db
 			.prepare(`UPDATE code_activations SET last_seen_at = ? WHERE code = ? AND install_id = ?`)
@@ -300,4 +313,30 @@ export async function findActiveCodesByEmail(db: D1Database, email: string): Pro
 		.bind(email.trim().toLowerCase())
 		.all<{ code: string }>();
 	return (rows.results ?? []).map((r) => r.code);
+}
+
+/** 找回邮件的默认冷却：同一邮箱 10 分钟内只发一封。 */
+export const RECOVERY_EMAIL_COOLDOWN_MS = 10 * 60 * 1000;
+
+/**
+ * 抢占「找回激活码」邮件的发送资格：同一邮箱冷却期内只允许一次。
+ * /api/resend-code 不需要任何凭证，没有冷却就是一个对客户邮箱的轰炸器（顺带烧发件配额）。
+ * 用一条条件 UPDATE 落时间戳，原子且不依赖内存状态（Workers 多实例）。
+ * 返回 true 表示本次可以发。
+ */
+export async function claimRecoveryEmailSlot(
+	db: D1Database,
+	email: string,
+	now: number = Date.now(),
+	cooldownMs: number = RECOVERY_EMAIL_COOLDOWN_MS,
+): Promise<boolean> {
+	const res = await db
+		.prepare(
+			`UPDATE codes SET recovery_sent_at = ?
+			 WHERE LOWER(buyer_email) = ? AND status = 'active'
+			   AND (recovery_sent_at IS NULL OR recovery_sent_at < ?)`,
+		)
+		.bind(now, email.trim().toLowerCase(), now - cooldownMs)
+		.run();
+	return (res.meta?.changes ?? 0) > 0;
 }

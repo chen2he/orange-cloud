@@ -7,6 +7,13 @@ export default async function SiteFooter() {
 	// 指南板块有英文与简体中文两套，只在这两种页脚露出入口（也是 /guides 的抓取入口）
 	const locale = await getLocale();
 	const guidesLabel = locale === "zh-Hans" ? "指南" : "Guides";
+	// 公司官网只有简中（默认）/ 繁中 / 英文三套，港繁并入繁中
+	const companySite =
+		locale === "zh-Hans"
+			? "https://zhe.ltd/"
+			: locale === "zh-Hant" || locale === "zh-HK"
+				? "https://zhe.ltd/zh-Hant"
+				: "https://zhe.ltd/en";
 
 	return (
 		<footer className="relative">
@@ -15,7 +22,16 @@ export default async function SiteFooter() {
 				style={{ borderTop: "0.5px solid var(--divider)" }}
 			>
 				<div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-					<p className="text-[13px] t-secondary">{t("copyright")}</p>
+					<p className="text-[13px] t-secondary">
+						{t.rich("copyright", {
+							company: (chunks) => (
+								// rel 只写 noopener：保留 Referer，便于公司站统计来源
+								<a href={companySite} target="_blank" rel="noopener" className="link-quiet">
+									{chunks}
+								</a>
+							),
+						})}
+					</p>
 					<nav className="flex items-center gap-6 text-[13px]">
 						{(locale === "en" || locale === "zh-Hans") && (
 							<Link href="/guides" className="link-quiet">

@@ -509,8 +509,8 @@ final class AuthManager {
 
         do {
             return try await requestAndStoreRefresh(sessionId: sessionId, refreshToken: refreshToken, previousScope: stored.scope)
-        } catch let AuthError.tokenEndpointError(status, _) where (400...403).contains(status) {
-            // token 端点 4xx = 服务端明确拒绝该刷新令牌。先看是否被别的进程轮换走了：
+        } catch let AuthError.tokenEndpointError(status, body) where (400...403).contains(status) && Self.isOAuthErrorBody(body) {
+            // token 端点 4xx **且带 OAuth 错误体** = 服务端明确拒绝该刷新令牌。先看是否被别的进程轮换走了：
             // 钥匙串里若已出现不同的 refresh token，用它重试一次（多账号 / 扩展并发下的良性竞态）。
             if let latest = TokenStore.load(sessionId: sessionId),
                let rotated = latest.refreshToken, rotated != refreshToken,
@@ -524,6 +524,16 @@ final class AuthManager {
             throw AuthError.notLoggedIn
         }
         // 其它错误（网络 / 超时 / 5xx / 429）：保留身份，原样向上抛出
+    }
+
+    /// token 端点的 4xx 只有带 OAuth 错误体（{"error":"invalid_grant",…}）才算「服务端明确拒绝该刷新令牌」。
+    /// WAF 挑战页 / 强制门户 / 运营商劫持返回的 403 HTML 同样落在 400...403，但那是网络层问题：
+    /// 不能据此删钥匙串把用户踢回登录页（后台刷新每 4h 一次，误判一次就丢掉仍有效的 refresh token）。
+    /// 非 OAuth 错误体的 4xx 与网络错误同待遇：保留身份、原样上抛。
+    nonisolated static func isOAuthErrorBody(_ body: String) -> Bool {
+        guard let data = body.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return false }
+        return object["error"] is String
     }
 
     /// 用给定 refresh token 向 token 端点换新令牌、写回钥匙串并返回新 access token。

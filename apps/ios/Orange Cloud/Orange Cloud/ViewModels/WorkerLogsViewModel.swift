@@ -88,8 +88,15 @@ final class WorkerLogsViewModel {
         self.scriptName = scriptName
     }
 
+    /// 每次 load 递增；晚到的旧一代结果一律丢弃。
+    /// 视图用两个 .task(id:) 调 load：改时间窗 / 级别会取消旧任务再起新任务，
+    /// 以前的 `guard !isLoading` 会让新任务在旧任务的 catch 跑完之前直接退出——
+    /// 结果是旧任务把「已取消」写进 error、清空列表，而新范围永远不查。
+    private var loadGeneration = 0
+
     func load() async {
-        guard !isLoading else { return }
+        loadGeneration += 1
+        let generation = loadGeneration
         isLoading = true
         error = nil
 
@@ -106,12 +113,14 @@ final class WorkerLogsViewModel {
                 level: levelFilter.queryValue, search: searchText,
                 cursor: nil, limit: Self.pageSize
             )
+            guard generation == loadGeneration else { return }
             let page = (result.events?.events ?? []).map { IdentifiedLogEvent(event: $0) }
             events = page
             totalCount = result.events?.count.map { Int($0) }
             cursor = page.last?.event.metadata?.id
             canLoadMore = page.count >= Self.pageSize && cursor != nil
         } catch {
+            guard generation == loadGeneration, !error.isCancellation else { return }
             self.error = error.localizedDescription
             events = []
             totalCount = nil

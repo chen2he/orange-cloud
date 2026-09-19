@@ -72,7 +72,7 @@ struct SnippetsListView: View {
                     .glassRow()
                 }
                 .scrollContentBackground(.hidden)
-                .refreshable { await viewModel.load() }
+                .refreshable { await detachedRefresh { await viewModel.load() } }
             }
         }
         .background { SkyBackground() }

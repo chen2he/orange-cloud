@@ -317,6 +317,8 @@
     <string name="urls_server">서버</string>
     <string name="urls_status_code">상태 코드</string>
     <string name="urls_still_scanning">아직 검사 중입니다. 잠시 후 같은 링크로 다시 시도하세요.</string>
+    <string name="urls_recently_scanned">이 URL은 최근에 스캔되었습니다. Cloudflare가 아직 재제출을 받지 않습니다. 나중에 다시 시도하세요.</string>
+    <string name="snippet_content_unavailable">스니펫 본문을 불러오지 못해 빈 내용으로 덮어쓰지 않도록 저장을 막았습니다. 돌아가서 다시 시도하세요.</string>
     <string name="perm_url_scanner">URL 검사</string>
     <string name="perm_url_scanner_desc">링크를 제출해 보안 검사를 하고 보고서를 봅니다</string>
     <string name="hc_notify_me">오리진에 문제가 생기면 알리기</string>
@@ -453,6 +455,7 @@
     <string name="settings_privacy">개인정보 처리방침</string>
     <string name="settings_terms">이용약관</string>
     <string name="settings_about_footer">Orange Cloud · 서드파티 Cloudflare 클라이언트</string>
+    <string name="settings_about_copyright">© 2026 Zhe Tech Co., Ltd.</string>
 
     <string name="identity_title">계정</string>
     <string name="identity_not_found">이 계정은 더 이상 존재하지 않습니다</string>

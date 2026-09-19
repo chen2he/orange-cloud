@@ -142,7 +142,7 @@
 		"privacy": "私隱政策",
 		"terms": "使用條款",
 		"contact": "聯絡我們",
-		"copyright": "© 2026 Orange Cloud",
+		"copyright": "© 2026 <company>柘家科技有限公司</company>",
 		"disclaimer": "Orange Cloud 為獨立的第三方客戶端，與 Cloudflare, Inc. 並無隸屬、背書或贊助關係。Cloudflare 為 Cloudflare, Inc. 的商標。"
 	},
 	"contact": {
@@ -158,7 +158,7 @@
 	},
 	"privacy": {
 		"title": "私隱政策",
-		"updated": "最後更新：2026 年 6 月",
+		"updated": "最後更新：2026 年 9 月",
 		"sections": [
 			{
 				"h": "資料收集",
@@ -171,6 +171,10 @@
 			{
 				"h": "第三方服務",
 				"p": "Orange Cloud 僅與 Cloudflare 官方 API 端點（api.cloudflare.com 與 dash.cloudflare.com）通訊，不使用任何其他第三方服務。"
+			},
+			{
+				"h": "購買與退款",
+				"p": "Pro 訂閱與買斷透過 Apple App Store 完成，付款資料由 Apple 處理，我們無法接觸。Apple 會把購買、續訂與退款的交易記錄（交易編號、商品、金額、商店地區，不包括你的姓名或 Apple 帳戶）發送到我們的伺服器，只用於對賬。當你向 Apple 申請退款時，即表示你同意我們向 Apple 提供該筆購買的交付情況及我們對退款的意見，供 Apple 作出退款決定；這些資料不會用於追蹤你。"
 			}
 		]
 	},

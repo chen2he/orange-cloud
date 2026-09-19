@@ -177,7 +177,7 @@
 		"privacy": "Gizlilik politikası",
 		"terms": "Hizmet koşulları",
 		"contact": "İletişim",
-		"copyright": "© 2026 Orange Cloud",
+		"copyright": "© 2026 <company>Zhe Tech Co., Ltd.</company>",
 		"disclaimer": "Orange Cloud bağımsız bir üçüncü taraf istemcidir; Cloudflare, Inc. ile bağlantılı, onun tarafından onaylanmış veya desteklenmiş değildir. Cloudflare, Cloudflare, Inc.’in ticari markasıdır."
 	},
 	"contact": {
@@ -202,7 +202,7 @@
 	},
 	"privacy": {
 		"title": "Gizlilik politikası",
-		"updated": "Son güncelleme: Haziran 2026",
+		"updated": "Son güncelleme: Eylül 2026",
 		"sections": [
 			{
 				"h": "Veri toplama",
@@ -215,6 +215,10 @@
 			{
 				"h": "Üçüncü taraf hizmetleri",
 				"p": "Orange Cloud yalnızca Cloudflare’in resmi API uç noktalarıyla (api.cloudflare.com ve dash.cloudflare.com) iletişim kurar. Başka hiçbir üçüncü taraf hizmeti kullanılmaz."
+			},
+			{
+				"h": "Satın alımlar ve iadeler",
+				"p": "Pro abonelikleri ve ömür boyu satın alım Apple App Store üzerinden yapılır. Ödeme bilgilerinizi Apple işler, biz bunları hiçbir zaman görmeyiz. Apple, satın alma, yenileme ve iade kayıtlarını (işlem kimliği, ürün, tutar ve mağaza bölgesi; adınız veya Apple Hesabınız hariç) sunucumuza gönderir ve bunları yalnızca muhasebe için kullanırız. Apple'dan iade talep ettiğinizde, satın alımın teslim edilip edilmediğini ve iade hakkındaki görüşümüzü karar vermesine yardımcı olmak için Apple'a iletmemizi kabul etmiş olursunuz. Bu bilgiler sizi izlemek için kullanılmaz."
 			}
 		]
 	},

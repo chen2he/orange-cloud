@@ -317,6 +317,8 @@
     <string name="urls_server">サーバー</string>
     <string name="urls_status_code">ステータスコード</string>
     <string name="urls_still_scanning">まだスキャン中です。しばらくしてから同じリンクでもう一度お試しください。</string>
+    <string name="urls_recently_scanned">このURLは最近スキャンされました。Cloudflareは現在、再送信を受け付けていません。しばらくしてから再試行してください。</string>
+    <string name="snippet_content_unavailable">本文の読み込みに失敗したため、空の内容で上書きしないよう保存をブロックしました。戻って再試行してください。</string>
     <string name="perm_url_scanner">URL スキャン</string>
     <string name="perm_url_scanner_desc">リンクを送信してセキュリティスキャンを実行し、レポートを表示します</string>
     <string name="hc_notify_me">オリジンに異常があれば通知</string>
@@ -453,6 +455,7 @@
     <string name="settings_privacy">プライバシーポリシー</string>
     <string name="settings_terms">利用規約</string>
     <string name="settings_about_footer">Orange Cloud · サードパーティ製 Cloudflare クライアント</string>
+    <string name="settings_about_copyright">© 2026 Zhe Tech Co., Ltd.</string>
 
     <string name="identity_title">アカウント</string>
     <string name="identity_not_found">このアカウントは存在しません</string>

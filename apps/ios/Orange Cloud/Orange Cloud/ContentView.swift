@@ -57,6 +57,7 @@ private struct SessionRootView: View {
             .whatsNewSheet()
             .telemetryConsentPrompt()
             .ratingPrompt()
+            .testFlightSunsetNotice()
     }
 }
 

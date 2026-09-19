@@ -25,8 +25,10 @@ struct RefreshButton: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.red)
             } else {
-                // 正常/加载态：刷新箭头，加载时持续旋转、完成即停
-                Image(systemName: "arrow.clockwise")
+                // 正常/加载态：刷新箭头，加载时持续旋转、完成即停。
+                // 用 Label 而非裸 Image：工具栏里仍只显示符号，但标题会被系统拿去做
+                // 溢出菜单的条目名（Duo 竖轴放不下时刷新会溢出到菜单里，没标题就只剩一个图标）。
+                Label("刷新", systemImage: "arrow.clockwise")
                     .loadingSpinSymbolEffect(isActive: isLoading)
             }
         }

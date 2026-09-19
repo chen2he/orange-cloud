@@ -80,7 +80,8 @@ final class R2BucketListViewModel {
             // 用量 best-effort：免费账号账户级 GraphQL 常被 authz 挡，失败不影响桶列表
             usageByBucket = (try? await analyticsService.r2UsageByBucket(accountId: accountId)) ?? [:]
         } catch {
-            self.error = error.localizedDescription
+            // 切分段 / 离开页面取消的请求不算失败（.task(id: kind) 切换会取消飞行中的列表请求）
+            if !error.isCancellation { self.error = error.localizedDescription }
             isLoading = false
         }
     }
@@ -116,28 +117,41 @@ final class R2ObjectListViewModel {
         self.bucketName = bucketName
     }
 
+    /// 每次整页加载（进文件夹 / 返回上级 / 刷新）递增；晚到的旧一代结果一律丢弃。
+    /// 以前点进一个慢文件夹再立刻返回，慢到的响应会把上级目录替换成子文件夹的内容与游标，
+    /// 「加载更多」也接着翻错的目录。
+    private var loadGeneration = 0
+
     func load() async {
+        loadGeneration += 1
+        let generation = loadGeneration
         isLoading = true
         error = nil
         do {
             let page = try await service.listObjects(listOptions())
+            guard generation == loadGeneration else { return }
             apply(page, reset: true)
         } catch {
+            guard generation == loadGeneration, !error.isCancellation else { return }
             self.error = error.localizedDescription
         }
-        isLoading = false
+        if generation == loadGeneration { isLoading = false }
     }
 
     func loadMore() async {
         guard let cursor = nextCursor, !isLoadingMore else { return }
+        let generation = loadGeneration
         isLoadingMore = true
+        // 旧一代提前 return 也必须复位：否则翻页途中换目录，isLoadingMore 永远卡在 true，本页再也翻不动
+        defer { isLoadingMore = false }
         do {
             let page = try await service.listObjects(listOptions(cursor: cursor))
+            guard generation == loadGeneration else { return }   // 期间已换目录 / 刷新：这页不属于当前列表
             apply(page, reset: false)
         } catch {
+            guard generation == loadGeneration, !error.isCancellation else { return }
             self.error = error.localizedDescription
         }
-        isLoadingMore = false
     }
 
     // MARK: - 文件夹导航
@@ -498,7 +512,7 @@ final class D1DatabaseListViewModel {
                 databases = list.map { details[$0.uuid] ?? $0 }
             }
         } catch {
-            self.error = error.localizedDescription
+            if !error.isCancellation { self.error = error.localizedDescription }
             isLoading = false
         }
     }
@@ -653,7 +667,12 @@ final class D1TableViewModel {
         "\"" + identifier.replacingOccurrences(of: "\"", with: "\"\"") + "\""
     }
 
+    /// 整页重载递增；飞行中的「加载更多」若跨过一次重载，其结果不能再 append（会重复行并让 offset 跳页）。
+    private var loadGeneration = 0
+
     func load() async {
+        loadGeneration += 1
+        let generation = loadGeneration
         isLoading = true
         error = nil
         do {
@@ -669,27 +688,33 @@ final class D1TableViewModel {
                     return D1Column(name: name, type: type, isPrimaryKey: pk)
                 }
             }
+            let first = try await fetchPage(offset: 0)
+            guard generation == loadGeneration else { return }
             offset = 0
-            rows = try await fetchPage(offset: 0)
+            rows = first
             computeColumnWidths()
         } catch {
+            guard generation == loadGeneration, !error.isCancellation else { return }
             self.error = error.localizedDescription
         }
-        isLoading = false
+        if generation == loadGeneration { isLoading = false }
     }
 
     func loadMore() async {
         guard hasMore, !isLoading, !reachedCap else { return }
+        let generation = loadGeneration
         isLoading = true
         do {
             // 先取下一页，成功后再推进 offset；否则瞬时失败会永久跳过这一页
             let next = try await fetchPage(offset: offset + pageSize)
+            guard generation == loadGeneration else { return }
             offset += pageSize
             rows.append(contentsOf: next)
         } catch {
+            guard generation == loadGeneration, !error.isCancellation else { return }
             self.error = error.localizedDescription
         }
-        isLoading = false
+        if generation == loadGeneration { isLoading = false }
     }
 
     private func fetchPage(offset: Int) async throws -> [[String: JSONValue]] {
@@ -876,7 +901,7 @@ final class KVNamespaceListViewModel {
         do {
             namespaces = try await service.listNamespaces(accountId: accountId)
         } catch {
-            self.error = error.localizedDescription
+            if !error.isCancellation { self.error = error.localizedDescription }
         }
         isLoading = false
     }
@@ -922,7 +947,12 @@ final class KVKeyListViewModel {
         await task.value
     }
 
+    /// 每次整页刷新递增；刷新期间还在飞的「加载更多」据此丢弃，
+    /// 否则旧游标的下一页会被追加到刷新后的第一页后面（键重复、游标错乱）。
+    private var loadGeneration = 0
+
     private func fetchKeys() async {
+        loadGeneration += 1
         isLoading = true
         error = nil
         do {
@@ -940,16 +970,19 @@ final class KVKeyListViewModel {
     }
 
     func loadMore() async {
-        guard let cursor = nextCursor, !isLoadingMore else { return }
+        guard let cursor = nextCursor, !isLoadingMore, !isLoading else { return }
+        let generation = loadGeneration
         isLoadingMore = true
+        defer { isLoadingMore = false }
         do {
             let page = try await service.listKeys(accountId: accountId, namespaceId: namespaceId, cursor: cursor)
+            guard generation == loadGeneration else { return }
             keys.append(contentsOf: page.keys)
             nextCursor = page.nextCursor
         } catch {
+            guard generation == loadGeneration, !error.isCancellation else { return }
             self.error = error.localizedDescription
         }
-        isLoadingMore = false
     }
 
     /// 删除成功返回 true 并从列表移除

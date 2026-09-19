@@ -149,6 +149,12 @@ private struct DashboardHomeView: View {
     @Environment(AuthManager.self) private var auth
     @Environment(EntitlementStore.self) private var entitlements
     @Environment(\.modelContext) private var modelContext
+    /// 矮画布（折叠机外屏横放、iPhone 横屏、iPhone 镜像的扁窗口）：440pt 高度下
+    /// 常规问候区要吃掉一半屏，页头必须换紧凑排法，见 daybreakHeader
+    @Environment(\.verticalSizeClass) private var vSizeClass
+    /// 宽画布下顶部是 Tab 胶囊，锚在工具栏头像上的 TipKit popover 会横着盖住它，
+    /// 改走页内 TipView，见 accountSwitchTip 的两处用法
+    @Environment(\.horizontalSizeClass) private var hSizeClass
     // 域名 / Workers 缓存只取当前账号（父视图 .id(selectedAccount) 切换账号时重建以刷新谓词）；
     // DNS 记录缓存无 accountId 字段，按当前账号下的缓存域名在内存里过滤计数。
     @Query private var cachedZones: [CachedZone]
@@ -305,6 +311,9 @@ private struct DashboardHomeView: View {
             VStack(alignment: .leading, spacing: 20) {
                 daybreakHeader
                     .islandReveal(0)
+                if usesInlineTip {
+                    TipView(accountSwitchTip)
+                }
                 if let sid = auth.currentSessionId, auth.sessionsNeedingReauth.contains(sid) {
                     // token 缺 refresh token（无从续期）：给「重新授权」引导而非泛化的刷新失败——
                     // 一键重授权对同一身份原地换新令牌，成功后自动摘标并重拉数据
@@ -339,6 +348,8 @@ private struct DashboardHomeView: View {
                     .islandReveal(7)
             }
             .padding(OCLayout.pagePadding)
+            // 宽画布下收进可读宽度并居中；天空仍由外层 ScrollView 的 background 出血铺满
+            .ocReadableWidth()
         }
         .background { SkyBackground() }
         .navigationBarTitleDisplayMode(.inline)
@@ -617,33 +628,67 @@ private struct DashboardHomeView: View {
 
     private var daybreakHeader: some View {
         TimelineView(.everyMinute) { context in
-            VStack(alignment: .leading, spacing: 5) {
-                Text(context.date, format: .dateTime.month().day().weekday(.wide))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                if let account = session.selectedAccount {
-                    Text("\(timeGreeting(at: context.date))，\(account.name)")
-                        .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                    Text(healthLine)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                } else if session.isLoadingAccounts {
-                    Text("加载账号中…")
-                        .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                        .redacted(reason: .placeholder)
-                } else {
-                    Text("未选择账号")
-                        .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                        .foregroundStyle(.secondary)
-                }
-                HorizonArc(date: context.date)
-                    .frame(height: 44)
-                    .padding(.top, 2)
+            if vSizeClass == .compact {
+                compactHeader(at: context.date)
+            } else {
+                regularHeader(at: context.date)
             }
         }
-        .padding(.top, 4)
+        .padding(.top, vSizeClass == .compact ? 0 : 4)
+    }
+
+    private func regularHeader(at date: Date) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(date, format: .dateTime.month().day().weekday(.wide))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            greeting(at: date, font: .system(.largeTitle, design: .rounded, weight: .bold))
+            if session.selectedAccount != nil {
+                Text(healthLine)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            HorizonArc(date: date)
+                .frame(height: 44)
+                .padding(.top, 2)
+        }
+    }
+
+    /// 矮画布排法：日期整行省掉（状态栏本来就有），健康摘要挪到问候语同行的尾部，
+    /// 地平线弧压到 20pt——常规排法在 440pt 高度下要吃掉半屏，只剩一行宫格露出来。
+    private func compactHeader(at date: Date) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                greeting(at: date, font: .system(.title2, design: .rounded, weight: .bold))
+                if session.selectedAccount != nil {
+                    Text(healthLine)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+            }
+            HorizonArc(date: date)
+                .frame(height: 20)
+        }
+    }
+
+    @ViewBuilder
+    private func greeting(at date: Date, font: Font) -> some View {
+        if let account = session.selectedAccount {
+            Text("\(timeGreeting(at: date))，\(account.name)")
+                .font(font)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+        } else if session.isLoadingAccounts {
+            Text("加载账号中…")
+                .font(font)
+                .redacted(reason: .placeholder)
+        } else {
+            Text("未选择账号")
+                .font(font)
+                .foregroundStyle(.secondary)
+        }
     }
 
     // MARK: - 右上角账号头像菜单
@@ -696,56 +741,67 @@ private struct DashboardHomeView: View {
                 )
                 .symbolEffect(.bounce, value: session.selectedAccount?.id)
         }
-        .safePopoverTip(accountSwitchTip)
+        .safePopoverTip(accountSwitchTip, enabled: !usesInlineTip)
         .accessibilityLabel("切换账号")
         .accessibilityValue(session.selectedAccount?.name ?? "")
     }
 
     // MARK: - 资产指标格（2×2）
 
+    /// 账号切换提示走页内 `TipView` 还是锚在工具栏头像上的 popover。
+    /// 只有「宽且高」的画布（iPad 一档）才换页内：那种形态顶部是 Tab 胶囊，
+    /// popover 会横着压住它。横屏矮画布（956×440）的 Tab 栏在底部、不存在遮挡，
+    /// 而 440pt 高度里再插一张提示卡要吃掉近四分之一屏，那里继续用 popover 更划算。
+    private var usesInlineTip: Bool {
+        hSizeClass == .regular && vSizeClass != .compact
+    }
+
+    /// 资产指标格的列数：窄画布 2 列（2×2，原样），宽画布 4 列拉成一行。
+    /// 卡片是内容高、宽度随格子摊开——2 列摆在 672pt 可读宽里每张 314pt、长宽比 3.5:1，
+    /// 数字孤零零漂在横条里；4 列每张 151pt，比例回到 iPhone 上 1.9:1 的样子。
+    private var statColumns: [GridItem] {
+        Array(
+            repeating: GridItem(.flexible(), spacing: OCLayout.islandGap),
+            count: hSizeClass == .regular ? 4 : 2
+        )
+    }
+
     private var statIslands: some View {
-        VStack(spacing: OCLayout.islandGap) {
-            HStack(spacing: OCLayout.islandGap) {
-                StatIsland(
-                    label: String(localized: "域名"),
-                    value: cachedZones.count,
-                    sub: String(localized: "\(activeCount) 已启用")
-                )
-                StatIsland(
-                    label: "Workers",
-                    value: cachedWorkers.count,
-                    sub: String(localized: "已部署脚本")
-                )
-            }
-            HStack(spacing: OCLayout.islandGap) {
-                StatIsland(
-                    label: String(localized: "DNS 记录"),
-                    value: dnsRecordCount,
-                    sub: viewModel.dnsRecordTotal != nil
-                        ? String(localized: "全部域名")
-                        : String(localized: "已同步域名")
-                )
-                fourthStatIsland
-            }
+        LazyVGrid(columns: statColumns, spacing: OCLayout.islandGap) {
+            StatIsland(
+                label: String(localized: "域名"),
+                value: cachedZones.count,
+                sub: String(localized: "\(activeCount) 已启用")
+            )
+            StatIsland(
+                label: "Workers",
+                value: cachedWorkers.count,
+                sub: String(localized: "已部署脚本")
+            )
+            StatIsland(
+                label: String(localized: "DNS 记录"),
+                value: dnsRecordCount,
+                sub: viewModel.dnsRecordTotal != nil
+                    ? String(localized: "全部域名")
+                    : String(localized: "已同步域名")
+            )
+            fourthStatIsland
         }
     }
 
     /// 指标格骨架：首屏缓存为空且资产统计进行中时展示
     private var statSkeleton: some View {
-        VStack(spacing: OCLayout.islandGap) {
-            ForEach(0..<2, id: \.self) { row in
-                HStack(spacing: OCLayout.islandGap) {
-                    ForEach(0..<2, id: \.self) { column in
-                        VStack(alignment: .leading, spacing: 7) {
-                            SkeletonBlock(width: 40 + CGFloat(((row * 2 + column) * 17) % 26), height: 10)
-                            SkeletonBlock(width: 46, height: 24, cornerRadius: 7)
-                            SkeletonBlock(width: 64, height: 9)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(OCLayout.islandPadding)
-                        .glassIsland(cornerRadius: OCLayout.chipRadius)
-                    }
+        // 列数跟 statIslands 走同一个 statColumns，否则加载完会从 2×2 跳成一行、闪一下
+        LazyVGrid(columns: statColumns, spacing: OCLayout.islandGap) {
+            ForEach(0..<4, id: \.self) { index in
+                VStack(alignment: .leading, spacing: 7) {
+                    SkeletonBlock(width: 40 + CGFloat((index * 17) % 26), height: 10)
+                    SkeletonBlock(width: 46, height: 24, cornerRadius: 7)
+                    SkeletonBlock(width: 64, height: 9)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(OCLayout.islandPadding)
+                .glassIsland(cornerRadius: OCLayout.chipRadius)
             }
         }
         .skeletonPulse()

@@ -230,7 +230,7 @@ struct ZonePhaseRulesListView: View {
                     .glassRow()
                 }
                 .scrollContentBackground(.hidden)
-                .refreshable { await viewModel.load() }
+                .refreshable { await detachedRefresh { await viewModel.load() } }
             }
         }
         .background { SkyBackground() }
@@ -453,7 +453,7 @@ struct PageRulesListView: View {
                     .glassRow()
                 }
                 .scrollContentBackground(.hidden)
-                .refreshable { await viewModel.load() }
+                .refreshable { await detachedRefresh { await viewModel.load() } }
             }
         }
         .background { SkyBackground() }

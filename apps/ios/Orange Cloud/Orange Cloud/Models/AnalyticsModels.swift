@@ -49,8 +49,7 @@ nonisolated enum AnalyticsTimeRange: String, CaseIterable, Identifiable, Sendabl
     /// 当前周期的查询区间。小时级返回 ISO8601 datetime，天级返回 yyyy-MM-dd（UTC）
     func sinceUntil(now: Date = .now) -> (since: String, until: String) {
         if usesHourlyGroups {
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime]
+            let formatter = ISO8601Parse.plain
             return (
                 formatter.string(from: now.addingTimeInterval(-24 * 3600)),
                 formatter.string(from: now)
@@ -66,8 +65,7 @@ nonisolated enum AnalyticsTimeRange: String, CaseIterable, Identifiable, Sendabl
     /// 前一个等长周期（环比趋势用）
     func previousSinceUntil(now: Date = .now) -> (since: String, until: String) {
         if usesHourlyGroups {
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime]
+            let formatter = ISO8601Parse.plain
             return (
                 formatter.string(from: now.addingTimeInterval(-48 * 3600)),
                 formatter.string(from: now.addingTimeInterval(-24 * 3600))
@@ -83,8 +81,7 @@ nonisolated enum AnalyticsTimeRange: String, CaseIterable, Identifiable, Sendabl
 
     /// 统一 ISO8601 datetime 窗口（Workers 指标等 Time 标量过滤用，三个范围通用）
     func datetimeWindow(now: Date = .now) -> (since: String, until: String) {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
+        let formatter = ISO8601Parse.plain
         let seconds: TimeInterval = switch self {
         case .last24h: 24 * 3600
         case .last7d:  7 * 24 * 3600

@@ -1,0 +1,6 @@
+• Corrigido: a chave da lista de regras do WAF não respondia
+• Corrigido: desconexões inesperadas quando várias solicitações renovavam a sessão ao mesmo tempo; ficar offline não remove mais a conta
+• Corrigido: o envio no URL Scanner falhava
+• Corrigido: a lista de supressão do Email Routing não carregava
+• Snippets não salvam se o código não carregou, então nunca viram um arquivo vazio
+• Reabrir os logs ao vivo não falha mais; “Solicitações hoje” carrega mais rápido

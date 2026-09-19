@@ -73,6 +73,7 @@ struct TunnelListView: View {
                     if canWrite { showCreate = true } else { showDenied = true }
                 }
             }
+            .ocPriority(.primary)
             ToolbarItem(placement: .topBarTrailing) {
                 RefreshButton(
                     isLoading: viewModel.isLoading,
@@ -80,6 +81,7 @@ struct TunnelListView: View {
                     action: { Task { await load() } }
                 )
             }
+            .ocPriority(.secondary)
         }
         .sheet(isPresented: $showCreate) {
             if let accountId {

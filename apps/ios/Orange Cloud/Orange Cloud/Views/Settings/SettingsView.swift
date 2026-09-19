@@ -315,6 +315,9 @@ struct SettingsView: View {
                     Text("版本、评分、社区与法律信息。")
                 }
                 .glassRow()
+
+                // ── 来自柘家科技（同开发者的其他 App，放在最底部）──
+                MoreAppsSection()
             }
             .daybreakList()
             .navigationTitle("设置")

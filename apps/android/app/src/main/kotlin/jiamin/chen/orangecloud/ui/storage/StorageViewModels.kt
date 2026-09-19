@@ -32,6 +32,10 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 // MARK: - 简单列表（存储桶 / 数据库 / 命名空间）
 
@@ -359,10 +363,14 @@ class R2ObjectListViewModel @Inject constructor(
         _previewState.value = R2PreviewState()
     }
 
+    /** 当前列表请求；换目录 / 刷新时取消它，慢到的旧目录响应不能覆盖新目录的内容与游标 */
+    private var listJob: Job? = null
+
     fun loadFirst() {
         if (!hasScope) return
         cursor = null
-        viewModelScope.launch {
+        listJob?.cancel()
+        listJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, hasError = false, objects = emptyList(), folders = emptyList(), prefix = prefix) }
             fetchPage(reset = true)
             _uiState.update { it.copy(isLoading = false) }
@@ -384,7 +392,8 @@ class R2ObjectListViewModel @Inject constructor(
 
     fun loadMore() {
         if (!hasScope || cursor == null || _uiState.value.isLoadingMore) return
-        viewModelScope.launch {
+        listJob?.cancel()
+        listJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoadingMore = true) }
             fetchPage(reset = false)
             _uiState.update { it.copy(isLoadingMore = false) }
@@ -399,6 +408,7 @@ class R2ObjectListViewModel @Inject constructor(
                 return
             }
             val page = storageRepository.listObjects(accountId, bucket, prefix, cursor)
+            currentCoroutineContext().ensureActive()
             cursor = page.nextCursor
             val folders = R2Folder.makeList(page.folderPrefixes, prefix)
             _uiState.update {
@@ -408,6 +418,8 @@ class R2ObjectListViewModel @Inject constructor(
                     hasMore = page.nextCursor != null,
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _uiState.update { it.copy(hasError = true) }
         }
@@ -716,8 +728,10 @@ class D1TableViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val accountId = accountStore.selectedAccountId.value ?: error("no account")
-                offset += pageSize
-                val (rows, more) = fetchPage(accountId, offset)
+                // 先取成功再推进 offset：瞬时失败时 hasMore 仍为 true，下次点击会跳过整整一页
+                val next = offset + pageSize
+                val (rows, more) = fetchPage(accountId, next)
+                offset = next
                 _uiState.update { it.copy(rows = it.rows + rows, hasMore = more) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message ?: "error") }
@@ -849,10 +863,14 @@ class KVKeyListViewModel @Inject constructor(
         if (hasRead) loadFirst()
     }
 
+    /** 当前列表请求；刷新时取消它，飞行中的「加载更多」不能把旧页追加到刷新后的列表上 */
+    private var listJob: Job? = null
+
     fun loadFirst() {
         if (!hasRead) return
         cursor = null
-        viewModelScope.launch {
+        listJob?.cancel()
+        listJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, hasError = false, keys = emptyList()) }
             fetchPage(reset = true)
             _uiState.update { it.copy(isLoading = false) }
@@ -861,7 +879,8 @@ class KVKeyListViewModel @Inject constructor(
 
     fun loadMore() {
         if (!hasRead || cursor == null || _uiState.value.isLoadingMore) return
-        viewModelScope.launch {
+        listJob?.cancel()
+        listJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoadingMore = true) }
             fetchPage(reset = false)
             _uiState.update { it.copy(isLoadingMore = false) }
@@ -876,10 +895,13 @@ class KVKeyListViewModel @Inject constructor(
                 return
             }
             val (keys, next) = storageRepository.listKeys(accountId, namespaceId, cursor)
+            currentCoroutineContext().ensureActive()
             cursor = next
             _uiState.update {
                 it.copy(keys = if (reset) keys else it.keys + keys, hasMore = next != null)
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _uiState.update { it.copy(hasError = true) }
         }

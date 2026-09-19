@@ -64,8 +64,7 @@ nonisolated struct BillingInfo: Sendable {
         let workersSub = active.first { matches($0, keyword: "workers") }
         let r2Sub      = active.first { matches($0, keyword: "r2") }
 
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
+        let formatter = ISO8601Parse.plain
         let periodSource = workersSub ?? r2Sub ?? active.first
         let start = periodSource?.currentPeriodStart.flatMap { formatter.date(from: $0) }
         let end   = periodSource?.currentPeriodEnd.flatMap { formatter.date(from: $0) }

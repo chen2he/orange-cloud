@@ -318,6 +318,8 @@
     <string name="urls_server">Servidor</string>
     <string name="urls_status_code">Código de estado</string>
     <string name="urls_still_scanning">Aún se está escaneando. Vuelve a intentarlo con el mismo enlace en un momento.</string>
+    <string name="urls_recently_scanned">Esta URL se escaneó recientemente. Cloudflare aún no acepta un envío repetido. Inténtalo más tarde.</string>
+    <string name="snippet_content_unavailable">El contenido del snippet no se cargó, así que se bloqueó el guardado para no sobrescribirlo con contenido vacío. Vuelve e inténtalo de nuevo.</string>
     <string name="perm_url_scanner">Escaneo de URL</string>
     <string name="perm_url_scanner_desc">Envía un enlace para escanearlo y ver el informe</string>
     <string name="hc_notify_me">Avisarme cuando el origen falle</string>
@@ -454,6 +456,7 @@
     <string name="settings_privacy">Política de privacidad</string>
     <string name="settings_terms">Términos de uso</string>
     <string name="settings_about_footer">Orange Cloud · cliente de Cloudflare de terceros</string>
+    <string name="settings_about_copyright">© 2026 Zhe Tech Co., Ltd.</string>
 
     <string name="identity_title">Cuenta</string>
     <string name="identity_not_found">Esta cuenta ya no existe</string>

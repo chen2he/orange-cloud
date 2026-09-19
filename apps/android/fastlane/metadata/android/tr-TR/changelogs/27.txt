@@ -1,0 +1,6 @@
+• Düzeltildi: WAF kural listesindeki anahtar tepki vermiyordu
+• Düzeltildi: birden çok istek oturumu aynı anda yenilediğinde beklenmedik çıkışlar; çevrimdışı olmak artık hesabı kaldırmıyor
+• Düzeltildi: URL Scanner gönderimi başarısız oluyordu
+• Düzeltildi: Email Routing engelleme listesi yüklenmiyordu
+• Kodu yüklenemeyen Snippet kaydedilmiyor, canlı kod asla boş dosyayla değişmiyor
+• Canlı günlükleri yeniden açmak artık başarısız olmuyor; “Bugünkü istekler” daha hızlı

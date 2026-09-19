@@ -74,7 +74,12 @@ export async function processNotification(
 					   notification_type = excluded.notification_type,
 					   notification_subtype = excluded.notification_subtype,
 					   signed_date = excluded.signed_date,
-					   updated_at = excluded.updated_at`,
+					   updated_at = excluded.updated_at
+					 -- 乱序保护（与 subscriptions 同口径）：Apple 会重投/乱序，迟到的更旧通知
+					 -- 不能把 REFUND 行的 notification_type 又翻回 DID_RENEW。
+					 WHERE transactions.signed_date IS NULL
+					    OR excluded.signed_date IS NULL
+					    OR excluded.signed_date >= transactions.signed_date`,
 				)
 				.bind(
 					transaction.transactionId,

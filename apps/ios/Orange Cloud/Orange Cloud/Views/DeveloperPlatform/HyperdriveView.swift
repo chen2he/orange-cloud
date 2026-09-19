@@ -142,6 +142,15 @@ private struct HyperdriveDetailSheet: View {
     private var config: HyperdriveConfig? { viewModel.configs.first { $0.id == configId } }
     private var cachingEnabled: Bool { !(config?.caching?.disabled ?? false) }
 
+    /// 配置的次级动作。iOS 27+ 并入系统溢出菜单，以下版本走自建 ellipsis 菜单。
+    @ViewBuilder private var configActions: some View {
+        Button("重命名", systemImage: "pencil") { showRename = true }
+        Button("编辑缓存", systemImage: "bolt.horizontal") { showCaching = true }
+        Button("编辑连接", systemImage: "server.rack") { showConnection = true }
+        Divider()
+        Button("删除配置", systemImage: "trash", role: .destructive) { showDelete = true }
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -152,19 +161,21 @@ private struct HyperdriveDetailSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("完成") { dismiss() } }
-                if canWrite {
+                // 这组动作在 iOS 27+ 并入系统溢出菜单（见下方 ocOverflowActions）——
+                // HIG 要求 ellipsis 只留给系统溢出菜单，App 别再自建一个；
+                // iOS 26 及以下没有系统菜单，仍挂自建 ellipsis，两条路共用同一份 configActions。
+                if canWrite, !ProcessInfo.usesSystemToolbarOverflow {
                     ToolbarItem(placement: .topBarLeading) {
                         Menu {
-                            Button("重命名", systemImage: "pencil") { showRename = true }
-                            Button("编辑缓存", systemImage: "bolt.horizontal") { showCaching = true }
-                            Button("编辑连接", systemImage: "server.rack") { showConnection = true }
-                            Divider()
-                            Button("删除配置", systemImage: "trash", role: .destructive) { showDelete = true }
+                            configActions
                         } label: {
-                            Image(systemName: "ellipsis.circle")
+                            Label("更多", systemImage: "ellipsis.circle")
                         }
                     }
                 }
+            }
+            .ocOverflowActions {
+                if canWrite { configActions }
             }
             .sheet(isPresented: $showRename) {
                 if let config { HyperdriveRenameSheet(viewModel: viewModel, configId: configId, currentName: config.displayName) }

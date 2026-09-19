@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { findActiveCodesByEmail } from "@/lib/codes/store";
+import { claimRecoveryEmailSlot, findActiveCodesByEmail } from "@/lib/codes/store";
 import { sendCodesRecoveryEmail, type EmailBinding } from "@/lib/notify/email";
 
 // 找回激活码：按邮箱查该邮箱名下的有效码，重新发到「该邮箱」（只发给本人邮箱，不回显给请求方）。
@@ -21,7 +21,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
 	const { env, ctx } = getCloudflareContext();
 	const cores = await findActiveCodesByEmail(env.IAP_DB, email);
-	if (cores.length > 0) {
+	// 冷却期内重复请求静默吞掉（仍回 ok，不给请求方任何「有/没有」的信号）。
+	if (cores.length > 0 && (await claimRecoveryEmailSlot(env.IAP_DB, email))) {
 		const cfg = env as { EMAIL?: EmailBinding };
 		ctx.waitUntil(sendCodesRecoveryEmail(cfg.EMAIL, email, cores));
 	}

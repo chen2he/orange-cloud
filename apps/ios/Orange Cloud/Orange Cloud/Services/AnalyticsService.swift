@@ -485,9 +485,7 @@ struct AnalyticsService {
 
     private nonisolated static func parseDimension(_ dimensions: AnalyticsDimensions?) -> Date? {
         if let datetime = dimensions?.datetime {
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime]
-            return formatter.date(from: datetime)
+            return ISO8601Parse.plain.date(from: datetime)
         }
         if let day = dimensions?.date {
             return AnalyticsTimeRange.dayFormatter.date(from: day)

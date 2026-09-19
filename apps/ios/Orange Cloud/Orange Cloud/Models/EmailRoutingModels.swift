@@ -136,3 +136,16 @@ nonisolated struct EmailSuppression: Codable, Identifiable, Hashable, Sendable {
 nonisolated struct EmailSuppressionCreate: Codable, Sendable {
     let email: String
 }
+
+/// GET suppression 的顶层结构（非标准信封：无 success/errors）
+nonisolated struct EmailSuppressionPage: Codable, Sendable {
+    let result:  [EmailSuppression]?
+    let page:    Int?
+    let perPage: Int?
+    let total:   Int?
+
+    enum CodingKeys: String, CodingKey {
+        case result, page, total
+        case perPage = "per_page"
+    }
+}

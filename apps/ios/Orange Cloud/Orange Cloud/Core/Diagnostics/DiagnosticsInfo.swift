@@ -11,7 +11,7 @@ import UIKit
 nonisolated enum DiagnosticsInfo {
 
     /// 反馈收件邮箱（与官网 /contact 一致）
-    static let supportEmail = "orange-cloud@hz.do"
+    static let supportEmail = "support@zhe.ltd"
 
     /// 自动附带到反馈正文的诊断头。accountCount 只传数量，不传账号标识。
     @MainActor

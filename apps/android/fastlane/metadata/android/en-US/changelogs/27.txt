@@ -1,0 +1,6 @@
+• Fixed: the WAF rules list switch did nothing when tapped
+• Fixed: unexpected sign-outs when several requests renewed the session at once; going offline no longer removes the account
+• Fixed: URL Scanner submissions failed
+• Fixed: the Email Routing suppression list would not load
+• Snippets won't save if their code failed to load, so live code is never replaced by an empty file
+• Reopening live logs no longer fails; “Requests today” loads faster

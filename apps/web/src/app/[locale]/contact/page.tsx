@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
-const EMAIL = "orange-cloud@hz.do";
+const EMAIL = "support@zhe.ltd";
 
 export async function generateMetadata({
 	params,

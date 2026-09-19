@@ -13,12 +13,24 @@ struct HyperdriveService {
 
     init(client: CFAPIClient) { self.client = client }
 
+    /// 端点默认 per_page=20（上限 100）：不带参数第 21 个配置起就看不见
     func list(accountId: String) async throws -> [HyperdriveConfig] {
-        let response: CFAPIResponseArray<HyperdriveConfig> = try await client.get(
-            "accounts/\(accountId)/hyperdrive/configs"
-        )
-        guard response.success else { throw response.toAPIError() }
-        return response.result ?? []
+        var all: [HyperdriveConfig] = []
+        var page = 1
+        while page <= 20 {
+            let response: CFAPIResponseArray<HyperdriveConfig> = try await client.get(
+                "accounts/\(accountId)/hyperdrive/configs",
+                queryItems: [
+                    URLQueryItem(name: "page",     value: String(page)),
+                    URLQueryItem(name: "per_page", value: "100"),
+                ]
+            )
+            guard response.success else { throw response.toAPIError() }
+            all.append(contentsOf: response.result ?? [])
+            guard page < (response.resultInfo?.totalPages ?? 1) else { break }
+            page += 1
+        }
+        return all
     }
 
     func create(accountId: String, body: HyperdriveCreate) async throws -> HyperdriveConfig {

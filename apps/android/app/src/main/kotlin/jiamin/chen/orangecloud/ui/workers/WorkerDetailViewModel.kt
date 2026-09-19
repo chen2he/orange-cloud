@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 
 sealed interface WorkerDeleteEvent {
     data object Deleted : WorkerDeleteEvent
@@ -98,17 +100,24 @@ class WorkerDetailViewModel @Inject constructor(
         loadMetrics()
     }
 
+    private var metricsJob: Job? = null
+
     private fun loadMetrics() {
         if (accountId == null || !canViewMetrics) return
-        viewModelScope.launch {
+        // 切范围先取消上一轮：晚到的旧范围数据不能顶在新范围名下，旧轮也不能提前把加载态关掉
+        metricsJob?.cancel()
+        metricsJob = viewModelScope.launch {
             _metricsLoading.value = true
-            _metrics.value = runCatching {
-                analyticsRepository.workerMetrics(accountId, scriptName, _range.value)
-            }.getOrNull()
+            val range = _range.value
+            val metrics = runCatching {
+                analyticsRepository.workerMetrics(accountId, scriptName, range)
+            }.getOrElse { if (it is CancellationException) throw it; null }
             // 趋势序列单独 runCatching，新字段失败不拖累摘要卡
-            _series.value = runCatching {
-                analyticsRepository.workerSeries(accountId, scriptName, _range.value)
-            }.getOrDefault(emptyList())
+            val series = runCatching {
+                analyticsRepository.workerSeries(accountId, scriptName, range)
+            }.getOrElse { if (it is CancellationException) throw it; emptyList() }
+            _metrics.value = metrics
+            _series.value = series
             _metricsLoading.value = false
         }
     }

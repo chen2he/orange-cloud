@@ -103,5 +103,14 @@ data class EmailSuppression(
     val zones: List<String>? = null,
 )
 
+/** GET suppression 的顶层结构（非标准信封：无 success/errors） */
+@Serializable
+data class EmailSuppressionPage(
+    val result: List<EmailSuppression>? = null,
+    val page: Int? = null,
+    @SerialName("per_page") val perPage: Int? = null,
+    val total: Int? = null,
+)
+
 @Serializable
 data class EmailSuppressionCreate(val email: String)

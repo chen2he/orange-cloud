@@ -14,12 +14,24 @@ struct DurableObjectService {
 
     init(client: CFAPIClient) { self.client = client }
 
+    /// 端点默认 per_page=20（上限 1000）：不带参数第 21 个命名空间起就看不见
     func listNamespaces(accountId: String) async throws -> [DurableObjectNamespace] {
-        let response: CFAPIResponseArray<DurableObjectNamespace> = try await client.get(
-            "accounts/\(accountId)/workers/durable_objects/namespaces"
-        )
-        guard response.success else { throw response.toAPIError() }
-        return response.result ?? []
+        var all: [DurableObjectNamespace] = []
+        var page = 1
+        while page <= 20 {
+            let response: CFAPIResponseArray<DurableObjectNamespace> = try await client.get(
+                "accounts/\(accountId)/workers/durable_objects/namespaces",
+                queryItems: [
+                    URLQueryItem(name: "page",     value: String(page)),
+                    URLQueryItem(name: "per_page", value: "1000"),
+                ]
+            )
+            guard response.success else { throw response.toAPIError() }
+            all.append(contentsOf: response.result ?? [])
+            guard page < (response.resultInfo?.totalPages ?? 1) else { break }
+            page += 1
+        }
+        return all
     }
 
     /// 命名空间内的对象实例（只读，游标分页）。返回 (本页对象, 下一页游标)；游标为空即无更多。

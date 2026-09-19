@@ -2,7 +2,7 @@
 //  FeedbackView.swift
 //  Orange Cloud
 //
-//  设置 → 帮助与反馈：写反馈 → 系统邮件发到 orange-cloud@hz.do（自动带诊断头，可选附诊断日志）。
+//  设置 → 帮助与反馈：写反馈 → 系统邮件发到 support@zhe.ltd（自动带诊断头，可选附诊断日志）。
 //  无邮件账号时回退系统分享（正文 + 日志文件）。
 //
 

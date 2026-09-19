@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 
 /** 流量汇总（图表下方的概览卡）。 */
 data class TrafficSummary(
@@ -47,13 +50,15 @@ class ZoneAnalyticsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val analyticsRepository: AnalyticsRepository,
     authRepository: AuthRepository,
-    entitlementStore: jiamin.chen.orangecloud.core.purchase.EntitlementStore,
+    private val entitlementStore: jiamin.chen.orangecloud.core.purchase.EntitlementStore,
 ) : ViewModel() {
 
     private val zoneId: String = checkNotNull(savedStateHandle["zoneId"])
     private val zoneName: String = savedStateHandle.get<String>("zoneName").orEmpty()
     private val hasScope = authRepository.hasScope(Scopes.ANALYTICS_READ)
-    private val isPro = entitlementStore.isPro.value
+    /** 每次判断时现读：Play 的 queryPurchases 在 connect 后异步回来，冷启动直奔分析页时快照会是 false */
+    private val isPro: Boolean get() = entitlementStore.isPro.value
+    private var loadJob: Job? = null
 
     private val cache = mutableMapOf<AnalyticsTimeRange, List<TrafficDataPoint>>()
     private val countryCache = mutableMapOf<AnalyticsTimeRange, List<jiamin.chen.orangecloud.data.model.CountryTraffic>>()
@@ -92,20 +97,26 @@ class ZoneAnalyticsViewModel @Inject constructor(
         if (!force) {
             cache[range]?.let { apply(it); return }
         }
-        viewModelScope.launch {
+        // 快速切 7d→30d 时前一个请求还在飞：取消它，晚到的 7d 数据不能顶在 30d 名下
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, hasError = false) }
             try {
                 val points = analyticsRepository.zoneTraffic(zoneId, range)
                 cache[range] = points
                 apply(points)
                 // 按国家/地区为附加视图，失败不影响主图表。
-                val countries = runCatching { analyticsRepository.zoneCountryTraffic(zoneId, range) }.getOrDefault(emptyList())
+                val countries = runCatching { analyticsRepository.zoneCountryTraffic(zoneId, range) }
+                    .getOrElse { if (it is CancellationException) throw it; emptyList() }
                 countryCache[range] = countries
                 _uiState.update { it.copy(countries = countries) }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _uiState.update { it.copy(hasError = true) }
             } finally {
-                _uiState.update { it.copy(isLoading = false) }
+                // 被新一轮取消时 isLoading 归新一轮管
+                if (isActive) _uiState.update { it.copy(isLoading = false) }
             }
         }
     }

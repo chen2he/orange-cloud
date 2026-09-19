@@ -1,0 +1,6 @@
+• Corrigido: o interruptor da lista de regras da WAF não respondia
+• Corrigido: fins de sessão inesperados quando vários pedidos renovavam a sessão ao mesmo tempo; ficar offline já não remove a conta
+• Corrigido: o envio no URL Scanner falhava
+• Corrigido: a lista de supressão do Email Routing não carregava
+• Os Snippets não são guardados se o código não carregou, nunca ficando um ficheiro vazio
+• Reabrir os registos em direto já não falha; “Pedidos hoje” carrega mais depressa

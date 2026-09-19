@@ -1,0 +1,6 @@
+• Corrigé : l’interrupteur de la liste des règles WAF ne réagissait pas
+• Corrigé : déconnexions inattendues quand plusieurs requêtes renouvelaient la session ; hors ligne, le compte n’est plus supprimé
+• Corrigé : l’envoi dans URL Scanner échouait
+• Corrigé : la liste de suppression d’Email Routing ne se chargeait pas
+• Un Snippet au code non chargé n’est plus enregistré : jamais de fichier vide en ligne
+• Rouvrir les journaux en direct n’échoue plus ; « Requêtes du jour » s’affiche plus vite

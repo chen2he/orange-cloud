@@ -61,6 +61,20 @@ class CfApiClient @Inject constructor(
         return decodeResult(executeRaw("PATCH", path, emptyList(), payload, JSON_MEDIA_TYPE), serializer<T>())
     }
 
+    /**
+     * 不走 CF 标准信封的 2xx JSON 端点（URL Scanner v2、Email Routing suppression 列表等）：
+     * 顶层就是目标对象，没有 success/result 包装。非 2xx 仍由 executeRaw 统一抛错。
+     */
+    suspend inline fun <reified T> getBare(path: String, query: List<Pair<String, String>> = emptyList()): T {
+        val bytes = executeRaw("GET", path, query, null, JSON_MEDIA_TYPE)
+        return decodeBare(bytes, serializer<T>())
+    }
+
+    suspend inline fun <reified T, reified B> postBare(path: String, body: B): T {
+        val payload = json.encodeToString(serializer<B>(), body).encodeToByteArray()
+        return decodeBare(executeRaw("POST", path, emptyList(), payload, JSON_MEDIA_TYPE), serializer<T>())
+    }
+
     /** 只关心 success 的请求（DELETE 等）。非 2xx 由 executeRaw 抛错。 */
     suspend fun delete(path: String) {
         executeRaw("DELETE", path, emptyList(), null, JSON_MEDIA_TYPE)
@@ -318,6 +332,13 @@ class CfApiClient @Inject constructor(
     }
 
     // MARK: - 内部实现（@PublishedApi internal 供上方 inline 函数引用）
+
+    @PublishedApi
+    internal fun <T> decodeBare(bytes: ByteArray, serializer: KSerializer<T>): T = try {
+        json.decodeFromString(serializer, bytes.decodeToString())
+    } catch (e: Exception) {
+        throw ApiError.Decoding(e)
+    }
 
     @PublishedApi
     internal fun <T> decodeResult(bytes: ByteArray, elementSerializer: KSerializer<T>): T {

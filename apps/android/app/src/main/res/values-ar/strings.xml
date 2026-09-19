@@ -335,6 +335,8 @@
     <string name="urls_server">الخادم</string>
     <string name="urls_status_code">رمز الحالة</string>
     <string name="urls_still_scanning">لا يزال الفحص جاريًا. أعد المحاولة بالرابط نفسه بعد قليل.</string>
+    <string name="urls_recently_scanned">تم فحص هذا الرابط مؤخرًا. لا يقبل Cloudflare إعادة الإرسال حاليًا. حاول لاحقًا.</string>
+    <string name="snippet_content_unavailable">لم يتم تحميل محتوى المقتطف، لذا تم منع الحفظ لتجنب استبداله بمحتوى فارغ. ارجع وحاول مرة أخرى.</string>
     <string name="perm_url_scanner">فحص الرابط</string>
     <string name="perm_url_scanner_desc">إرسال رابط لفحص أمني وعرض التقرير</string>
     <string name="hc_notify_me">أبلغني عند تعطّل الخادم المصدر</string>
@@ -570,6 +572,7 @@
     <string name="settings_privacy">سياسة الخصوصية</string>
     <string name="settings_terms">شروط الاستخدام</string>
     <string name="settings_about_footer">Orange Cloud · عميل Cloudflare من طرف ثالث</string>
+    <string name="settings_about_copyright">© 2026 Zhe Tech Co., Ltd.</string>
     <string name="identity_title">الحساب</string>
     <string name="identity_not_found">هذا الحساب لم يعد موجودًا</string>
     <string name="identity_oauth_badge">OAuth 2.0</string>

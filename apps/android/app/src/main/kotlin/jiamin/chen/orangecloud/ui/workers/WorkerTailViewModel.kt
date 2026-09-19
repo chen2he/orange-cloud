@@ -21,6 +21,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import jiamin.chen.orangecloud.core.di.ApplicationScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 
 sealed interface TailConnState {
     data object Idle : TailConnState
@@ -69,6 +72,7 @@ class WorkerTailViewModel @Inject constructor(
     private val tailRepository: WorkerTailRepository,
     private val tailNotifier: TailNotifier,
     authRepository: AuthRepository,
+    @ApplicationScope private val externalScope: CoroutineScope,
 ) : ViewModel() {
 
     val scriptName: String = checkNotNull(savedStateHandle["scriptName"])
@@ -176,6 +180,8 @@ class WorkerTailViewModel @Inject constructor(
                 try {
                     socket.events().collect { handle(it) }
                     streamEnded(null)
+                } catch (e: CancellationException) {
+                    throw e   // 离开页面 / 主动停止：不是流故障，别走重连
                 } catch (e: Exception) {
                     streamEnded(e)
                 }
@@ -246,6 +252,12 @@ class WorkerTailViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         tailNotifier.cancel()
+        // viewModelScope 已经没了，DELETE tail 只能交给应用级 scope：
+        // 以前离开页面从不删服务端 tail 会话，反复进出会撞上 CF 每脚本并发 tail 上限、之后 createTail 一直失败。
+        val id = tailId ?: return
+        val acct = accountId ?: return
+        tailId = null
+        externalScope.launch { runCatching { tailRepository.deleteTail(acct, scriptName, id) } }
     }
 
     private fun line(timestampMs: Long, level: String, text: String) =

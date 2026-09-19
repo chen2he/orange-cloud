@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jiamin.chen.orangecloud.core.auth.AuthRepository
 import jiamin.chen.orangecloud.core.auth.Scopes
+import jiamin.chen.orangecloud.core.network.ApiError
 import jiamin.chen.orangecloud.data.model.URLScanResult
 import jiamin.chen.orangecloud.data.repository.AccountStore
 import jiamin.chen.orangecloud.data.repository.URLScannerRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -30,6 +32,8 @@ data class URLScannerUiState(
 
 sealed interface URLScannerEvent {
     data class Error(val message: String?) : URLScannerEvent
+    /** 409：同一主机名近期已扫过，Cloudflare 拒绝重复提交 */
+    data object RecentlyScanned : URLScannerEvent
 }
 
 @HiltViewModel
@@ -78,7 +82,14 @@ class URLScannerViewModel @Inject constructor(
                     }
                     _uiState.update { it.copy(result = report) }
                 }
-                .onFailure { eventChannel.send(URLScannerEvent.Error(it.message)) }
+                .onFailure {
+                    if (it is CancellationException) throw it
+                    if (it is ApiError.Http && it.status == 409) {
+                        eventChannel.send(URLScannerEvent.RecentlyScanned)
+                    } else {
+                        eventChannel.send(URLScannerEvent.Error(it.message))
+                    }
+                }
             _uiState.update { it.copy(isScanning = false) }
         }
     }

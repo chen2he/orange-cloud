@@ -22,6 +22,11 @@ nonisolated enum OCLayout {
     static let islandGap: CGFloat = 12
     /// 岛内边距
     static let islandPadding: CGFloat = 14
+    /// 宽画布下的内容可读宽度上限。对齐系统 readableContentGuide 的量级（~672pt）：
+    /// 再宽下去一行的两端就拉开到几百点，「图标+标签贴最左、值/箭头贴最右」中间全是空白。
+    /// iOS 27 起 App 会被自动 opt-in 可调尺寸（折叠机内屏 / iPhone 镜像 / iPad 上的 iPhone App），
+    /// 单列拉通是宽幅下最普遍的一类失配。
+    static let readableWidth: CGFloat = 672
 }
 
 // MARK: - 天空画布
@@ -216,10 +221,20 @@ extension View {
         modifier(IslandReveal(index: index))
     }
 
-    /// List 页接入晨昏：隐藏系统底色，铺天空画布（配合 glassRow 使用）
+    /// 宽画布下把内容收进可读宽度并居中；compact 宽度原样返回、零影响。
+    /// 只封顶不撑开——所以放进本来就窄的容器（如分栏的边栏）里也不会有副作用。
+    func ocReadableWidth(_ maxWidth: CGFloat = OCLayout.readableWidth) -> some View {
+        modifier(ReadableWidth(maxWidth: maxWidth))
+    }
+
+    /// List 页接入晨昏：隐藏系统底色，收进可读宽度，铺天空画布（配合 glassRow 使用）。
+    /// 顺序要紧：先收窄 List，再铺天空——天空挂在收窄后的外层全宽 frame 上，
+    /// 于是内容居中、天色仍然出血铺满。数据密集的表格页（D1 表、R2 对象列表）本就不走
+    /// 这个修饰器，不受影响。
     func daybreakList() -> some View {
         self
             .scrollContentBackground(.hidden)
+            .ocReadableWidth()
             .background { SkyBackground() }
     }
 
@@ -227,6 +242,24 @@ extension View {
     /// 用 OCGlass 纯色而非真材质：每行一个 backdrop blur 是列表掉帧主因，见 OCGlass 注释。
     func glassRow() -> some View {
         modifier(GlassRowBackground())
+    }
+}
+
+/// ocReadableWidth 的实现载体（要读 horizontalSizeClass 环境）
+private struct ReadableWidth: ViewModifier {
+
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    let maxWidth: CGFloat
+
+    func body(content: Content) -> some View {
+        if sizeClass == .regular {
+            content
+                .frame(maxWidth: maxWidth)
+                .frame(maxWidth: .infinity)   // 外层再撑满，把收窄后的内容顶到居中
+        } else {
+            content
+        }
     }
 }
 

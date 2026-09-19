@@ -129,7 +129,7 @@ fun SettingsScreen(
             // 带附件：ACTION_SEND（mailto 不支持 EXTRA_STREAM），偏向邮件应用
             Intent(Intent.ACTION_SEND).apply {
                 type = "message/rfc822"
-                putExtra(Intent.EXTRA_EMAIL, arrayOf("orange-cloud@hz.do"))
+                putExtra(Intent.EXTRA_EMAIL, arrayOf("support@zhe.ltd"))
                 putExtra(Intent.EXTRA_SUBJECT, feedbackSubject)
                 putExtra(Intent.EXTRA_TEXT, diag)
                 putExtra(Intent.EXTRA_STREAM, logUri)
@@ -138,7 +138,7 @@ fun SettingsScreen(
         } else {
             Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:")
-                putExtra(Intent.EXTRA_EMAIL, arrayOf("orange-cloud@hz.do"))
+                putExtra(Intent.EXTRA_EMAIL, arrayOf("support@zhe.ltd"))
                 putExtra(Intent.EXTRA_SUBJECT, feedbackSubject)
                 putExtra(Intent.EXTRA_TEXT, diag)
             }
@@ -288,7 +288,14 @@ fun SettingsScreen(
                 stringResource(R.string.settings_about_footer),
                 color = cs.onSurfaceVariant,
                 fontSize = 12.sp,
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                stringResource(R.string.settings_about_copyright),
+                color = cs.onSurfaceVariant,
+                fontSize = 12.sp,
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 24.dp),
                 textAlign = TextAlign.Center,
             )
         }

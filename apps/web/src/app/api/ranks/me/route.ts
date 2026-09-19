@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { fetchCountryRank, type RankParsed } from "@/lib/ranks/capture";
+import { fetchCountryRankCached, type RankParsed } from "@/lib/ranks/capture";
 
 // 访客所在地区的当前 App Store 排名（首页 ISR 缓存页 → 客户端 <HomeRankBadge> 挂载后请求本接口）。
 //
@@ -15,16 +15,17 @@ export const dynamic = "force-dynamic";
 
 const FALLBACK_COUNTRY = "us";
 
-async function safeRank(country: string): Promise<RankParsed | null> {
+async function safeRank(country: string, waitUntil?: (p: Promise<unknown>) => void): Promise<RankParsed | null> {
 	try {
-		return await fetchCountryRank(country);
+		return await fetchCountryRankCached(country, waitUntil);
 	} catch {
 		return null;
 	}
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-	const { cf } = getCloudflareContext();
+	const { cf, ctx } = getCloudflareContext();
+	const waitUntil = ctx?.waitUntil ? (p: Promise<unknown>) => ctx.waitUntil(p) : undefined;
 
 	// 地区来源：Cloudflare 的 cf.country / CF-IPCountry；?country= 仅供本地验证覆盖。
 	const ipCountry = (cf?.country ?? request.headers.get("cf-ipcountry") ?? "").toLowerCase();
@@ -36,12 +37,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
 	// 1) 实时查访客所在地区（合法两位国家码才查）。
 	let country = /^[a-z]{2}$/.test(visitor) ? visitor : "";
-	let parsed = country ? await safeRank(country) : null;
+	let parsed = country ? await safeRank(country, waitUntil) : null;
 
 	// 2) 访客地区无榜单数据（未上榜 / 未上架）→ 回落实时查 US（避免对 US 重复查）。
 	if ((!parsed || parsed.position == null) && country !== FALLBACK_COUNTRY) {
 		country = FALLBACK_COUNTRY;
-		parsed = await safeRank(FALLBACK_COUNTRY);
+		parsed = await safeRank(FALLBACK_COUNTRY, waitUntil);
 	}
 
 	// 3) US 也没上榜 → 不展示。

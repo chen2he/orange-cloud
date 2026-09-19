@@ -28,6 +28,10 @@ final class EntitlementStore {
     private(set) var hasLifetime = false
     /// 按 ProductID.all 顺序排列，付费墙直接展示
     private(set) var products: [Product] = []
+    /// 当前 Apple 账户仍可享受的首次优惠（免费试用等），按商品 ID。
+    /// 用过试用 / 订阅过同组的账户 Apple 判定不再有资格——此时不在表里，付费墙不能再写「免费试用」。
+    /// 资格未查清前为空（宁可少展示优惠，也不误导成免费）。
+    private(set) var eligibleIntroOffers: [String: Product.SubscriptionOffer] = [:]
     private(set) var isLoadingProducts = false
     /// 恢复购买进行中（防并发 AppStore.sync 互相取消；付费墙据此禁用按钮）
     private(set) var isRestoring = false
@@ -73,6 +77,7 @@ final class EntitlementStore {
                 purchaseError = String(localized: "无法加载商品信息，请稍后再试。")
             } else {
                 AppLog.purchase.info("已加载 \(self.products.count) 个商品")
+                await refreshIntroOfferEligibility()
             }
         } catch {
             AppLog.purchase.error("Product.products(for:) 失败：\(String(describing: error))")
@@ -149,5 +154,20 @@ final class EntitlementStore {
         hasLifetime = lifetime
         entitled = pro
         AppLog.purchase.info("entitlements refreshed: pro=\(pro) lifetime=\(lifetime)")
+        // 购买 / 恢复 / 退款都可能改变试用资格
+        await refreshIntroOfferEligibility()
+    }
+
+    private func refreshIntroOfferEligibility() async {
+        var eligible: [String: Product.SubscriptionOffer] = [:]
+        for product in products {
+            guard let subscription = product.subscription,
+                  let offer = subscription.introductoryOffer else { continue }
+            if await subscription.isEligibleForIntroOffer {
+                eligible[product.id] = offer
+            }
+        }
+        eligibleIntroOffers = eligible
+        AppLog.purchase.info("intro offer eligible: \(eligible.keys.sorted().joined(separator: ", "))")
     }
 }

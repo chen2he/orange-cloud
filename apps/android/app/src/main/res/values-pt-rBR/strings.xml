@@ -317,6 +317,8 @@
     <string name="urls_server">Servidor</string>
     <string name="urls_status_code">Código de status</string>
     <string name="urls_still_scanning">Ainda verificando. Tente o mesmo link novamente em instantes.</string>
+    <string name="urls_recently_scanned">Esta URL foi verificada recentemente. A Cloudflare ainda não aceita um novo envio. Tente novamente mais tarde.</string>
+    <string name="snippet_content_unavailable">O conteúdo do snippet não foi carregado, então o salvamento foi bloqueado para não sobrescrevê-lo com conteúdo vazio. Volte e tente novamente.</string>
     <string name="perm_url_scanner">Verificação de URL</string>
     <string name="perm_url_scanner_desc">Envie um link para verificação de segurança e veja o relatório</string>
     <string name="hc_notify_me">Avisar quando a origem falhar</string>
@@ -453,6 +455,7 @@
     <string name="settings_privacy">Política de Privacidade</string>
     <string name="settings_terms">Termos de Uso</string>
     <string name="settings_about_footer">Orange Cloud · cliente Cloudflare de terceiros</string>
+    <string name="settings_about_copyright">© 2026 Zhe Tech Co., Ltd.</string>
 
     <string name="identity_title">Conta</string>
     <string name="identity_not_found">Esta conta não existe mais</string>

@@ -331,6 +331,8 @@
     <string name="urls_server">Server</string>
     <string name="urls_status_code">Status code</string>
     <string name="urls_still_scanning">Still scanning. Try the same link again in a moment.</string>
+    <string name="urls_recently_scanned">This URL was scanned recently. Cloudflare won\'t accept a repeat submission yet. Try again later.</string>
+    <string name="snippet_content_unavailable">The snippet body hasn\'t loaded, so saving was blocked to avoid overwriting it with empty content. Go back and retry.</string>
     <string name="perm_url_scanner">URL Scan</string>
     <string name="perm_url_scanner_desc">Submit a link for a security scan and view the report</string>
     <string name="hc_notify_me">Notify me when the origin goes down</string>
@@ -473,6 +475,7 @@
     <string name="settings_privacy">Privacy Policy</string>
     <string name="settings_terms">Terms of Use</string>
     <string name="settings_about_footer">Orange Cloud · third-party Cloudflare client</string>
+    <string name="settings_about_copyright">© 2026 Zhe Tech Co., Ltd.</string>
 
     <!-- Account detail -->
     <string name="identity_title">Account</string>

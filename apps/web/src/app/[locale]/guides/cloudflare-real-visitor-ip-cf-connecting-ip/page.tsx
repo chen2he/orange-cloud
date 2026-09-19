@@ -14,6 +14,7 @@ const DOCS_HEADERS = "https://developers.cloudflare.com/fundamentals/reference/h
 const DOCS_CF_CONNECTING_IP = `${DOCS_HEADERS}#cf-connecting-ip`;
 const DOCS_TRUE_CLIENT_IP = `${DOCS_HEADERS}#true-client-ip-enterprise-plan-only`;
 const DOCS_XFF = `${DOCS_HEADERS}#x-forwarded-for`;
+const DOCS_CF_IPCOUNTRY = `${DOCS_HEADERS}#cf-ipcountry`;
 const DOCS_RESTORE =
 	"https://developers.cloudflare.com/support/troubleshooting/restoring-visitor-ips/restoring-original-visitor-ips/";
 const DOCS_IP_ADDRESSES = "https://developers.cloudflare.com/fundamentals/concepts/cloudflare-ip-addresses/";
@@ -27,28 +28,33 @@ const APACHE_REMOTEIP = "https://httpd.apache.org/docs/2.4/mod/mod_remoteip.html
 /** FAQ 一处定义：可见文本与 FAQPage JSON-LD 同源，保证逐字一致 */
 const FAQ: Array<{ q: string; a: string }> = [
 	{
-		q: "How do I get the real visitor IP behind Cloudflare?",
-		a: "Read the CF-Connecting-IP request header instead of the address of the connection itself. Every proxied request Cloudflare forwards to your origin carries it, and it always holds exactly one address.",
+		q: "Why do my server logs show Cloudflare IP addresses instead of the visitor's?",
+		a: "Because on a proxied hostname Cloudflare is the client that connects to your origin, so the connection really does come from a Cloudflare address. Cloudflare documents that the original visitor address is moved into an appended request header called CF-Connecting-IP, and your web server has to be configured to log that header instead of the connection.",
 	},
 	{
-		q: "What is the CF-Connecting-IP header?",
-		a: "It is the header Cloudflare adds to a proxied request to give the origin the client IP address that connected to Cloudflare. Cloudflare only sends it on traffic from its own edge to your origin, so it never appears on a request that reached your server some other way.",
+		q: "Why do all my visitors appear to have the same IP address?",
+		a: "They are sharing the handful of Cloudflare addresses that served them, because Cloudflare IP addresses are shared by every proxied hostname. Anything that counts or identifies people by address — unique visitor stats, rate limits, ban lists, one-vote-per-IP logic — is really counting Cloudflare data centres until you restore the real address.",
 	},
 	{
-		q: "Should I use CF-Connecting-IP or X-Forwarded-For?",
-		a: "Cloudflare recommends CF-Connecting-IP or True-Client-IP over X-Forwarded-For, because both contain a single address in a consistent format. X-Forwarded-For is a list that grows by one entry for every proxy in front of Cloudflare, so parsing it correctly is harder than it looks.",
+		q: "How do I restore the original visitor IP in Nginx or Apache?",
+		a: "In Nginx, use the built-in real IP module with real_ip_header CF-Connecting-IP plus one set_real_ip_from line for each Cloudflare range. In Apache, Cloudflare now recommends mod_remoteip with RemoteIPHeader CF-Connecting-IP and RemoteIPTrustedProxy entries, and you must also change %h to %a in your LogFormat or the log keeps printing Cloudflare's address.",
 	},
 	{
 		q: "Can the CF-Connecting-IP header be spoofed?",
-		a: "Not through Cloudflare, but a request that reaches your origin directly can carry any header its sender likes. That is why real-IP modules take a trusted proxy list, and why Cloudflare recommends blocking traffic at the origin that does not come from its published IP ranges.",
+		a: "Not through Cloudflare, but a request that reaches your origin directly can carry any header its sender likes. That is why real IP modules take a trusted proxy list, and why Cloudflare recommends blocking traffic at the origin that does not come from its published IP ranges.",
 	},
 	{
 		q: "Why is CF-Connecting-IP missing from my requests?",
-		a: "The three documented reasons are that the record is not proxied, that the Remove visitor IP headers Managed Transform is enabled on the zone, or that Pseudo IPv4 is set to Overwrite Headers, which replaces the value with a Class E address and moves the real one into CF-Connecting-IPv6.",
+		a: "The documented reasons are that the record is not proxied, that the Remove visitor IP headers Managed Transform is enabled on the zone, or that Pseudo IPv4 is set to Overwrite Headers, which replaces the value with a Class E address and preserves the real one in CF-Connecting-IPv6.",
 	},
 ];
 
 const RELATED: RelatedLink[] = [
+	{
+		href: "/guides/cloudflare-hide-origin-ip",
+		label: "Can someone still find my origin IP behind Cloudflare?",
+		note: "The reason this header can be trusted at all: an origin that only accepts Cloudflare is the other half of the job.",
+	},
 	{
 		href: "/guides/what-is-the-orange-cloud-in-cloudflare",
 		label: "What does the orange cloud mean in Cloudflare?",
@@ -146,7 +152,7 @@ export default async function VisitorIpGuide({ params }: { params: Promise<{ loc
 			<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 			<GuideShell
 				title={guide.h1}
-				lede="Every entry in the access log is a Cloudflare address, the rate limiter is throttling continents at a time, and the ban list has stopped meaning anything. Here is where the visitor went, and how to get them back."
+				lede="Every entry in the access log is a Cloudflare address, the rate limiter is throttling continents at a time, and the ban list has stopped meaning anything. Here is where the visitor went, how to get them back, and the reaction that turns this into an outage."
 				updated={guide.updated}
 				readingTime={guide.readingTime}
 				related={RELATED}
@@ -154,10 +160,11 @@ export default async function VisitorIpGuide({ params }: { params: Promise<{ loc
 				<div className="glass r-island note p-6 sm:p-7">
 					<p>
 						<strong>
-							The visitor&rsquo;s address is in the <code>CF-Connecting-IP</code> request header.
+							Because Cloudflare is the client now. The visitor&rsquo;s address moved into the{" "}
+							<code>CF-Connecting-IP</code> request header.
 						</strong>{" "}
-						Configure your web server to read that instead of the connection&rsquo;s source address — and to
-						believe it only on connections from Cloudflare&rsquo;s published IP ranges.
+						Configure your web server to log that header instead of the connection — and to believe it only
+						on connections from Cloudflare&rsquo;s published IP ranges.
 					</p>
 				</div>
 
@@ -173,6 +180,52 @@ export default async function VisitorIpGuide({ params }: { params: Promise<{ loc
 				</p>
 
 				<VisitorIpTrust />
+
+				<h2 id="what-breaks">What breaks when every visitor shares an address</h2>
+				<p>
+					Cloudflare&rsquo;s IP addresses are shared by every proxied hostname, so this is not only a cosmetic
+					logging problem. Anything that counts, identifies or punishes by address quietly changed meaning the
+					moment the record went orange, and none of it throws an error:
+				</p>
+				<ul>
+					<li>
+						<strong>Analytics that count unique visitors</strong> now count data centres. Server-side stats
+						collapse; a JavaScript analytics tag is unaffected, because it reads the address from the
+						visitor&rsquo;s own connection.
+					</li>
+					<li>
+						<strong>Per-IP rate limits and one-vote-per-IP logic</strong> apply to everyone behind the same
+						edge address at once. The limit still fires — just against a crowd instead of a person.
+					</li>
+					<li>
+						<strong>Ban lists and blocklists</strong> either hit nobody or hit a whole region, and the
+						country rules built on <code>REMOTE_ADDR</code> now read Cloudflare&rsquo;s location rather than
+						the visitor&rsquo;s. Geolocation has its own header,{" "}
+						<a href={DOCS_CF_IPCOUNTRY} target="_blank" rel="noopener noreferrer">
+							<code>CF-IPCountry</code>
+						</a>
+						, but Cloudflare only adds it once the <em>Add visitor location headers</em> Managed Transform is
+						enabled — it is not there by default.
+					</li>
+				</ul>
+				<p>
+					The expensive one is the failure that fixes itself into an outage. Cloudflare warns that to your
+					origin&rsquo;s firewall, proxied traffic{" "}
+					<a href={DOCS_IP_ADDRESSES} target="_blank" rel="noopener noreferrer">
+						looks like a small number of sources sending a high volume of requests
+					</a>{" "}
+					— exactly the shape that automatic blocking and rate limiting are built to stop. So fail2ban, or a
+					host firewall left on its defaults, does what it was told: it bans the noisiest addresses. Those
+					addresses are Cloudflare, every visitor is behind them, and the site goes dark for everyone at once.
+					What you see next is{" "}
+					<Link href="/guides/cloudflare-error-522-connection-timed-out">error 522</Link>, because the proxy
+					can no longer reach the origin either.
+				</p>
+				<p>
+					That is the real reason to restore the visitor IP before you tune anything else: until your server
+					reads the right address, every security tool you own is aiming at the wrong target — and some of
+					them are aiming at your own traffic.
+				</p>
 
 				<h2 id="headers">The headers that carry the address</h2>
 				<p>
@@ -277,10 +330,13 @@ real_ip_header CF-Connecting-IP;`}</code>
 				<p>
 					To keep the address in the access log, Cloudflare notes that you add{" "}
 					<code>$http_cf_connecting_ip</code> — and, if you want it, <code>$http_x_forwarded_for</code> — to
-					your <code>log_format</code> directive. It is the same header throughout, spelled three ways
-					depending on where you are looking: <code>CF-Connecting-IP</code> in Cloudflare&rsquo;s reference,{" "}
-					<code>cf-connecting-ip</code> on the wire, and <code>$http_cf_connecting_ip</code> once Nginx has
-					turned it into a variable.
+					your <code>log_format</code> directive. It is one header throughout, and the spelling changes with
+					the context rather than the meaning: <code>CF-Connecting-IP</code> in Cloudflare&rsquo;s reference,{" "}
+					<code>cf-connecting-ip</code> on the wire, <code>$http_cf_connecting_ip</code> once Nginx has turned
+					it into a variable, and <code>HTTP_CF_CONNECTING_IP</code> inside PHP&rsquo;s <code>$_SERVER</code>.
+					Header names
+					are case-insensitive, so the CF Connecting IP you see written without hyphens in forum posts is the
+					same thing again.
 				</p>
 
 				<h3 id="apache">Apache</h3>
@@ -329,10 +385,10 @@ RemoteIPTrustedProxy 198.51.100.0/24   # repeat for every published range`}</cod
 						the ranges at{" "}
 						<a href={CF_IPS} target="_blank" rel="noopener noreferrer">
 							cloudflare.com/ips
-						</a>{" "}
-						and says plainly that the list needs updating regularly — a config written three years ago is
-						probably incomplete now, so pull it from the published source on a schedule rather than pasting
-						it once.
+						</a>
+						. The ranges do not change often, which is the trap: a list pasted in by hand survives long
+						enough to feel permanent, and Cloudflare publishes new ranges to that page before putting them
+						into production. Pull it from the published source — or the API — rather than from memory.
 					</li>
 					<li>
 						<strong>Refuse the connections in the first place.</strong> Cloudflare recommends blocking all
@@ -381,12 +437,6 @@ RemoteIPTrustedProxy 198.51.100.0/24   # repeat for every published range`}</cod
 						traffic passes through a Worker, verify the value rather than assuming it.
 					</li>
 				</ul>
-				<p>
-					One last trap worth knowing about, because it produces a header that vanishes for no visible reason:
-					Cloudflare may drop request headers whose <em>names</em> it considers invalid by Nginx&rsquo;s rules
-					— a custom header with a dot in the name, for instance. If you are forwarding a visitor address under
-					a name of your own devising, that is a good place to look before you suspect the proxy.
-				</p>
 
 				<h2 id="faq">FAQ</h2>
 				{FAQ.map((item) => (

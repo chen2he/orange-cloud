@@ -142,7 +142,7 @@
 		"privacy": "プライバシーポリシー",
 		"terms": "利用規約",
 		"contact": "お問い合わせ",
-		"copyright": "© 2026 Orange Cloud",
+		"copyright": "© 2026 <company>Zhe Tech Co., Ltd.</company>",
 		"disclaimer": "Orange Cloud は独立した第三者クライアントであり、Cloudflare, Inc. との提携・承認・後援関係はありません。Cloudflare は Cloudflare, Inc. の商標です。"
 	},
 	"contact": {
@@ -158,7 +158,7 @@
 	},
 	"privacy": {
 		"title": "プライバシーポリシー",
-		"updated": "最終更新：2026 年 6 月",
+		"updated": "最終更新：2026 年 9 月",
 		"sections": [
 			{
 				"h": "データの収集",
@@ -171,6 +171,10 @@
 			{
 				"h": "第三者サービス",
 				"p": "Orange Cloud は Cloudflare 公式 API エンドポイント（api.cloudflare.com および dash.cloudflare.com）とのみ通信し、その他の第三者サービスは使用しません。"
+			},
+			{
+				"h": "購入と返金",
+				"p": "Pro サブスクリプションと買い切りは Apple App Store を通じて行われ、支払い情報は Apple が処理するため、当方が知ることはありません。Apple から当方のサーバーには、購入・更新・返金の取引記録（取引 ID、商品、金額、ストアの地域。氏名や Apple アカウントは含みません）が送られ、会計処理にのみ使用します。Apple に返金を申請した場合、その購入が正常に提供されたかどうかと返金に対する当方の意見を、Apple の判断材料として Apple に提供することに同意したものとみなします。これらの情報がトラッキングに使われることはありません。"
 			}
 		]
 	},

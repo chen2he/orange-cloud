@@ -136,14 +136,14 @@ export const GUIDES: GuideMeta[] = [
 	},
 	{
 		slug: "cloudflare-real-visitor-ip-cf-connecting-ip",
-		h1: "How Do You Get the Real Visitor IP Behind Cloudflare?",
-		title: "Cloudflare Real Visitor IP: CF-Connecting-IP Explained",
+		h1: "Why Do My Server Logs Show Cloudflare\u2019s IP, Not the Visitor\u2019s?",
+		title: "Server Logs Show Cloudflare IPs Instead of Visitors",
 		description:
-			"The visitor's real address arrives in the CF-Connecting-IP header. Read that instead of the connection source, and trust it only from Cloudflare's IPs.",
+			"Because Cloudflare is the client now. The visitor\u2019s address moves into the CF-Connecting-IP request header, and your server has to be told to read it.",
 		blurb:
-			"Your logs fill up with Cloudflare addresses because Cloudflare is the client now. Which header carries the real one, why X-Forwarded-For is the wrong one to read, and the trust boundary every guide leaves out.",
-		updated: "2026-08-28",
-		readingTime: "8 min read",
+			"Every entry is a Cloudflare address, so the rate limiter, the ban list and the geo rules all quietly stopped meaning anything \u2014 and a firewall that reacts on its own can take the site down.",
+		updated: "2026-09-12",
+		readingTime: "9 min read",
 	},
 	{
 		slug: "cloudflare-error-521-web-server-is-down",
@@ -177,6 +177,61 @@ export const GUIDES: GuideMeta[] = [
 			"The connection succeeded \u2014 that is what makes 524 different from every other 52x code. The two clocks behind it, and what to do when your plan cannot raise either one.",
 		updated: "2026-09-05",
 		readingTime: "8 min read",
+	},
+	{
+		slug: "cloudflare-error-1020-access-denied",
+		h1: "Why Am I Seeing Cloudflare Error 1020: Access Denied?",
+		title: "Cloudflare Error 1020: Access Denied, Explained",
+		description:
+			"Error 1020 means a security rule on that site blocked your request on purpose. It is a decision by the site owner, not an outage, and arrives as HTTP 403.",
+		blurb:
+			"Someone wrote a rule and you matched it. Which Cloudflare feature emits 1020 rather than 1015 or 1106, and the one log that names the rule that did it.",
+		updated: "2026-09-09",
+		readingTime: "8 min read",
+	},
+	{
+		slug: "cloudflare-hide-origin-ip",
+		h1: "Can Someone Still Find My Origin IP Behind Cloudflare?",
+		title: "Hide Your Origin IP Behind Cloudflare: What Works",
+		description:
+			"Proxying hides your origin address from DNS, but does not make it secret. Anyone who learns it can skip Cloudflare unless your origin refuses them.",
+		blurb:
+			"The orange cloud hides an address; it does not defend one. The five ways an origin IP gets out, and why only a rule at the origin itself actually closes the door.",
+		updated: "2026-09-09",
+		readingTime: "9 min read",
+	},
+	{
+		slug: "cloudflare-error-525-ssl-handshake-failed",
+		h1: "Why Am I Getting Cloudflare Error 525: SSL Handshake Failed?",
+		title: "Cloudflare Error 525: SSL Handshake Failed, Explained",
+		description:
+			"Error 525 means the TLS handshake between Cloudflare and your origin failed. It happens in Full as well as Full (strict), not just strict.",
+		blurb:
+			"The connection got as far as TLS and died there. Four things have to hold for the handshake to finish \u2014 and unlike a 526, relaxing the encryption mode fixes none of them.",
+		updated: "2026-09-14",
+		readingTime: "8 min read",
+	},
+	{
+		slug: "cloudflare-error-codes",
+		h1: "What Do Cloudflare\u2019s Error Codes Mean?",
+		title: "Cloudflare Error Codes: 5xx vs 1xxx, and Who Fixes What",
+		description:
+			"A 520\u2013527 code describes the hop from Cloudflare to your origin. A 1xxx code is Cloudflare\u2019s own decision, and is not an HTTP status code at all.",
+		blurb:
+			"The range tells you who has to fix it. Why a 1xxx number never reaches your monitoring, which four codes could come from either side, and how one Ray ID becomes one log line.",
+		updated: "2026-09-16",
+		readingTime: "8 min read",
+	},
+	{
+		slug: "cloudflare-block-ai-crawlers",
+		h1: "How Do You Block AI Crawlers on Cloudflare?",
+		title: "Block AI Crawlers on Cloudflare: Defaults Change Sept 15",
+		description:
+			"robots.txt only states a preference. Enforcement comes from AI Crawl Control or the AI bot policies, and new-domain defaults change on September 15, 2026.",
+		blurb:
+			"Stating a preference, enforcing it, and wasting a crawler's time are three different tools. Which one actually stops a crawler, and what changes on September 15.",
+		updated: "2026-09-09",
+		readingTime: "9 min read",
 	},
 ];
 

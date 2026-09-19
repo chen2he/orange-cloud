@@ -62,7 +62,7 @@ const RELATED: RelatedLink[] = [
 	},
 	{
 		href: "/guides/cloudflare-real-visitor-ip-cf-connecting-ip",
-		label: "How do you get the real visitor IP behind Cloudflare?",
+		label: "Why do my server logs show Cloudflare\u2019s IP, not the visitor\u2019s?",
 		note: "The first thing proxying changes at the origin: every connection now comes from Cloudflare, and the visitor moves into a header.",
 	},
 	{

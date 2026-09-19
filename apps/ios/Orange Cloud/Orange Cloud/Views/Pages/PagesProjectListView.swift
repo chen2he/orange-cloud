@@ -72,7 +72,7 @@ struct PagesProjectListView: View {
                     .glassRow()
                 }
                 .scrollContentBackground(.hidden)
-                .refreshable { await load() }
+                .refreshable { await detachedRefresh { await load() } }
             }
         }
         .background { SkyBackground() }
@@ -83,11 +83,13 @@ struct PagesProjectListView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 ResourceSortMenu(sort: $sort)
             }
+            .ocPriority(.secondary)
             ToolbarItem(placement: .topBarTrailing) {
                 Button("创建项目", systemImage: "plus") {
                     if canWrite { showCreate = true } else { writeDenied = true }
                 }
             }
+            .ocPriority(.primary)
         }
         .sheet(isPresented: $showCreate) {
             PagesCreateView(viewModel: viewModel, accountId: session.selectedAccount?.id ?? "")

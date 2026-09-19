@@ -76,7 +76,11 @@ export async function storeLedgerRows(
 					   notification_type = excluded.notification_type,
 					   notification_subtype = excluded.notification_subtype,
 					   signed_date = excluded.signed_date,
-					   updated_at = excluded.updated_at`,
+					   updated_at = excluded.updated_at
+					 -- 乱序保护：Pub/Sub 至少一次投递且不保序，迟到的旧事件不覆盖新状态。
+					 WHERE transactions.signed_date IS NULL
+					    OR excluded.signed_date IS NULL
+					    OR excluded.signed_date >= transactions.signed_date`,
 				)
 				.bind(
 					tx.orderId,

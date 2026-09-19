@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 
 // MARK: - 列表
 
@@ -77,6 +78,8 @@ class SnippetsViewModel @Inject constructor(
 // MARK: - 编辑器
 
 sealed interface SnippetEditEvent {
+    /** 远端正文没拉到，拒绝保存（否则会把空正文写上去） */
+    data object ContentUnavailable : SnippetEditEvent
     data object Saved : SnippetEditEvent
     data object Deleted : SnippetEditEvent
     /** 触发规则写入成功：只提示，不关页 */
@@ -93,6 +96,8 @@ data class SnippetEditUiState(
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val canWrite: Boolean = false,
+    /** 远端正文拉取失败：编辑器里是空的，绝不能拿这个空正文去覆盖线上 snippet */
+    val loadFailed: Boolean = false,
 )
 
 @HiltViewModel
@@ -133,11 +138,20 @@ class SnippetEditorViewModel @Inject constructor(
 
     init {
         if (initialName.isNotEmpty()) {
-            viewModelScope.launch {
-                val code = runCatching { snippetRepository.content(zoneId, initialName) }.getOrNull().orEmpty()
-                _uiState.update { it.copy(code = code, isLoading = false) }
-            }
+            loadContent()
             viewModelScope.launch { reloadRules() }
+        }
+    }
+
+    /** 拉正文。失败置 loadFailed（保存被拒），用户可重试。 */
+    fun loadContent() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, loadFailed = false) }
+            val result = runCatching { snippetRepository.content(zoneId, initialName) }
+            result.exceptionOrNull()?.let { if (it is CancellationException) throw it }
+            _uiState.update {
+                it.copy(code = result.getOrNull() ?: it.code, isLoading = false, loadFailed = result.isFailure)
+            }
         }
     }
 
@@ -230,6 +244,11 @@ class SnippetEditorViewModel @Inject constructor(
     fun save() {
         val s = _uiState.value
         if (!canWrite || s.name.isBlank()) return
+        if (s.loadFailed || s.isLoading) {
+            // 弱网下正文没拉到、编辑器一片空白：这时保存等于把线上的边缘 JS 换成空文件
+            viewModelScope.launch { eventChannel.send(SnippetEditEvent.ContentUnavailable) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             try {

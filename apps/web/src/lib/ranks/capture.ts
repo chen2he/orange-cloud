@@ -67,6 +67,54 @@ export async function fetchCountryRank(country: string): Promise<RankParsed | nu
 	return parseRankPayload(json);
 }
 
+/** 边缘缓存里的一条榜单结果；把 null（未上榜 / 未上架）也存下来，否则对没上架地区的每次访问都要打 Apple。 */
+interface CachedRank {
+	parsed: RankParsed | null;
+}
+
+const RANK_CACHE_TTL_SECONDS = 3600;
+
+/**
+ * 带边缘缓存的单地区查询（首页徽章 / README 徽章这类**每个访客都会触发**的路径用它）。
+ * Worker 的响应不会被边缘缓存，浏览器侧的 cache-control 只约束同一访客；没有服务端缓存时
+ * 任何人循环请求 ?country=xx 都会被原样放大成对 Apple 的出站请求（还烧 Worker 子请求配额）。
+ * 用 Cache API 按地区缓存 1 小时；本地 next dev 没有 caches.default 时退化为直连。
+ */
+export async function fetchCountryRankCached(
+	country: string,
+	waitUntil?: (p: Promise<unknown>) => void,
+): Promise<RankParsed | null> {
+	const cache = edgeCache();
+	const key = cache ? new Request(`https://o-c.do/__cache/app-store-rank/${country}`) : null;
+	if (cache && key) {
+		const hit = await cache.match(key).catch(() => undefined);
+		if (hit) {
+			const body = (await hit.json().catch(() => null)) as CachedRank | null;
+			if (body && "parsed" in body) return body.parsed;
+		}
+	}
+	const parsed = await fetchCountryRank(country);
+	if (cache && key) {
+		const store = cache.put(
+			key,
+			new Response(JSON.stringify({ parsed } satisfies CachedRank), {
+				headers: {
+					"content-type": "application/json",
+					"cache-control": `public, max-age=${RANK_CACHE_TTL_SECONDS}`,
+				},
+			}),
+		).catch(() => undefined);
+		if (waitUntil) waitUntil(store);
+		else await store;
+	}
+	return parsed;
+}
+
+function edgeCache(): Cache | null {
+	const c = (globalThis as { caches?: { default?: Cache } }).caches;
+	return c?.default ?? null;
+}
+
 /**
  * 抓全部地区并把当日快照写入 app_store_ranks。
  * 顺序遍历（一天一次、对 Apple 友好）；单地区失败不影响其余；

@@ -51,10 +51,14 @@ final class CFAlertingViewModel {
             async let webhooksFetch = service.webhooks(accountId: accountId)
             let (available, pols, hooks) = try await (availableFetch, policiesFetch, webhooksFetch)
 
+            // 等待期间用户可能已切到别的账号（selectAccount 起的是不取消的 Task）：
+            // A 账号慢到的策略 / webhook id 不能顶在 B 名下，否则后续开关告警会打到错误账号的 webhook。
+            guard accountId == selectedAccountId else { return }
             groups = available.map { (category: $0.key, alerts: $0.value) }.sorted { $0.category < $1.category }
             policies = pols
             pushWebhookId = hooks.first(where: { $0.url == cfWebhookURL })?.id
         } catch {
+            guard !error.isCancellation else { return }
             self.error = error.localizedDescription
         }
         isLoading = false

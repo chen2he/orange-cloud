@@ -335,6 +335,8 @@
     <string name="urls_server">Server</string>
     <string name="urls_status_code">Statuscode</string>
     <string name="urls_still_scanning">Scan läuft noch. Versuchen Sie es gleich mit demselben Link erneut.</string>
+    <string name="urls_recently_scanned">Diese URL wurde kürzlich gescannt. Cloudflare nimmt derzeit keine erneute Einreichung an. Versuche es später erneut.</string>
+    <string name="snippet_content_unavailable">Der Snippet-Inhalt wurde nicht geladen, daher wurde das Speichern blockiert, um ihn nicht mit leerem Inhalt zu überschreiben. Gehe zurück und versuche es erneut.</string>
     <string name="perm_url_scanner">URL-Scan</string>
     <string name="perm_url_scanner_desc">Einen Link zum Sicherheitsscan einreichen und den Bericht ansehen</string>
     <string name="hc_notify_me">Benachrichtigen, wenn der Origin ausfällt</string>
@@ -570,6 +572,7 @@
     <string name="settings_privacy">Datenschutzerklärung</string>
     <string name="settings_terms">Nutzungsbedingungen</string>
     <string name="settings_about_footer">Orange Cloud · Cloudflare-Client von Drittanbietern</string>
+    <string name="settings_about_copyright">© 2026 Zhe Tech Co., Ltd.</string>
     <string name="identity_title">Konto</string>
     <string name="identity_not_found">Dieses Konto existiert nicht mehr</string>
     <string name="identity_oauth_badge">OAuth 2.0</string>

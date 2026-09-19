@@ -71,10 +71,15 @@ enum BackgroundRefresh {
         AppLog.background.notice("BGAppRefresh fired, loggedIn=\(authManager.isLoggedIn)")
         if authManager.isLoggedIn {
             _ = try? await authManager.refreshAccessToken()
+            // 系统收回预算时 expirationHandler 已 cancel 本 Task 并 setTaskCompleted(false)：
+            // 后面的步骤不能再跑，也绝不能对同一个 BGTask 第二次 setTaskCompleted。
+            if Task.isCancelled { return }
             // 预热当前账号域名快照，让用户切回前台 / 小组件刷新时直接见到最新数据
             await prewarmWidgetSnapshot(authManager: authManager)
+            if Task.isCancelled { return }
             // 顺带做通知检测（Zone 状态变化 / Worker 错误）
             await AppNotifications.runBackgroundChecks(authManager: authManager)
+            if Task.isCancelled { return }
         }
         task.setTaskCompleted(success: true)
         AppLog.background.info("BGAppRefresh completed")

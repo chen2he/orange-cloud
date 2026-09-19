@@ -86,7 +86,7 @@ struct WorkersAIView: View {
                     }
                 }
                 .daybreakList()
-                .refreshable { await vm.load() }
+                .refreshable { await detachedRefresh { await vm.load() } }
             }
         }
     }

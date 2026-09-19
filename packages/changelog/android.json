@@ -1,5 +1,112 @@
 [
   {
+    "version": "2.1.3",
+    "date": "2026.09.19",
+    "channel": "Google Play",
+    "inApp": false,
+    "items": [
+      {
+        "icon": "switch.2",
+        "title": {
+          "zh-Hans": "WAF 规则开关恢复响应",
+          "en": "WAF rule switches respond again",
+          "zh-Hant": "WAF 規則開關恢復回應",
+          "zh-HK": "WAF 規則開關恢復回應",
+          "ja": "WAF ルールのスイッチが反応するように",
+          "es-MX": "Los interruptores de reglas WAF vuelven a responder",
+          "ko": "WAF 규칙 스위치가 다시 반응합니다",
+          "pt-BR": "As chaves das regras do WAF voltam a responder",
+          "pt-PT": "Os interruptores das regras da WAF voltam a responder",
+          "de": "WAF-Regelschalter reagieren wieder",
+          "fr": "Les interrupteurs des règles WAF répondent à nouveau",
+          "ar": "مفاتيح قواعد WAF تستجيب مجددًا",
+          "tr": "WAF kural anahtarları yeniden yanıt veriyor"
+        },
+        "detail": {
+          "zh-Hans": "WAF 规则列表里的启停开关点下去没反应，只能进详情页改。现在点一下立即切换，失败会回滚并告诉你原因。",
+          "en": "Tapping the enable switch on the WAF rules list did nothing, so you had to open each rule to change it. It now flips instantly, and if Cloudflare rejects the change it rolls back and tells you why.",
+          "zh-Hant": "WAF 規則列表裡的啟停開關點下去沒反應，只能進詳細頁修改。現在點一下立即切換，失敗會復原並告訴你原因。",
+          "zh-HK": "WAF 規則列表裏的啟停開關按下去沒反應，只能進詳細頁修改。現在按一下即時切換，失敗會還原並告訴你原因。",
+          "ja": "WAF ルール一覧の有効／無効スイッチをタップしても反応せず、詳細画面から変更するしかありませんでした。今はすぐに切り替わり、失敗した場合は元に戻して理由を表示します。",
+          "es-MX": "El interruptor de la lista de reglas WAF no respondía y había que abrir cada regla para cambiarla. Ahora cambia al instante y, si Cloudflare rechaza el cambio, se revierte y te dice por qué.",
+          "ko": "WAF 규칙 목록의 활성화 스위치를 눌러도 반응이 없어 규칙마다 상세 화면에서 바꿔야 했습니다. 이제 바로 전환되며, 실패하면 되돌리고 이유를 알려 줍니다.",
+          "pt-BR": "A chave na lista de regras do WAF não respondia e era preciso abrir cada regra para mudar. Agora ela alterna na hora e, se a Cloudflare recusar, volta ao estado anterior e mostra o motivo.",
+          "pt-PT": "O interruptor na lista de regras da WAF não respondia e era preciso abrir cada regra para o alterar. Agora muda de imediato e, se a Cloudflare recusar, reverte e indica o motivo.",
+          "de": "Der Schalter in der WAF-Regelliste reagierte nicht, man musste jede Regel einzeln öffnen. Jetzt schaltet er sofort um und wird bei einer Ablehnung durch Cloudflare mit Begründung zurückgesetzt.",
+          "fr": "L’interrupteur de la liste des règles WAF ne réagissait pas : il fallait ouvrir chaque règle. Il bascule désormais immédiatement et, si Cloudflare refuse, revient en arrière en indiquant pourquoi.",
+          "ar": "لم يكن مفتاح التفعيل في قائمة قواعد WAF يستجيب، فكان عليك فتح كل قاعدة لتغييرها. الآن يتبدّل فورًا، وإذا رفضت Cloudflare التغيير يعود كما كان ويوضح السبب.",
+          "tr": "WAF kural listesindeki anahtar tepki vermiyordu, her kuralı tek tek açmak gerekiyordu. Artık anında değişiyor; Cloudflare reddederse geri alınıp nedeni gösteriliyor."
+        }
+      },
+      {
+        "icon": "person.badge.key",
+        "title": {
+          "zh-Hans": "不再被意外退出登录",
+          "en": "No more unexpected sign-outs",
+          "zh-Hant": "不再被意外登出",
+          "zh-HK": "不再被意外登出",
+          "ja": "意図しないログアウトを解消",
+          "es-MX": "Se acabaron los cierres de sesión inesperados",
+          "ko": "예기치 않은 로그아웃 해결",
+          "pt-BR": "Chega de desconexões inesperadas",
+          "pt-PT": "Fim das sessões terminadas sem aviso",
+          "de": "Keine unerwarteten Abmeldungen mehr",
+          "fr": "Fini les déconnexions inattendues",
+          "ar": "لا مزيد من تسجيل الخروج المفاجئ",
+          "tr": "Beklenmedik çıkışlar giderildi"
+        },
+        "detail": {
+          "zh-Hans": "多个请求同时刷新登录凭据时，可能触发 Cloudflare 的复用保护把账号踢下线；断网或服务端临时故障也会被误判成凭据失效。现在刷新排队进行，只有凭据确实失效才会要求重新登录。",
+          "en": "When several requests refreshed your session at once, Cloudflare's reuse protection could sign you out, and going offline or a brief server error was mistaken for an expired session. Refreshes now run one at a time, and you are only asked to sign in again when the session has really expired.",
+          "zh-Hant": "多個請求同時更新登入憑證時，可能觸發 Cloudflare 的重複使用保護而把帳號登出；斷網或伺服器暫時故障也會被誤判為憑證失效。現在更新會排隊進行，只有憑證確實失效才會要求重新登入。",
+          "zh-HK": "多個請求同時更新登入憑證時，可能觸發 Cloudflare 的重複使用保護而把帳戶登出；斷網或伺服器暫時故障也會被誤判為憑證失效。現在更新會排隊進行，只有憑證確實失效才會要求重新登入。",
+          "ja": "複数のリクエストが同時に認証情報を更新すると、Cloudflare の再利用保護でログアウトされることがあり、オフラインやサーバーの一時的な障害も失効と誤判定されていました。更新は順番に行われ、本当に失効したときだけ再ログインを求めます。",
+          "es-MX": "Cuando varias solicitudes renovaban la sesión a la vez, la protección contra reutilización de Cloudflare podía cerrarla, y estar sin conexión o un fallo breve del servidor se tomaba como sesión vencida. Ahora las renovaciones van de una en una y solo se pide iniciar sesión si realmente venció.",
+          "ko": "여러 요청이 동시에 세션을 갱신하면 Cloudflare의 재사용 보호로 로그아웃될 수 있었고, 오프라인이나 일시적인 서버 오류도 만료로 오인했습니다. 이제 갱신을 차례로 처리하며 세션이 정말 만료됐을 때만 다시 로그인을 요청합니다.",
+          "pt-BR": "Quando várias solicitações renovavam a sessão ao mesmo tempo, a proteção contra reutilização da Cloudflare podia desconectar você, e ficar offline ou uma falha breve do servidor era tratada como sessão expirada. Agora as renovações ocorrem uma de cada vez e só pedimos novo login quando a sessão expirou de fato.",
+          "pt-PT": "Quando vários pedidos renovavam a sessão ao mesmo tempo, a proteção contra reutilização da Cloudflare podia terminá-la, e ficar offline ou uma falha breve do servidor era tratada como sessão expirada. As renovações passam a ser feitas uma de cada vez e só é pedido novo início de sessão quando esta expirou de facto.",
+          "de": "Erneuerten mehrere Anfragen gleichzeitig die Sitzung, konnte der Wiederverwendungsschutz von Cloudflare dich abmelden; auch Offline-Phasen oder kurze Serverfehler galten als abgelaufene Sitzung. Erneuerungen laufen jetzt nacheinander, und eine neue Anmeldung ist nur nötig, wenn die Sitzung wirklich abgelaufen ist.",
+          "fr": "Quand plusieurs requêtes renouvelaient la session en même temps, la protection contre la réutilisation de Cloudflare pouvait vous déconnecter, et une coupure réseau ou une panne passagère du serveur passait pour une session expirée. Les renouvellements se font désormais un par un et la reconnexion n’est demandée que si la session a vraiment expiré.",
+          "ar": "عندما كانت عدة طلبات تُجدِّد الجلسة معًا، قد تؤدي حماية Cloudflare من إعادة الاستخدام إلى تسجيل خروجك، وكان انقطاع الاتصال أو عطل مؤقت في الخادم يُعدّ انتهاءً للجلسة. الآن يتم التجديد بالتتابع، ولا يُطلب تسجيل الدخول مجددًا إلا إذا انتهت الجلسة فعلًا.",
+          "tr": "Birden çok istek oturumu aynı anda yenilediğinde Cloudflare'in yeniden kullanım koruması çıkış yaptırabiliyordu; çevrimdışı olmak veya kısa sunucu hataları da oturum süresi dolmuş sayılıyordu. Yenilemeler artık sırayla yapılıyor ve yalnızca oturum gerçekten sona erdiğinde yeniden giriş isteniyor."
+        }
+      },
+      {
+        "icon": "wrench.and.screwdriver",
+        "title": {
+          "zh-Hans": "URL 扫描与邮件抑制列表修复",
+          "en": "URL Scanner and suppression list fixed",
+          "zh-Hant": "URL 掃描與郵件抑制清單修正",
+          "zh-HK": "URL 掃描與電郵抑制清單修正",
+          "ja": "URL スキャンと抑制リストを修正",
+          "es-MX": "Correcciones en URL Scanner y lista de supresión",
+          "ko": "URL 스캐너와 억제 목록 수정",
+          "pt-BR": "Correções no URL Scanner e na lista de supressão",
+          "pt-PT": "Correções no URL Scanner e na lista de supressão",
+          "de": "URL Scanner und Unterdrückungsliste repariert",
+          "fr": "URL Scanner et liste de suppression corrigés",
+          "ar": "إصلاح URL Scanner وقائمة الحظر",
+          "tr": "URL Scanner ve engelleme listesi düzeltildi"
+        },
+        "detail": {
+          "zh-Hans": "URL 扫描提交总是失败，近期已扫过的网址现在会明确提示；邮件路由的抑制列表恢复显示。另外 Snippet 正文没加载成功时禁止保存，避免空内容覆盖线上代码；实时日志反复进出不再失败。",
+          "en": "URL Scanner submissions always failed, and recently scanned URLs now get a clear message; the Email Routing suppression list shows again. Snippets also refuse to save when their code failed to load, so live code is never overwritten with an empty file, and reopening live logs no longer fails.",
+          "zh-Hant": "URL 掃描送出總是失敗，近期已掃描過的網址現在會明確提示；電子郵件路由的抑制清單恢復顯示。另外 Snippet 內容未載入成功時禁止儲存，避免以空內容覆蓋線上程式碼；反覆進出即時日誌不再失敗。",
+          "zh-HK": "URL 掃描提交總是失敗，近期已掃描過的網址現在會明確提示；電郵路由的抑制清單恢復顯示。另外 Snippet 內容未載入成功時禁止儲存，避免以空內容覆蓋線上程式碼；反覆進出即時日誌不再失敗。",
+          "ja": "URL スキャンの送信が常に失敗していたのを修正し、最近スキャンした URL は分かりやすく案内します。メールルーティングの抑制リストも再び表示されます。また Snippet の本文を読み込めなかった場合は保存しないため本番コードが空で上書きされず、ライブログを開き直しても失敗しません。",
+          "es-MX": "El envío en URL Scanner siempre fallaba; ahora las URL escaneadas hace poco muestran un aviso claro, y la lista de supresión de Email Routing vuelve a verse. Además, un Snippet cuyo código no cargó no se guarda, para no sobrescribir el código en producción con un archivo vacío, y reabrir los registros en vivo ya no falla.",
+          "ko": "URL 스캐너 제출이 항상 실패하던 문제를 고쳤고, 최근 스캔한 URL은 명확히 안내합니다. 이메일 라우팅 억제 목록도 다시 표시됩니다. 또한 Snippet 코드를 불러오지 못하면 저장하지 않아 운영 코드가 빈 파일로 덮어써지지 않으며, 실시간 로그를 다시 열어도 실패하지 않습니다.",
+          "pt-BR": "O envio no URL Scanner sempre falhava; agora URLs verificadas recentemente mostram um aviso claro, e a lista de supressão do Email Routing volta a aparecer. Além disso, um Snippet cujo código não carregou não é salvo, evitando sobrescrever o código em produção com um arquivo vazio, e reabrir os logs ao vivo não falha mais.",
+          "pt-PT": "O envio no URL Scanner falhava sempre; os URL analisados recentemente mostram agora um aviso claro, e a lista de supressão do Email Routing volta a aparecer. Além disso, um Snippet cujo código não carregou não é guardado, para não substituir o código em produção por um ficheiro vazio, e reabrir os registos em direto já não falha.",
+          "de": "Übermittlungen im URL Scanner schlugen immer fehl; kürzlich gescannte URLs zeigen jetzt einen klaren Hinweis, und die Unterdrückungsliste von Email Routing ist wieder sichtbar. Außerdem werden Snippets nicht gespeichert, wenn ihr Code nicht geladen wurde, damit Live-Code nie durch eine leere Datei ersetzt wird, und das erneute Öffnen der Live-Logs schlägt nicht mehr fehl.",
+          "fr": "L’envoi dans URL Scanner échouait systématiquement ; les URL analysées récemment affichent désormais un message clair, et la liste de suppression d’Email Routing s’affiche à nouveau. Un Snippet dont le code n’a pas pu être chargé n’est plus enregistré, pour ne jamais remplacer le code en production par un fichier vide, et rouvrir les journaux en direct n’échoue plus.",
+          "ar": "كان الإرسال في URL Scanner يفشل دائمًا؛ والآن تظهر رسالة واضحة للروابط التي فُحصت مؤخرًا، وعادت قائمة الحظر في Email Routing للظهور. كما لا يُحفظ Snippet إذا تعذّر تحميل شيفرته، فلا تُستبدل الشيفرة المنشورة بملف فارغ، ولم تعد إعادة فتح السجلات المباشرة تفشل.",
+          "tr": "URL Scanner gönderimleri her zaman başarısız oluyordu; yakın zamanda taranan URL'ler artık açık bir uyarı gösteriyor ve Email Routing engelleme listesi yeniden görünüyor. Ayrıca kodu yüklenemeyen Snippet kaydedilmiyor, böylece canlı kod boş bir dosyayla değişmiyor; canlı günlükleri yeniden açmak da artık başarısız olmuyor."
+        }
+      }
+    ]
+  },
+  {
     "version": "2.1.2",
     "date": "2026.09.02",
     "channel": "Google Play",

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { BLANK_SVG, renderRankBadge } from "@/lib/ranks/badge";
-import { fetchCountryRank } from "@/lib/ranks/capture";
+import { fetchCountryRankCached } from "@/lib/ranks/capture";
 import { bestFreshRank } from "@/lib/ranks/query";
 
 // App Store 排名徽章（SVG），供 README 内嵌：
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 		if (region) {
 			// 指定地区：实时查 Apple（支持任意商店，不止采集的 7 国）；未上榜 / 未上架 → 空白。
 			if (!/^[a-z]{2}$/.test(region)) return blank();
-			const parsed = await fetchCountryRank(region);
+			const parsed = await fetchCountryRankCached(region);
 			if (!parsed || parsed.position == null) return blank();
 			country = region;
 			position = parsed.position;

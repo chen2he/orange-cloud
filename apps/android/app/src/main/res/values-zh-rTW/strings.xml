@@ -317,6 +317,8 @@
     <string name="urls_server">伺服器</string>
     <string name="urls_status_code">狀態碼</string>
     <string name="urls_still_scanning">掃描仍在進行，請稍後用同一個連結再查一次。</string>
+    <string name="urls_recently_scanned">此網址最近已掃描過，Cloudflare 暫不接受重複提交，請稍後再試。</string>
+    <string name="snippet_content_unavailable">內容尚未載入成功，為避免以空內容覆蓋線上 Snippet，已阻止儲存。請返回重試。</string>
     <string name="perm_url_scanner">URL 掃描</string>
     <string name="perm_url_scanner_desc">提交連結做安全掃描並查看報告</string>
     <string name="hc_notify_me">來源伺服器異常時通知我</string>
@@ -453,6 +455,7 @@
     <string name="settings_privacy">隱私權政策</string>
     <string name="settings_terms">使用條款</string>
     <string name="settings_about_footer">Orange Cloud · 第三方 Cloudflare 用戶端</string>
+    <string name="settings_about_copyright">© 2026 柘家科技有限公司</string>
 
     <string name="identity_title">帳號</string>
     <string name="identity_not_found">帳號已不存在</string>

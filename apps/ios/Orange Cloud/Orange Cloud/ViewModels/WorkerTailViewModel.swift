@@ -153,6 +153,12 @@ final class WorkerTailViewModel {
         state = .connecting
         do {
             let session = try await service.createTail(accountId: accountId, scriptName: scriptName)
+            // 创建途中用户已离开：teardown 当时还拿不到 tailId，这里补删，
+            // 否则服务端会话泄漏，反复进出会撞上每脚本并发 tail 上限
+            guard !userStopped else {
+                try? await service.deleteTail(accountId: accountId, scriptName: scriptName, tailId: session.id)
+                return
+            }
             tailId = session.id
             let socket = try service.makeSocket(for: session)
             self.socket = socket

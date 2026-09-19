@@ -1,0 +1,6 @@
+• Corregido: el interruptor de la lista de reglas WAF no respondía
+• Corregido: cierres de sesión inesperados cuando varias solicitudes renovaban la sesión a la vez; sin conexión ya no se elimina la cuenta
+• Corregido: fallaba el envío en URL Scanner
+• Corregido: no cargaba la lista de supresión de Email Routing
+• Los Snippets no se guardan si su código no cargó, así nunca se reemplaza por un archivo vacío
+• Reabrir los registros en vivo ya no falla; “Solicitudes de hoy” carga más rápido

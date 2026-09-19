@@ -62,8 +62,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 				}
 			}
 		} else if (event.type === "charge.refunded") {
-			const charge = event.data.object as { payment_intent?: string };
-			if (charge.payment_intent) await revokeByPaymentIntent(db, charge.payment_intent);
+			// Stripe 对「部分退款」同样发 charge.refunded（refunded=false、amount_refunded < amount）。
+			// 后台善意退一部分不该把买断码吊销：只有全额退款才撤销授权。
+			const charge = event.data.object as {
+				payment_intent?: string;
+				refunded?: boolean;
+				amount?: number;
+				amount_refunded?: number;
+			};
+			const fullyRefunded =
+				charge.refunded === true ||
+				(typeof charge.amount === "number" &&
+					typeof charge.amount_refunded === "number" &&
+					charge.amount_refunded >= charge.amount);
+			if (charge.payment_intent && fullyRefunded) {
+				await revokeByPaymentIntent(db, charge.payment_intent);
+			}
 		}
 
 		return NextResponse.json({ received: true });

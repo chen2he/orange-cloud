@@ -60,11 +60,13 @@ fun URLScannerScreen(
     val onSky = phase.onSky
     val snackbarHostState = remember { SnackbarHostState() }
     val stillScanning = stringResource(R.string.urls_still_scanning)
+    val recentlyScanned = stringResource(R.string.urls_recently_scanned)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is URLScannerEvent.Error -> snackbarHostState.showSnackbar(event.message ?: stillScanning)
+                URLScannerEvent.RecentlyScanned -> snackbarHostState.showSnackbar(recentlyScanned)
             }
         }
     }

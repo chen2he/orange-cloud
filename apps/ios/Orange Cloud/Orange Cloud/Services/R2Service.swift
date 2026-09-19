@@ -13,16 +13,28 @@ struct R2Service {
         self.client = client
     }
 
-    /// Bucket 列表（result 是 { buckets: [...] } 包装）
+    /// Bucket 列表（result 是 { buckets: [...] } 包装）。端点是游标分页：以前只取一页 100 个，
+    /// 桶多的账号后面的桶在 App / Files.app 里根本不可达。
     func listBuckets(accountId: String) async throws -> [R2Bucket] {
-        let response: CFAPIResponse<R2BucketList> = try await client.get(
-            "accounts/\(accountId)/r2/buckets",
-            queryItems: [URLQueryItem(name: "per_page", value: "100")]
-        )
-        guard response.success, let list = response.result else {
-            throw response.toAPIError()
+        var all: [R2Bucket] = []
+        var cursor: String?
+        for _ in 0..<20 {
+            var items = [URLQueryItem(name: "per_page", value: "100")]
+            if let cursor, !cursor.isEmpty {
+                items.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            let response: CFAPIResponse<R2BucketList> = try await client.get(
+                "accounts/\(accountId)/r2/buckets",
+                queryItems: items
+            )
+            guard response.success, let list = response.result else {
+                throw response.toAPIError()
+            }
+            all.append(contentsOf: list.buckets)
+            cursor = response.resultInfo?.cursor
+            guard let cursor, !cursor.isEmpty, !list.buckets.isEmpty else { break }
         }
-        return list.buckets
+        return all
     }
 
     /// 创建桶（workers-r2.write）。locationHint 为空走自动放置，storageClass 为空默认 Standard。

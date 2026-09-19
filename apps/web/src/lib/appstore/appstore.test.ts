@@ -7,7 +7,7 @@
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { CompactSign } from "jose";
-import { cryptoProvider, X509Certificate, X509CertificateGenerator } from "@peculiar/x509";
+import { cryptoProvider, Extension, X509Certificate, X509CertificateGenerator } from "@peculiar/x509";
 import { deriveSubscription } from "./notification-logic";
 import { NotificationVerifyError, verifyNotification } from "./verify";
 
@@ -16,6 +16,7 @@ const NOW = Date.now();
 
 let leafPrivateKey: CryptoKey;
 let x5c: string[];
+let x5cNoMarker: string[];
 let testRoot: X509Certificate;
 
 function bytesToBase64(buf: ArrayBuffer): string {
@@ -25,9 +26,9 @@ function bytesToBase64(buf: ArrayBuffer): string {
 	return btoa(bin);
 }
 
-async function signJws(obj: unknown): Promise<string> {
+async function signJws(obj: unknown, chain: string[] = x5c): Promise<string> {
 	return new CompactSign(new TextEncoder().encode(JSON.stringify(obj)))
-		.setProtectedHeader({ alg: "ES256", x5c })
+		.setProtectedHeader({ alg: "ES256", x5c: chain })
 		.sign(leafPrivateKey);
 }
 
@@ -85,9 +86,24 @@ beforeAll(async () => {
 		notAfter,
 		signingAlgorithm: sign,
 		serialNumber: "02",
+		// Apple 给通知专用叶子证书打的用途标记（ASN.1 NULL 值）
+		extensions: [new Extension("1.2.840.113635.100.6.11.1", false, new Uint8Array([0x05, 0x00]))],
+	});
+
+	// 同一把叶子私钥、同一条链，但证书没有 Apple 用途标记：模拟「Apple 签发的别种证书」
+	const plainLeaf = await X509CertificateGenerator.create({
+		subject: "CN=Orange Cloud Test Leaf (no marker)",
+		issuer: testRoot.subject,
+		publicKey: leafKeys.publicKey,
+		signingKey: rootKeys.privateKey,
+		notBefore,
+		notAfter,
+		signingAlgorithm: sign,
+		serialNumber: "03",
 	});
 
 	x5c = [bytesToBase64(leaf.rawData), bytesToBase64(testRoot.rawData)];
+	x5cNoMarker = [bytesToBase64(plainLeaf.rawData), bytesToBase64(testRoot.rawData)];
 });
 
 const baseTx = {
@@ -137,6 +153,31 @@ describe("verifyNotification", () => {
 		await expect(verifyNotification(tampered, { trustedRoot: testRoot })).rejects.toBeInstanceOf(
 			NotificationVerifyError,
 		);
+	});
+
+	it("叶子证书没有 Apple 通知专用 OID -> 拒绝（链到可信根也不行）", async () => {
+		// 外层用不带标记的叶子证书签，链本身合法、根也可信
+		const payload = {
+			notificationType: "ONE_TIME_CHARGE",
+			notificationUUID: "00000000-0000-0000-0000-00000000dead",
+			version: "2.0",
+			signedDate: NOW,
+			data: { bundleId: "jiamin.chen.orange-cloud", environment: "Production" },
+		};
+		const jws = await signJws(payload, x5cNoMarker);
+		await expect(verifyNotification(jws, { trustedRoot: testRoot })).rejects.toThrow(/专用证书/);
+	});
+
+	it("payload 不带 signedDate 时按当前时刻校验有效期（不能整段跳过）", async () => {
+		const payload = {
+			notificationType: "TEST",
+			notificationUUID: "00000000-0000-0000-0000-00000000beef",
+			version: "2.0",
+			data: { bundleId: "jiamin.chen.orange-cloud", environment: "Sandbox" },
+		};
+		const jws = await signJws(payload);
+		// 测试证书当前有效 -> 通过
+		await expect(verifyNotification(jws, { trustedRoot: testRoot })).resolves.toBeTruthy();
 	});
 
 	it("pin 到真 Apple 根时拒绝非 Apple 证书链", async () => {

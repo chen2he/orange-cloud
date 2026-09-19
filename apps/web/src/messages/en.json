@@ -142,7 +142,7 @@
 		"privacy": "Privacy Policy",
 		"terms": "Terms of Service",
 		"contact": "Contact",
-		"copyright": "© 2026 Orange Cloud",
+		"copyright": "© 2026 <company>Zhe Tech Co., Ltd.</company>",
 		"disclaimer": "Orange Cloud is an independent third-party client and is not affiliated with, endorsed by, or sponsored by Cloudflare, Inc. Cloudflare is a trademark of Cloudflare, Inc."
 	},
 	"contact": {
@@ -158,7 +158,7 @@
 	},
 	"privacy": {
 		"title": "Privacy Policy",
-		"updated": "Last updated: June 2026",
+		"updated": "Last updated: September 2026",
 		"sections": [
 			{
 				"h": "Data Collection",
@@ -171,6 +171,10 @@
 			{
 				"h": "Third-Party Services",
 				"p": "Orange Cloud communicates exclusively with Cloudflare's official API endpoints (api.cloudflare.com and dash.cloudflare.com). No other third-party services are used."
+			},
+			{
+				"h": "Purchases and Refunds",
+				"p": "Pro subscriptions and the lifetime purchase are handled by the Apple App Store. Apple processes your payment details and we never see them. Apple sends our server records of purchases, renewals, and refunds (transaction ID, product, amount, and storefront, but not your name or Apple Account), which we use only for bookkeeping. When you ask Apple for a refund, you agree that we may tell Apple whether the purchase was delivered and share our view on the refund, to help Apple decide. This information is not used to track you."
 			}
 		]
 	},

@@ -10,6 +10,23 @@ import Foundation
 
 nonisolated enum WhatsNewGenerated {
     static let releases: [WhatsNewRelease] = [
+        WhatsNewRelease(version: "2.1.3", items: [
+            WhatsNewItem(
+                icon:   "rectangle.landscape.rotate",
+                title:  String(localized: "横屏与大屏适配", table: "WhatsNew"),
+                detail: String(localized: "App 现在可以横过来用，宽屏上内容会收在舒适的阅读宽度里，不再被拉得很长；顺带修好了域名页偶尔打开是一片空白的问题。", table: "WhatsNew")
+            ),
+            WhatsNewItem(
+                icon:   "list.bullet",
+                title:  String(localized: "长列表不再漏项", table: "WhatsNew"),
+                detail: String(localized: "R2 存储桶超过 100 个，或邮件路由规则、目标地址、Durable Objects、Hyperdrive 超过 20 条时，后面的内容以前看不到，现在会全部列出；刚添加、还没验证的邮件目标地址也会显示出来。", table: "WhatsNew")
+            ),
+            WhatsNewItem(
+                icon:   "checkmark.shield",
+                title:  String(localized: "更稳，少打扰", table: "WhatsNew"),
+                detail: String(localized: "网络被拦截时（比如公共 Wi-Fi 登录页、WAF 挑战页）不再被误退出登录；修复一处偶发的启动闪退；下拉刷新或快速切换时间范围时，不再提示「已取消」或显示错位的数据。", table: "WhatsNew")
+            )
+        ]),
         WhatsNewRelease(version: "2.1.2", items: [
             WhatsNewItem(
                 icon:   "clock.badge.checkmark",

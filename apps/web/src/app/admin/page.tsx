@@ -19,6 +19,7 @@ import {
 	TableCardSkeleton,
 } from "@/components/dashboard/panels/skeletons";
 import { CodesSection } from "@/components/dashboard/panels/CodesSection";
+import { RefundReviewsSection } from "@/components/dashboard/panels/RefundReviewsSection";
 import { TimezoneToggle, UpdatedAt } from "@/components/dashboard/prefs";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/admin/auth";
 import { parseFilters, parsePage } from "@/lib/dashboard/types";
@@ -94,6 +95,11 @@ export default async function AdminDashboardPage({
 			<div className="flex flex-col gap-4">
 				<Suspense key={`kpi-${filterKey}`} fallback={<KpiSkeleton />}>
 					<OverviewSection filters={filters} />
+				</Suspense>
+
+				{/* Apple 退款申请（12h 内表态）—— 与筛选无关，静态 key。 */}
+				<Suspense key="refund-reviews" fallback={<TableCardSkeleton title="Apple 退款申请" rows={3} />}>
+					<RefundReviewsSection />
 				</Suspense>
 
 				{/* 激活码（安卓渠道）—— 与 Apple IAP 看板并列；与产品/天数筛选无关，静态 key。 */}
