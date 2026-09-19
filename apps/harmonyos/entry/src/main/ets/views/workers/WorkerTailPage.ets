@@ -142,6 +142,9 @@ export struct WorkerTailPage {
   private seq: number = 0;
   private socket: TailSocket | null = null;
   private session: TailSession | null = null;
+  /// 页面已离开：createTail 还在飞时离开，回来的会话要立即删掉、也不再连 socket，
+  /// 否则服务端 tail 会话泄漏，反复进出会撞上每脚本并发 tail 上限
+  private disposed: boolean = false;
   private service: WorkerService = new WorkerService();
   private scroller: Scroller = new Scroller();
   /// buffer 上限（对齐 iOS maxLines）
@@ -149,6 +152,11 @@ export struct WorkerTailPage {
 
   private start(): void {
     this.service.createTail(accountStore.selectedId, this.scriptName).then((session: TailSession) => {
+      if (this.disposed) {
+        this.service.deleteTail(accountStore.selectedId, this.scriptName, session.id).catch(() => {
+        });
+        return;
+      }
       this.session = session;
       const socket = new TailSocket(session.url);
       this.socket = socket;
@@ -191,6 +199,7 @@ export struct WorkerTailPage {
   }
 
   aboutToDisappear(): void {
+    this.disposed = true;
     this.stop();
   }
 

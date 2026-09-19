@@ -27,7 +27,7 @@ import { AccountAnalyticsUnauthorizedError } from '../../services/UsageService';
 import { accountStore } from '../../core/store/AccountStore';
 import { authManager } from '../../core/auth/AuthManager';
 import { Scopes } from '../../core/auth/Scopes';
-import { formatCount, formatDateTime, formatTimeAgo } from '../../core/util/Format';
+import { formatBytes, formatCount, formatDateTime, formatTimeAgo } from '../../core/util/Format';
 import {
   BRAND_ORANGE,
   BRAND_ORANGE_BG,
@@ -37,6 +37,8 @@ import {
   OCLoading,
 } from '../common/Components';
 import { ocSheet } from '../common/Sheets';
+import { picker, fileIo } from '@kit.CoreFileKit';
+import { util } from '@kit.ArkTS';
 import { OCSkyBackground } from '../common/OCSky';
 import { OCLayout, StatIsland, RevealBox } from '../common/Daybreak';
 import { MetricsChart, MetricsPoint } from '../common/MetricsChart';
@@ -128,23 +130,38 @@ class WorkerDetailVM {
     this.metricsLoading = true;
     this.metricsError = '';
     const range = this.range;
+    // 切范围后晚到的旧范围结果不能顶在新范围名下：每次 await 后核对发起时的范围
     try {
       const summary = await this.analytics.workerMetrics(accountId, scriptName, range);
+      if (range !== this.range) {
+        return;
+      }
       this.metrics = summary;
       this.metricsUnauthorized = false;
       try {
         const total = await this.analytics.workerCpuTotal(accountId, scriptName, range);
+        if (range !== this.range) {
+          return;
+        }
         if (total >= 0 && this.metrics !== null) {
           this.metrics!.cpuTotalUs = total;
         }
       } catch (e) {
       }
+      let series: WorkerSeriesPoint[] = [];
       try {
-        this.series = await this.analytics.workerSeries(accountId, scriptName, range);
+        series = await this.analytics.workerSeries(accountId, scriptName, range);
       } catch (e) {
-        this.series = [];
+        series = [];
       }
+      if (range !== this.range) {
+        return;
+      }
+      this.series = series;
     } catch (e) {
+      if (range !== this.range) {
+        return;
+      }
       this.metrics = null;
       this.series = [];
       if (e instanceof AccountAnalyticsUnauthorizedError) {
@@ -153,7 +170,9 @@ class WorkerDetailVM {
         this.metricsError = (e as Error).message ?? '指标加载失败';
       }
     } finally {
-      this.metricsLoading = false;
+      if (range === this.range) {
+        this.metricsLoading = false;
+      }
     }
   }
 
@@ -206,12 +225,48 @@ class WorkerDetailVM {
   }
 }
 
+/// 超过这个体积就不在手机上就地编辑（wrangler 打包产物动辄数百 KB 到数 MB），对齐 iOS
+const MAX_EDITABLE_SOURCE_BYTES = 256 * 1024;
+/// 单行超过这个长度即判定为压缩产物：整段塞进 TextArea 会把 UI 线程拖住（iOS 2.1.2 同款问题）
+const MAX_EDITABLE_LINE_LENGTH = 5000;
+
+function utf8Length(text: string): number {
+  return new util.TextEncoder().encodeInto(text).length;
+}
+
+/// 源码是否不适合就地编辑：'' = 可编辑；否则返回给用户看的原因
+function sourceIssue(text: string): string {
+  const bytes = utf8Length(text);
+  if (bytes > MAX_EDITABLE_SOURCE_BYTES) {
+    return `当前线上脚本 ${formatBytes(bytes)}，超出手机端就地编辑的上限，已转为只读。可以导入改好的 .js 文件整体替换。`;
+  }
+  let longest = 0;
+  let start = 0;
+  while (start <= text.length) {
+    let end = text.indexOf('\n', start);
+    if (end < 0) {
+      end = text.length;
+    }
+    longest = Math.max(longest, end - start);
+    if (longest > MAX_EDITABLE_LINE_LENGTH) {
+      return `当前线上脚本是压缩过的打包产物（${formatBytes(bytes)}，存在超长行），不适合在手机上就地编辑，已转为只读。可以导入改好的 .js 文件整体替换。`;
+    }
+    start = end + 1;
+  }
+  return '';
+}
+
 @ComponentV2
 export struct WorkerDetailPage {
   @Local vm: WorkerDetailVM = new WorkerDetailVM();
   @Local scriptName: string = '';
   @Local codeSheetVisible: boolean = false;
   @Local fCode: string = '';
+  /// 线上源码过大 / 压缩产物时的只读原因（'' = 可就地编辑）；只读时正文不进 TextArea
+  @Local fCodeIssue: string = '';
+  /// 只读态下导入的替换文件（名称 + 字节数），用于回显「已选好要部署的文件」
+  @Local fImportedName: string = '';
+  @Local fImportedBytes: number = 0;
   /// 观察权益：购买后各入口的 Pro 徽章即时消失
   @Local entitlements: EntitlementStore = entitlement;
   /// 下拉刷新进行中（对照 iOS 详情页的 .refreshable）
@@ -263,12 +318,54 @@ export struct WorkerDetailPage {
     this.codeSheetVisible = true;
     this.vm.loadContent(accountStore.selectedId, this.scriptName).then((err: string) => {
       if (err === '') {
-        this.fCode = this.vm.content?.body ?? '';
+        const body = this.vm.content?.body ?? '';
+        this.fImportedName = '';
+        this.fImportedBytes = 0;
+        this.fCodeIssue = (this.vm.content?.editable ?? false) ? sourceIssue(body) : '';
+        // 只读态不把正文交给 TextArea：超大 / 超长行正文会拖住 UI 线程
+        this.fCode = this.fCodeIssue === '' ? body : '';
       } else {
         this.codeSheetVisible = false;
         this.toast(err);
       }
     });
+  }
+
+  /// 只读态下导入改好的 .js 整体替换（正文不进编辑器，只回显文件名与体积）
+  private async importCodeFile(): Promise<void> {
+    let fd = -1;
+    try {
+      const documentPicker = new picker.DocumentViewPicker();
+      const uris = await documentPicker.select({ maxSelectNumber: 1 });
+      if (!uris || uris.length === 0) {
+        return;
+      }
+      const uri = uris[0];
+      const slash = uri.lastIndexOf('/');
+      const name = decodeURIComponent(slash >= 0 ? uri.substring(slash + 1) : uri);
+      const file = fileIo.openSync(uri, fileIo.OpenMode.READ_ONLY);
+      fd = file.fd;
+      const stat = fileIo.statSync(fd);
+      const buffer = new ArrayBuffer(stat.size);
+      fileIo.readSync(fd, buffer);
+      const text = util.TextDecoder.create('utf-8').decodeToString(new Uint8Array(buffer));
+      if (text.trim() === '') {
+        this.toast('所选文件是空的');
+        return;
+      }
+      this.fCode = text;
+      this.fImportedName = name;
+      this.fImportedBytes = stat.size;
+    } catch (e) {
+      this.toast((e as Error).message ?? '导入失败');
+    } finally {
+      if (fd >= 0) {
+        try {
+          fileIo.closeSync(fd);
+        } catch (e) {
+        }
+      }
+    }
   }
 
   private confirmDeployCode(): void {
@@ -626,15 +723,41 @@ export struct WorkerDetailPage {
           .fontSize(12)
           .fontColor($r('sys.color.font_secondary'))
           .width('100%')
-        TextArea({ text: this.fCode })
-          .fontSize(12)
-          .fontFamily('monospace')
-          .width('100%')
-          .height(300)
-          .enabled(this.vm.content!.editable)
-          .onChange((value: string) => {
-            this.fCode = value;
-          })
+        if (this.fCodeIssue !== '') {
+          Text(this.fCodeIssue)
+            .fontSize(12)
+            .fontColor($r('sys.color.font_secondary'))
+            .width('100%')
+          if (this.fImportedName !== '') {
+            Text(`将部署：${this.fImportedName}（${formatBytes(this.fImportedBytes)}）`)
+              .fontSize(13)
+              .fontFamily('monospace')
+              .fontColor($r('sys.color.font_primary'))
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .width('100%')
+          }
+          Button(this.fImportedName === '' ? '导入 .js 文件整体替换' : '重新选择文件')
+            .width('100%')
+            .height(40)
+            .fontSize(14)
+            .type(ButtonType.Capsule)
+            .backgroundColor($r('sys.color.comp_background_tertiary'))
+            .fontColor($r('sys.color.font_primary'))
+            .onClick(() => {
+              this.importCodeFile();
+            })
+        } else {
+          TextArea({ text: this.fCode })
+            .fontSize(12)
+            .fontFamily('monospace')
+            .width('100%')
+            .height(300)
+            .enabled(this.vm.content!.editable)
+            .onChange((value: string) => {
+              this.fCode = value;
+            })
+        }
         Button(this.vm.isDeployingCode ? '正在部署…' : '部署')
           .width('100%')
           .height(44)

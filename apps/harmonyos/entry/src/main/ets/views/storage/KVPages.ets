@@ -212,28 +212,45 @@ class KVKeysVM {
   @Trace valueLoading: boolean = false;
   private service: StorageService = new StorageService();
 
+  /// 每次整页刷新递增；刷新期间还在飞的「加载更多」据此丢弃，
+  /// 否则旧游标的下一页会被追加到刷新后的第一页后面（键重复、游标错乱）。
+  private loadGeneration: number = 0;
+
   async load(nsId: string): Promise<void> {
+    this.loadGeneration++;
+    const generation = this.loadGeneration;
     this.isLoading = true;
     this.error = '';
     this.cursor = '';
     try {
       const page: CursorPage<KVKey> = await this.service.listKeys(accountStore.selectedId, nsId, '');
+      if (generation !== this.loadGeneration) {
+        return;
+      }
       this.keys = page.items;
       this.cursor = page.cursor;
     } catch (e) {
-      this.error = (e as Error).message ?? '加载失败';
+      if (generation === this.loadGeneration) {
+        this.error = (e as Error).message ?? '加载失败';
+      }
     } finally {
-      this.isLoading = false;
+      if (generation === this.loadGeneration) {
+        this.isLoading = false;
+      }
     }
   }
 
   async loadMore(nsId: string): Promise<void> {
-    if (this.isLoadingMore || this.cursor === '') {
+    if (this.isLoadingMore || this.isLoading || this.cursor === '') {
       return;
     }
+    const generation = this.loadGeneration;
     this.isLoadingMore = true;
     try {
       const page: CursorPage<KVKey> = await this.service.listKeys(accountStore.selectedId, nsId, this.cursor);
+      if (generation !== this.loadGeneration) {
+        return;
+      }
       this.keys = this.keys.concat(page.items);
       this.cursor = page.cursor;
     } catch (e) {

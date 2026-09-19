@@ -274,19 +274,32 @@ class ObjectsVM {
     return slash >= 0 ? trimmed.substring(0, slash + 1) : '';
   }
 
+  /// 每次整页加载（进文件夹 / 返回上级 / 刷新）递增；晚到的旧一代结果一律丢弃。
+  /// 否则点进慢文件夹再立刻返回，慢到的响应会把上级目录替换成子文件夹内容与游标。
+  private loadGeneration: number = 0;
+
   async load(bucket: string): Promise<void> {
+    this.loadGeneration++;
+    const generation = this.loadGeneration;
     this.isLoading = true;
     this.error = '';
     this.cursor = '';
     try {
       const page: R2ObjectPage = await this.service.listObjects(accountStore.selectedId, bucket, this.currentPrefix, '');
+      if (generation !== this.loadGeneration) {
+        return;
+      }
       this.objects = page.objects;
       this.folders = page.folders;
       this.cursor = page.cursor;
     } catch (e) {
-      this.error = (e as Error).message ?? '加载失败';
+      if (generation === this.loadGeneration) {
+        this.error = (e as Error).message ?? '加载失败';
+      }
     } finally {
-      this.isLoading = false;
+      if (generation === this.loadGeneration) {
+        this.isLoading = false;
+      }
     }
   }
 
@@ -306,9 +319,13 @@ class ObjectsVM {
     if (this.isLoadingMore || this.cursor === '') {
       return;
     }
+    const generation = this.loadGeneration;
     this.isLoadingMore = true;
     try {
       const page: R2ObjectPage = await this.service.listObjects(accountStore.selectedId, bucket, this.currentPrefix, this.cursor);
+      if (generation !== this.loadGeneration) {
+        return; // 期间已换目录 / 刷新：这页不属于当前列表（finally 仍会复位 isLoadingMore）
+      }
       this.objects = this.objects.concat(page.objects);
       // 折叠前缀去重合并
       for (const f of page.folders) {

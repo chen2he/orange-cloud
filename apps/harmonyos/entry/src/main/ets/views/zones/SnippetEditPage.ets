@@ -25,12 +25,30 @@ export struct SnippetEditPage {
   @Local isLoading: boolean = false;
   @Local isSaving: boolean = false;
   @Local error: string = '';
+  /// 远端正文没拉到：编辑器里只有新建模板，绝不能拿它去覆盖线上 snippet
+  @Local loadFailed: boolean = false;
   private service: SnippetService = new SnippetService();
   private pathStack: NavPathStack | null = null;
 
+  /// 拉取已有 snippet 的正文；失败置 loadFailed（禁止保存），可重试
+  private loadContent(): void {
+    this.isLoading = true;
+    this.error = '';
+    this.loadFailed = false;
+    this.service.content(this.zoneId, this.snippetName).then((code: string) => {
+      this.code = code;
+      this.isLoading = false;
+    }).catch((e: Error) => {
+      this.code = '';
+      this.loadFailed = true;
+      this.error = e.message ?? '加载正文失败';
+      this.isLoading = false;
+    });
+  }
+
   private save(): void {
     const name = this.snippetName.trim();
-    if (name === '') {
+    if (name === '' || this.loadFailed || this.isLoading) {
       return;
     }
     this.isSaving = true;
@@ -66,14 +84,32 @@ export struct SnippetEditPage {
                 })
             }
 
-            TextArea({ text: this.code })
-              .fontSize(12)
-              .fontFamily('monospace')
+            if (this.loadFailed) {
+              Column({ space: 12 }) {
+                Text('代码加载失败，为避免覆盖线上代码，暂不能保存。')
+                  .fontSize(14)
+                  .fontColor($r('sys.color.font_secondary'))
+                  .textAlign(TextAlign.Center)
+                Button('重试')
+                  .height(40)
+                  .fontSize(14)
+                  .onClick(() => {
+                    this.loadContent();
+                  })
+              }
               .width('100%')
               .layoutWeight(1)
-              .onChange((value: string) => {
-                this.code = value;
-              })
+              .justifyContent(FlexAlign.Center)
+            } else {
+              TextArea({ text: this.code })
+                .fontSize(12)
+                .fontFamily('monospace')
+                .width('100%')
+                .layoutWeight(1)
+                .onChange((value: string) => {
+                  this.code = value;
+                })
+            }
 
             if (this.error !== '') {
               Text(this.error)
@@ -88,7 +124,7 @@ export struct SnippetEditPage {
               .fontSize(15)
               .fontColor(Color.White)
               .backgroundColor($r('app.color.oc_brand_cta'))
-              .enabled(!this.isSaving && this.snippetName.trim() !== '' && this.code.trim() !== '')
+              .enabled(!this.isSaving && !this.loadFailed && this.snippetName.trim() !== '' && this.code.trim() !== '')
               .onClick(() => {
                 this.save();
               })
@@ -113,14 +149,7 @@ export struct SnippetEditPage {
       this.snippetName = param.snippetName;
       this.isNew = param.snippetName === '';
       if (!this.isNew) {
-        this.isLoading = true;
-        this.service.content(param.zoneId, param.snippetName).then((code: string) => {
-          this.code = code;
-          this.isLoading = false;
-        }).catch((e: Error) => {
-          this.error = e.message ?? '加载正文失败';
-          this.isLoading = false;
-        });
+        this.loadContent();
       }
     })
   }

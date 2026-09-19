@@ -107,32 +107,54 @@ class AnalyticsVM {
     return max;
   }
 
+  /// 每次加载递增；晚到的旧范围结果一律丢弃。以前加载中切范围会被 isLoading 挡掉，
+  /// 选中的是 7 天、图上却还是 24 小时的数据。
+  private loadGeneration: number = 0;
+
   async load(zoneId: string, range: AnalyticsRange): Promise<void> {
-    if (this.isLoading) {
-      return;
-    }
+    this.loadGeneration++;
+    const generation = this.loadGeneration;
     this.isLoading = true;
     this.error = '';
     try {
-      this.points = await this.service.zoneTraffic(zoneId, range);
+      const points = await this.service.zoneTraffic(zoneId, range);
+      if (generation !== this.loadGeneration) {
+        return;
+      }
+      this.points = points;
       // 上一周期失败不阻塞主图（趋势徽章隐藏即可）
+      let previous: TrafficDataPoint[] = [];
       try {
-        this.previousPoints = await this.service.zoneTrafficPrevious(zoneId, range);
+        previous = await this.service.zoneTrafficPrevious(zoneId, range);
       } catch (e) {
-        this.previousPoints = [];
+        previous = [];
       }
+      if (generation !== this.loadGeneration) {
+        return;
+      }
+      this.previousPoints = previous;
       // 国家排行失败不阻塞主图
+      let countries: CountryTraffic[] = [];
       try {
-        this.countries = await this.service.zoneCountryTraffic(zoneId, range);
+        countries = await this.service.zoneCountryTraffic(zoneId, range);
       } catch (e) {
-        this.countries = [];
+        countries = [];
       }
+      if (generation !== this.loadGeneration) {
+        return;
+      }
+      this.countries = countries;
     } catch (e) {
-      this.error = (e as Error).message ?? '加载失败';
+      if (generation === this.loadGeneration) {
+        this.error = (e as Error).message ?? '加载失败';
+      }
     } finally {
-      this.isLoading = false;
+      if (generation === this.loadGeneration) {
+        this.isLoading = false;
+      }
     }
   }
+
 }
 
 /// 可复用分析区块：拥有自己的 AnalyticsVM，aboutToAppear 加载。
