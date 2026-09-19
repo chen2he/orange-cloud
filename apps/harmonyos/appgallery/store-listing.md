@@ -23,14 +23,15 @@ Orange Cloud 是一款为 Cloudflare 用户打造的原生鸿蒙管理客户端�
 · 存储：R2 对象浏览与上传下载、桶设置（自定义域 / CORS）；D1 SQL 查询控制台与表浏览；KV 键值管理
 · 网络：Cloudflare Tunnel、Zero Trust Access 与 Gateway、负载均衡（含源站池与健康监测）、批量重定向
 · 更多：邮件路由、SSL/TLS 证书、审计日志、通知告警、Cloudflare 服务状态
-· 免登录工具箱：DNS 查询、Whois、IP 归属、HTTP 探测、CF 节点检测、SSL 检查、CIDR 计算器
+· 工具箱：DNS 查询、Whois、IP 归属、HTTP 探测、CF 节点检测、SSL 检查、CIDR 计算器
+· 指南：Cloudflare 常见问题排障与科普长文，读过的文章可离线查看
 · 桌面卡片：「天窗」与「流量山脊」两款服务卡片
 
 【设计】
 原生鸿蒙设计：采用 HarmonyOS Design 系统分层色与 UI Design Kit 组件，深浅色随系统自动切换；标题栏与页签栏使用光感材质，品牌橙只用于强调与选中态，信息密度与可读性优先。
 
 【Pro 会员】
-免费版始终可用：单账号登录、域名与 DNS 全功能、24 小时流量分析、全部免登录工具箱与桌面卡片。
+免费版始终可用：单账号登录、域名与 DNS 全功能、24 小时流量分析、工具箱、指南与桌面卡片。
 Pro 解锁：多账号切换、存储模块（R2 / D1 / KV）、Workers 实时日志、WAF 自定义规则、Cloudflare Tunnel、7 天与 30 天流量分析。提供「Pro 年度」自动续期订阅与「Pro 终身」一次性买断两种方式，可在华为账号中随时管理或取消订阅。
 
 【隐私】
@@ -69,7 +70,7 @@ Cloudflare 账号：
 2. 点击「使用 Cloudflare 登录」，在弹出的授权页选择权限后跳转 cloudflare.com；
 3. 使用上述测试账号登录，按需完成两步验证；
 4. 在 Cloudflare 授权页点击同意，自动跳回应用；
-5. 登录后即可测试全部功能。未登录状态下也可完整体验「工具箱」（设置 → 开发者工具箱：DNS 查询、Whois、HTTP 探测等）。
+5. 登录后即可测试全部功能；「设置 → 工具箱」提供 DNS 查询、Whois、HTTP 探测等 7 个工具，「设置 → 指南」可阅读 Cloudflare 排障与科普文章。
 
 【补充说明】
 - 本应用为独立第三方客户端，与 Cloudflare, Inc. 无隶属或背书关系；
@@ -79,6 +80,6 @@ Cloudflare 账号：
 
 ## AGC 隐私标签（个人信息收集清单申报口径）
 - 收集的个人信息：无主动收集。用户 Cloudflare 访问令牌由用户授权后仅存于本机（Asset Store 加密），不上传本应用服务器。
-- 网络访问目标：api.cloudflare.com（产品功能）、o-c.do（OAuth 回调中转 / 政策页面）、cloudflarestatus.com（服务状态，免登录）。
+- 网络访问目标：api.cloudflare.com（产品功能）、o-c.do（OAuth 回调中转 / 政策页面 / 指南内容，公开只读、不带任何用户数据）、cloudflarestatus.com（服务状态，免登录）。
 - 第三方 SDK：无。
 - 权限：仅 INTERNET（网络）；文件选择走系统 Picker 无需存储权限。

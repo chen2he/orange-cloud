@@ -83,6 +83,8 @@ export class Routes {
   static readonly IDENTITY_DETAIL = 'identityDetail';
   static readonly WEB_AUTH = 'webAuth';
   static readonly TOOLBOX = 'toolbox';
+  static readonly GUIDES = 'guides';
+  static readonly GUIDE_ARTICLE = 'guideArticle';
   static readonly PAYWALL = 'paywall';
 }
 
@@ -103,6 +105,14 @@ export interface IdNameParam {
 
 export interface NameParam {
   name: string;
+}
+
+/// 指南文章：语言 + slug，标题先用清单里的，正文回来前就能显示
+export interface GuideParam {
+  locale: string;
+  slug: string;
+  title: string;
+  url: string;
 }
 
 /// D1 表浏览：库 + 表名

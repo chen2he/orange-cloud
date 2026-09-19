@@ -52,6 +52,7 @@ interface ToolEntry {
 const ACCOUNT_TOOL_ENTRIES: ToolEntry[] = [
   { symbol: $r('sys.symbol.checkmark_circle'), title: 'Cloudflare 状态', subtitle: '官方服务健康状况', route: Routes.STATUS },
   { symbol: $r('sys.symbol.wrench_and_screwdriver'), title: '工具箱', subtitle: 'whois / DNS / SSL 等 7 件套', route: Routes.TOOLBOX },
+  { symbol: $r('sys.symbol.book'), title: '指南', subtitle: 'Cloudflare 排障与科普长文', route: Routes.GUIDES },
   { symbol: $r('sys.symbol.doc_text'), title: '审计日志', subtitle: '账户操作记录', route: Routes.AUDIT },
   { symbol: $r('sys.symbol.bell'), title: '通知告警', subtitle: 'Cloudflare Alerting 策略', route: Routes.ALERTING },
 ];

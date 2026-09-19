@@ -65,6 +65,8 @@ import { PagesDeploymentPage } from '../views/pages/PagesDeploymentPage';
 import { PagesDomainsPage } from '../views/pages/PagesDomainsPage';
 import { TurnstileListPage, TurnstileDetailPage } from '../views/turnstile/TurnstilePages';
 import { ToolboxPage } from '../views/toolbox/ToolboxPage';
+import { GuidesListPage } from '../views/guides/GuidesListPage';
+import { GuideArticlePage } from '../views/guides/GuideArticlePage';
 import { IdentityDetailPage } from '../views/settings/IdentityDetailPage';
 import { PaywallPage } from '../views/paywall/PaywallPage';
 import { PrivacyConsentPage } from '../views/common/PrivacyConsentPage';
@@ -266,6 +268,10 @@ struct Index {
       TurnstileDetailPage()
     } else if (name === Routes.TOOLBOX) {
       ToolboxPage()
+    } else if (name === Routes.GUIDES) {
+      GuidesListPage()
+    } else if (name === Routes.GUIDE_ARTICLE) {
+      GuideArticlePage()
     } else if (name === Routes.WEB_AUTH) {
       WebAuthPage()
     } else if (name === Routes.IDENTITY_DETAIL) {
