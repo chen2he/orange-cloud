@@ -59,11 +59,27 @@ export class StorageService {
 
   // ---- R2 ----
   // R2 buckets 端点 result 是对象 { buckets: [...] }，不能走 getList（会把对象当数组返回，ForEach 崩溃）。
+  /// 桶列表走游标取全量：单页上限 100，超过 100 个桶以前后面的看不到（iOS 2.1.3 同批修复）。
+  /// 最多 50 页兜底，防服务端游标异常死循环。
   async listBuckets(accountId: string): Promise<R2Bucket[]> {
-    const wrap = await this.client.getObject<R2BucketList>(`/accounts/${accountId}/r2/buckets`, {
-      'per_page': '100',
-    } as Record<string, string>);
-    return wrap.buckets ?? [];
+    const all: R2Bucket[] = [];
+    let cursor = '';
+    for (let i = 0; i < 50; i++) {
+      const query: Record<string, string> = { 'per_page': '100' };
+      if (cursor !== '') {
+        query['cursor'] = cursor;
+      }
+      const page = await this.client.getObjectEnvelope<R2BucketList>(`/accounts/${accountId}/r2/buckets`, query);
+      const buckets = page.result?.buckets ?? [];
+      for (const b of buckets) {
+        all.push(b);
+      }
+      cursor = page.result_info?.cursor ?? '';
+      if (cursor === '' || buckets.length === 0) {
+        break;
+      }
+    }
+    return all;
   }
 
   createBucket(accountId: string, name: string): Promise<R2Bucket> {

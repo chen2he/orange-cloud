@@ -456,8 +456,8 @@ export class AuthManager {
       throw new Error('登录授权已失效，请重新授权');
     }
     const context = GlobalContext.getBase();
-    // TokenRefresher 已在锁内完成「重读最新 token → 刷新 → 落盘 / 4xx 清空」。
-    // 它不抛错：refreshed=false 可能是「他人已刷新」「网络错误保持原状」或「4xx 已判死」。
+    // TokenRefresher 已在锁内完成「重读最新 token → 刷新 → 落盘 / 被拒清空」。
+    // 它不抛错：refreshed=false 可能是「他人已刷新」「瞬时错误保持原状」或「服务端拒绝 refresh token 已判死」。
     await TokenRefresher.refreshSessionIfNeeded(context, sessionId);
     // 从持久层同步最新态到内存
     const latest = await TokenStore.load(sessionId);
@@ -473,7 +473,7 @@ export class AuthManager {
       }
       return;
     }
-    // TokenStore 被清空 = 4xx 判死，会话结束
+    // TokenStore 被清空 = 服务端明确拒绝 refresh token，会话结束
     await this.removeSession(sessionId, false);
     throw new Error('登录已过期，请重新登录');
   }

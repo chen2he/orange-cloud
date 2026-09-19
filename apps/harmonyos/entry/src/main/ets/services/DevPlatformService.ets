@@ -292,9 +292,10 @@ export class DevPlatformService {
     }
   }
 
+  /// 端点默认 per_page=20（上限 1000）：不翻页第 21 个命名空间起就看不见
   listDurableObjectNamespaces(accountId: string): Promise<DurableObjectNamespace[]> {
-    return this.client.getList<DurableObjectNamespace>(
-      `/accounts/${accountId}/workers/durable_objects/namespaces`);
+    return this.client.getAllPages<DurableObjectNamespace>(
+      `/accounts/${accountId}/workers/durable_objects/namespaces`, 1000);
   }
 
   /// 命名空间下的对象实例（只读，游标分页）。对象在首次被访问时才由运行时创建，
@@ -313,8 +314,9 @@ export class DevPlatformService {
     };
   }
 
+  /// 端点默认 per_page=20（上限 100）：不翻页第 21 个配置起就看不见
   listHyperdrive(accountId: string): Promise<HyperdriveConfig[]> {
-    return this.client.getList<HyperdriveConfig>(`/accounts/${accountId}/hyperdrive/configs`);
+    return this.client.getAllPages<HyperdriveConfig>(`/accounts/${accountId}/hyperdrive/configs`, 100);
   }
 
   /// 创建 Hyperdrive（PostgreSQL 源连接）

@@ -4,6 +4,7 @@ import { HdsNavDestination } from '@kit.UIDesignKit';
 // URL 安全扫描：提交链接，看归属、状态与风险判定。需账号，故不在免登录工具箱里。
 import { URLScannerService, URLScanResult } from '../../services/URLScannerService';
 import { accountStore } from '../../core/store/AccountStore';
+import { ApiError } from '../../core/network/CFApiClient';
 import { SectionHeader } from '../common/Components';
 import { OCSkyBackground } from '../common/OCSky';
 import { promptAction } from '@kit.ArkUI';
@@ -50,11 +51,17 @@ class ScannerVM {
           this.result = await this.service.result(accountStore.selectedId, scanId);
           break;
         } catch (e) {
-          // 未就绪，继续轮询
+          // 404 = 报告未就绪，继续轮询；其它错误（权限 / 限流 / 网络）直接报出，别白轮询
+          if (!(e instanceof ApiError) || (e as ApiError).code !== 404) {
+            throw e as Error;
+          }
         }
       }
       return this.result === null ? '扫描仍在进行，请稍后用同一个链接再查一次。' : '';
     } catch (e) {
+      if (e instanceof ApiError && (e as ApiError).code === 409) {
+        return '该网址最近已扫描过，Cloudflare 暂不接受重复提交，请稍后再试。';
+      }
       return (e as Error).message ?? '扫描失败';
     } finally {
       this.isScanning = false;

@@ -2,7 +2,9 @@
 // 安全铁律（Cloudflare 每次刷新轮换 refresh_token）：
 //   1. 拿到 RefreshGate 跨进程锁后，**重新从 TokenStore 读一次最新 token**——
 //      另一进程可能刚刷新过，若读到的 token 已远离过期则直接跳过（避免消费到已轮换的旧 refresh_token）。
-//   2. 只有 token 端点返回 4xx 才判死（清空该身份 token）；网络错误保持原状，绝不误登出。
+//   2. 只有 token 端点明确拒绝该 refresh_token 才判死（清空该身份 token）：400–403 **且**响应体是
+//      OAuth 错误 JSON（{"error":"invalid_grant",…}）。WAF 挑战页（403 HTML）、429 限流、公共 Wi-Fi
+//      登录页、5xx、断网都只是瞬时问题，保持原状、绝不误登出（对齐 iOS 2.1.3）。
 import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
@@ -30,7 +32,37 @@ function formEncode(params: Record<string, string>): string {
   return parts.join('&');
 }
 
-/// POST token 端点；非 2xx 抛 `HTTP <code> ...`（4xx 会被上层判死）
+/// token 端点非 2xx：保留状态码与原始响应体，交给 isRefreshTokenRejected 判定
+class TokenEndpointError extends Error {
+  status: number;
+  body: string;
+
+  constructor(status: number, body: string) {
+    super(`HTTP ${status}`);
+    this.status = status;
+    this.body = body;
+  }
+}
+
+interface OAuthErrorBody {
+  error?: string;
+}
+
+/// 服务端明确拒绝了这个 refresh_token：400–403 且响应体是带 error 字段的 OAuth JSON。
+/// 403 的 WAF 挑战页是 HTML，解析失败即不算；429 / 5xx 不在区间内。
+function isRefreshTokenRejected(e: TokenEndpointError): boolean {
+  if (e.status < 400 || e.status > 403) {
+    return false;
+  }
+  try {
+    const body = JSON.parse(e.body) as OAuthErrorBody;
+    return typeof body.error === 'string' && body.error.length > 0;
+  } catch (err) {
+    return false;
+  }
+}
+
+/// POST token 端点；非 2xx 抛 TokenEndpointError（由 isRefreshTokenRejected 决定是否判死）
 async function postForm(endpoint: string, params: Record<string, string>): Promise<string> {
   const session = http.createHttp();
   try {
@@ -44,7 +76,7 @@ async function postForm(endpoint: string, params: Record<string, string>): Promi
     });
     const body = response.result as string;
     if (response.responseCode < 200 || response.responseCode >= 300) {
-      throw new Error(`HTTP ${response.responseCode} ${body}`);
+      throw new TokenEndpointError(response.responseCode, body ?? '');
     }
     return body;
   } finally {
@@ -95,12 +127,13 @@ export class TokenRefresher {
         return true;
       } catch (e) {
         const message = (e as Error).message ?? '';
-        // 仅 token 端点 4xx 判死；网络错误保持原状，绝不误登出
-        if (message.startsWith('HTTP 4')) {
+        if (e instanceof TokenEndpointError && isRefreshTokenRejected(e as TokenEndpointError)) {
           await TokenStore.clear(sessionId);
-          hilog.warn(DOMAIN, TAG, 'session %{public}s token dead (4xx), cleared', sessionId);
+          hilog.warn(DOMAIN, TAG, 'session %{public}s refresh token rejected (%{public}s), cleared',
+            sessionId, message);
         } else {
-          hilog.warn(DOMAIN, TAG, 'refresh network error (kept): %{public}s', message);
+          // WAF 挑战页 / 限流 / 5xx / 断网：瞬时问题，保留会话
+          hilog.warn(DOMAIN, TAG, 'refresh transient error (kept): %{public}s', message);
         }
         return false;
       }

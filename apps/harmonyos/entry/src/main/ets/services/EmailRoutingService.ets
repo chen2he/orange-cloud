@@ -1,5 +1,5 @@
 // Email Routing：zone 级状态/规则 + 账户级目标地址（对齐 Android EmailRoutingRepository）。
-import { CFApiClient, apiClient } from '../core/network/CFApiClient';
+import { ApiError, CFApiClient, apiClient } from '../core/network/CFApiClient';
 
 export interface EmailRoutingStatus {
   enabled?: boolean;
@@ -57,6 +57,19 @@ export interface EmailSuppression {
   zones?: string[];
 }
 
+/// GET 抑制列表的顶层结构（非标准信封：无 success / errors）
+interface SuppressionPage {
+  result?: EmailSuppression[];
+  page?: number;
+  per_page?: number;
+  total?: number;
+}
+
+/// POST 抑制地址的顶层结构（只有 result）
+interface SuppressionCreated {
+  result?: EmailSuppression;
+}
+
 interface SuppressionCreate {
   email: string;
 }
@@ -93,8 +106,9 @@ export class EmailRoutingService {
     await this.client.postObject<object>(`/zones/${zoneId}/email/routing/${action}`, {} as Record<string, string>);
   }
 
+  /// 路由规则（不含 catch-all）。端点默认 per_page=20（上限 50），不翻页第 21 条起就看不见。
   rules(zoneId: string): Promise<EmailRoutingRule[]> {
-    return this.client.getList<EmailRoutingRule>(`/zones/${zoneId}/email/routing/rules`);
+    return this.client.getAllPages<EmailRoutingRule>(`/zones/${zoneId}/email/routing/rules`, 50);
   }
 
   createRule(zoneId: string, input: EmailRuleInput): Promise<EmailRoutingRule> {
@@ -119,8 +133,23 @@ export class EmailRoutingService {
     return this.client.putObject<EmailRoutingRule>(`/zones/${zoneId}/email/routing/rules/catch_all`, input);
   }
 
-  addresses(accountId: string): Promise<EmailDestinationAddress[]> {
-    return this.client.getList<EmailDestinationAddress>(`/accounts/${accountId}/email/routing/addresses`);
+  /// 账号下全部目的地址（含未验证）。
+  /// OpenAPI 里 `verified` 查询参数默认 true（只回已验证），而 UI 有「待验证」态，刚添加的地址必须出现——
+  /// 所以已验证 / 未验证各拉一遍再按 id 去重合并；分页同 rules（默认 20 条）。
+  async addresses(accountId: string): Promise<EmailDestinationAddress[]> {
+    const merged: EmailDestinationAddress[] = [];
+    const seen = new Set<string>();
+    for (const verified of ['true', 'false']) {
+      const items = await this.client.getAllPages<EmailDestinationAddress>(
+        `/accounts/${accountId}/email/routing/addresses`, 50, { 'verified': verified } as Record<string, string>);
+      for (const item of items) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id);
+          merged.push(item);
+        }
+      }
+    }
+    return merged;
   }
 
   createAddress(accountId: string, email: string): Promise<EmailDestinationAddress> {
@@ -131,17 +160,24 @@ export class EmailRoutingService {
   deleteAddress(accountId: string, addressId: string): Promise<void> {
     return this.client.delete(`/accounts/${accountId}/email/routing/addresses/${addressId}`);
   }
-  /// 抑制列表（email-routing-suppression.read / .write）
-  suppressions(zoneId: string): Promise<EmailSuppression[]> {
-    return this.client.getList<EmailSuppression>(`/zones/${zoneId}/email/routing/suppression`, {
+  /// 抑制列表（email-routing-suppression.read / .write）。
+  /// ⚠️ 该端点 2xx 不走 CF 标准信封：顶层是 { page, per_page, total, result }，没有 success
+  /// （OpenAPI 规范如此，iOS Sentry APPLE-IOS-AB 坐实）；按信封解必然失败。
+  async suppressions(zoneId: string): Promise<EmailSuppression[]> {
+    const page = await this.client.getBare<SuppressionPage>(`/zones/${zoneId}/email/routing/suppression`, {
       'per_page': '100',
     } as Record<string, string>);
+    return page.result ?? [];
   }
 
-  /// 手动抑制一个地址（此后不再向它转发）
-  addSuppression(zoneId: string, email: string): Promise<EmailSuppression> {
+  /// 手动抑制一个地址。响应同样无信封，只有 { result }（OpenAPI）。
+  async addSuppression(zoneId: string, email: string): Promise<EmailSuppression> {
     const body: SuppressionCreate = { email: email };
-    return this.client.postObject<EmailSuppression>(`/zones/${zoneId}/email/routing/suppression`, body);
+    const res = await this.client.postBare<SuppressionCreated>(`/zones/${zoneId}/email/routing/suppression`, body);
+    if (!res.result) {
+      throw new ApiError('响应缺少结果');
+    }
+    return res.result;
   }
 
   /// 解除抑制

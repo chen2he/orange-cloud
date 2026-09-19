@@ -3,7 +3,7 @@
 // 特殊形态：getRaw（KV value / Snippet 正文是裸字节非信封）、putMultipart（KV 写值）、graphql（分析）。
 import { http } from '@kit.NetworkKit';
 import { rcp } from '@kit.RemoteCommunicationKit';
-import { CFError, CFListEnvelope, CFObjectEnvelope } from '../../models/Models';
+import { CFError, CFListEnvelope, CFObjectEnvelope, CFObjectPage } from '../../models/Models';
 import { authManager } from '../auth/AuthManager';
 
 const BASE_URL = 'https://api.cloudflare.com/client/v4';
@@ -35,6 +35,17 @@ export interface MultipartPart {
   data: string;
   contentType?: string;
   filename?: string;
+}
+
+/// 无信封端点的错误体：v2 系列是 { message, errors: [{ title|message }] } 等不固定形态
+interface BareErrorItem {
+  message?: string;
+  title?: string;
+}
+
+interface BareErrorBody {
+  message?: string;
+  errors?: BareErrorItem[];
 }
 
 interface RawResponse {
@@ -102,6 +113,42 @@ export class CFApiClient {
     return envelope;
   }
 
+  /// 页码分页取全量：按 result_info.total_pages 翻页，最多 20 页兜底（防服务端页数异常死循环）。
+  /// 很多端点默认 per_page=20，不翻页第 21 条起就看不见（iOS 2.1.3 同批修复）。
+  async getAllPages<T>(path: string, perPage: number, query?: Record<string, string>): Promise<T[]> {
+    const all: T[] = [];
+    for (let page = 1; page <= 20; page++) {
+      const q: Record<string, string> = {};
+      if (query) {
+        for (const key of Object.keys(query)) {
+          q[key] = query[key];
+        }
+      }
+      q['page'] = String(page);
+      q['per_page'] = String(perPage);
+      const envelope = await this.getListEnvelope<T>(path, q);
+      const items = envelope.result ?? [];
+      for (const item of items) {
+        all.push(item);
+      }
+      const totalPages = envelope.result_info?.total_pages ?? 1;
+      if (page >= totalPages || items.length === 0) {
+        break;
+      }
+    }
+    return all;
+  }
+
+  /// GET 单对象型端点，连同 result_info 一起返回（R2 桶列表这类「result 是对象 + 游标在 result_info」）
+  async getObjectEnvelope<T>(path: string, query?: Record<string, string>): Promise<CFObjectPage<T>> {
+    const text = await this.requestText(http.RequestMethod.GET, path, query);
+    const envelope = JSON.parse(text) as CFObjectPage<T>;
+    if (!envelope.success || envelope.result === undefined) {
+      throw envelopeError(envelope.errors);
+    }
+    return envelope;
+  }
+
   /// GET 单对象型端点
   async getObject<T>(path: string, query?: Record<string, string>): Promise<T> {
     const text = await this.requestText(http.RequestMethod.GET, path, query);
@@ -111,6 +158,18 @@ export class CFApiClient {
   /// GET 裸响应体（KV value、Snippet 正文等非信封端点）；404 时抛 ApiError(code 404)
   async getRaw(path: string, query?: Record<string, string>): Promise<string> {
     return await this.requestText(http.RequestMethod.GET, path, query);
+  }
+
+  /// 不走 CF 标准信封的 2xx JSON 端点（URL Scanner v2、Email Routing 抑制列表等）：
+  /// 顶层就是目标对象，没有 success/result 包装。非 2xx 抛 ApiError，code 保留 **HTTP 状态码**
+  /// （调用方要区分 404 未就绪 / 409 近期已扫），不是 CF 业务码。
+  async getBare<T>(path: string, query?: Record<string, string>): Promise<T> {
+    return this.unwrapBare<T>(await this.requestRaw(http.RequestMethod.GET, path, query));
+  }
+
+  async postBare<T>(path: string, body: object): Promise<T> {
+    return this.unwrapBare<T>(
+      await this.requestRaw(http.RequestMethod.POST, path, undefined, JSON.stringify(body)));
   }
 
   /// POST 创建（JSON 请求体），返回信封内单对象
@@ -346,6 +405,12 @@ export class CFApiClient {
 
   private async requestText(method: http.RequestMethod, path: string, query?: Record<string, string>,
     bodyText?: string, contentType: string = 'application/json'): Promise<string> {
+    return this.unwrap(await this.requestRaw(method, path, query, bodyText, contentType));
+  }
+
+  /// 发请求、不判状态码，交给调用方决定怎么解（信封 unwrap / 无信封 unwrapBare）
+  private async requestRaw(method: http.RequestMethod, path: string, query?: Record<string, string>,
+    bodyText?: string, contentType: string = 'application/json'): Promise<RawResponse> {
     const token = await authManager.ensureAccessToken();
     let requestURL = `${BASE_URL}${path}`;
     if (query) {
@@ -371,7 +436,8 @@ export class CFApiClient {
         connectTimeout: 15000,
         readTimeout: 60000,
       });
-      return this.unwrap({ code: response.responseCode, body: response.result as string });
+      const raw: RawResponse = { code: response.responseCode, body: response.result as string };
+      return raw;
     } finally {
       session.destroy();
     }
@@ -399,6 +465,28 @@ export class CFApiClient {
       return this.unwrap({ code: response.responseCode, body: response.result as string });
     } finally {
       session.destroy();
+    }
+  }
+
+  private unwrapBare<T>(raw: RawResponse): T {
+    if (raw.code === 401) {
+      throw new ApiError('登录已过期，请重新登录', 401);
+    }
+    if (raw.code < 200 || raw.code >= 300) {
+      let message = `HTTP ${raw.code}`;
+      try {
+        const body = JSON.parse(raw.body) as BareErrorBody;
+        const first = body.errors && body.errors.length > 0 ? body.errors[0] : undefined;
+        message = body.message ?? first?.message ?? first?.title ?? message;
+      } catch (e) {
+        // 非 JSON 错误页（WAF / 网关）：保留 HTTP 状态码文案
+      }
+      throw new ApiError(message, raw.code);
+    }
+    try {
+      return JSON.parse(raw.body) as T;
+    } catch (e) {
+      throw new ApiError('响应解析失败', raw.code);
     }
   }
 

@@ -24,6 +24,14 @@ export interface CFListEnvelope<T> {
   result_info?: ResultInfo;
 }
 
+/// 单对象型响应 + 分页信息（R2 桶列表：result 是 { buckets }，游标在 result_info.cursor）
+export interface CFObjectPage<T> {
+  success: boolean;
+  result?: T;
+  errors?: CFError[];
+  result_info?: ResultInfo;
+}
+
 /// 通用响应包装（单对象型，POST/PUT/DELETE 返回）
 export interface CFObjectEnvelope<T> {
   success: boolean;
