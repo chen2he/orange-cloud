@@ -23,7 +23,7 @@
           "keyAlias": "zhe_ltd",
           "keyPassword": "00000019034BDEC33CA11C778EC99477CE819D178A6C2C806B499559DA2B20B6B28FF0E17FC81086AD",
           "signAlg": "SHA256withECDSA",
-          "profile": "/Users/zhe/keys/prodRelease.p7b",
+          "profile": "/Users/zhe/keys/orange_cloud_prodRelease.p7b",
           "certpath": "/Users/zhe/keys/zhe_ltd.cer"
         }
       }
