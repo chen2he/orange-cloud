@@ -1,7 +1,8 @@
 # Orange Cloud — AppGallery 上架素材（HarmonyOS）
 
 > 图标：同目录 `icon_216.png` / `icon_512.png` / `icon_1024.png`（AGC 表单按要求的尺寸取用）。
-> 截图：同目录 `shots/`（模拟器出图，1260×2720）。
+> 截图：`marketing/zh-CN/`（设计稿成品，不入库）；`shots/` 为真机裸截图备查。⚠️ 两套都出自 2026-07 旧版晨昏 UI，2026-09 改用系统色 + UI Design Kit 后需按新界面重拍。
+> 可直接粘贴的完整审核备注（含测试账号凭据）：`review-notes.local.md`（本地，不入库）。
 > 隐私政策 https://o-c.do/privacy ｜ 使用条款 https://o-c.do/terms
 
 ## 应用名称
@@ -23,10 +24,14 @@ Orange Cloud 是一款为 Cloudflare 用户打造的原生鸿蒙管理客户端�
 · 网络：Cloudflare Tunnel、Zero Trust Access 与 Gateway、负载均衡（含源站池与健康监测）、批量重定向
 · 更多：邮件路由、SSL/TLS 证书、审计日志、通知告警、Cloudflare 服务状态
 · 免登录工具箱：DNS 查询、Whois、IP 归属、HTTP 探测、CF 节点检测、SSL 检查、CIDR 计算器
-· 桌面卡片：「天窗」与「流量山脊」两款服务卡片，天色随时刻流转
+· 桌面卡片：「天窗」与「流量山脊」两款服务卡片
 
 【设计】
-晨昏设计语言：整个 App 是一片随本地时间流转的天空——清晨的奶油粉、正午的暖白、黄昏的橙金、夜晚的深蓝，玻璃质感卡片浮于天色之上。
+原生鸿蒙设计：采用 HarmonyOS Design 系统分层色与 UI Design Kit 组件，深浅色随系统自动切换；标题栏与页签栏使用光感材质，品牌橙只用于强调与选中态，信息密度与可读性优先。
+
+【Pro 会员】
+免费版始终可用：单账号登录、域名与 DNS 全功能、24 小时流量分析、全部免登录工具箱与桌面卡片。
+Pro 解锁：多账号切换、存储模块（R2 / D1 / KV）、Workers 实时日志、WAF 自定义规则、Cloudflare Tunnel、7 天与 30 天流量分析。提供「Pro 年度」自动续期订阅与「Pro 终身」一次性买断两种方式，可在华为账号中随时管理或取消订阅。
 
 【隐私】
 不注册自有账号、不接入第三方统计或广告 SDK。访问令牌仅加密存储在本机，网络请求仅发往 Cloudflare API 与本应用官网。
@@ -37,12 +42,13 @@ Orange Cloud 是一款为 Cloudflare 用户打造的原生鸿蒙管理客户端�
 Orange Cloud 首次登陆 HarmonyOS：
 · Cloudflare 官方 OAuth 授权登录，支持多账号
 · 域名 / DNS / 分析 / 安全规则 / Workers / 存储 / 网络 全模块管理
-· 晨昏设计语言与桌面服务卡片
+· 原生鸿蒙设计与桌面服务卡片
+· Pro 会员：年度订阅或一次性买断
 
 ## 分类与分级建议
 - 分类：实用工具（或 商务/办公 → 效率）
 - 年龄分级：3+（无用户生成内容、无社交、无广告）
-- 收费：免费（当前版本无内购）
+- 收费：免费下载，含应用内购买（Pro 年度 ¥128 自动续期订阅 / Pro 终身 ¥298 非消耗型，商品配置见 iap-products.md）
 
 ## 提审备注（对齐 iOS App Store 审核备注，凭据同源 apps/ios/fastlane/metadata/review_information/）
 感谢审核本应用。
