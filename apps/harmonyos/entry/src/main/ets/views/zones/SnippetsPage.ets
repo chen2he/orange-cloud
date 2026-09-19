@@ -62,6 +62,9 @@ export struct SnippetsPage {
   @Local ruleSheetVisible: boolean = false;
   @Local fRuleExpression: string = '';
   @Local fRuleSnippet: string = '';
+  @Local fRuleDescription: string = '';
+  /// 正在编辑的规则下标；-1 = 新增
+  @Local editingRuleIndex: number = -1;
   private pathStack: NavPathStack | null = null;
 
   private toast(message: string): void {
@@ -138,18 +141,75 @@ export struct SnippetsPage {
     }
     .width('100%')
     .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+    .onClick(() => {
+      this.openRuleEditor(rule, index);
+    })
     .gesture(LongPressGesture().onAction(() => {
-      const next = this.vm.rules.filter((r: SnippetRule, i: number) => i !== index);
-      this.vm.saveRules(this.zoneId, next).then((err: string) => {
-        this.toast(err === '' ? '已删除规则' : err);
-      });
+      this.confirmDeleteRule(rule, index);
     }))
+  }
+
+  /// 点按规则：同一张表单预填后编辑（改表达式 / 描述 / 目标片段），保存时原地替换、顺序不变
+  private openRuleEditor(rule: SnippetRule, index: number): void {
+    this.editingRuleIndex = index;
+    this.fRuleSnippet = rule.snippet_name;
+    this.fRuleExpression = rule.expression;
+    this.fRuleDescription = rule.description ?? '';
+    this.ruleSheetVisible = true;
+  }
+
+  private confirmDeleteRule(rule: SnippetRule, index: number): void {
+    this.getUIContext().showAlertDialog({
+      title: '删除触发规则',
+      message: `确定删除这条触发「${rule.snippet_name}」的规则？`,
+      primaryButton: { value: '取消', action: () => {
+      } },
+      secondaryButton: {
+        value: '删除',
+        fontColor: '#DC2626',
+        action: () => {
+          const next = this.vm.rules.filter((r: SnippetRule, i: number) => i !== index);
+          this.vm.saveRules(this.zoneId, next).then((err: string) => {
+            this.toast(err === '' ? '已删除规则' : err);
+          });
+        },
+      },
+    });
+  }
+
+  /// 表单提交：新增追加到末尾；编辑原地替换（snippet_rules 是整组 PUT，漏传即删，所以回写全集）
+  private submitRule(): void {
+    const description = this.fRuleDescription.trim();
+    const editing = this.editingRuleIndex;
+    const base: SnippetRule | undefined = editing >= 0 ? this.vm.rules[editing] : undefined;
+    const rule: SnippetRule = {
+      expression: this.fRuleExpression.trim(),
+      snippet_name: this.fRuleSnippet,
+      enabled: base ? base.enabled : true,
+    };
+    if (description !== '') {
+      rule.description = description;
+    }
+    let next: SnippetRule[];
+    if (editing >= 0 && editing < this.vm.rules.length) {
+      next = this.vm.rules.map((r: SnippetRule, i: number): SnippetRule => i === editing ? rule : r);
+    } else {
+      next = this.vm.rules.concat([rule]);
+    }
+    this.vm.saveRules(this.zoneId, next).then((err: string) => {
+      if (err === '') {
+        this.ruleSheetVisible = false;
+        this.toast(editing >= 0 ? '已保存规则' : '已添加规则');
+      } else {
+        this.toast(err);
+      }
+    });
   }
 
   @Builder
   addRuleSheet() {
     Column({ space: 12 }) {
-      Text('添加 Snippet 规则')
+      Text(this.editingRuleIndex >= 0 ? '编辑触发规则' : '添加 Snippet 规则')
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
         .fontColor($r('sys.color.font_primary'))
@@ -179,7 +239,14 @@ export struct SnippetsPage {
           this.fRuleExpression = value;
         })
 
-      Button('添加（整组回写）')
+      TextInput({ text: this.fRuleDescription, placeholder: '描述（可选）' })
+        .fontSize(14)
+        .width('100%')
+        .onChange((value: string) => {
+          this.fRuleDescription = value;
+        })
+
+      Button(this.editingRuleIndex >= 0 ? '保存' : '添加')
         .width('100%')
         .height(44)
         .fontSize(15)
@@ -187,19 +254,7 @@ export struct SnippetsPage {
         .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(this.fRuleSnippet !== '' && this.fRuleExpression.trim() !== '')
         .onClick(() => {
-          const newRule: SnippetRule = {
-            expression: this.fRuleExpression.trim(),
-            snippet_name: this.fRuleSnippet,
-            enabled: true,
-          };
-          this.vm.saveRules(this.zoneId, this.vm.rules.concat([newRule])).then((err: string) => {
-            if (err === '') {
-              this.ruleSheetVisible = false;
-              this.fRuleExpression = '';
-            } else {
-              this.toast(err);
-            }
-          });
+          this.submitRule();
         })
     }
     .padding({ left: 20, right: 20, bottom: 24 })
@@ -283,7 +338,7 @@ export struct SnippetsPage {
 
               Column() {
                 Row() {
-                  SectionHeader({ title: `触发规则（${this.vm.rules.length}）· 长按删除` })
+                  SectionHeader({ title: `触发规则（${this.vm.rules.length}）· 点按编辑，长按删除` })
                   Blank()
                   Text('＋加规则')
                     .fontSize(13)
@@ -294,7 +349,10 @@ export struct SnippetsPage {
                         this.toast('先创建一个 Snippet');
                         return;
                       }
+                      this.editingRuleIndex = -1;
                       this.fRuleSnippet = this.vm.snippets[0].snippet_name;
+                      this.fRuleExpression = '';
+                      this.fRuleDescription = '';
                       this.ruleSheetVisible = true;
                     })
                 }
