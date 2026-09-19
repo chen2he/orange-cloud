@@ -56,6 +56,7 @@ export class Routes {
   static readonly WORKER_DOMAINS = 'workerDomains';
   static readonly WORKER_DEPLOYMENTS = 'workerDeployments';
   static readonly TAIL = 'tail';
+  static readonly WORKER_LOGS = 'workerLogs';
   static readonly PAGES = 'pages';
   static readonly PAGES_DETAIL = 'pagesDetail';
   static readonly PAGES_DEPLOYMENT = 'pagesDeployment';

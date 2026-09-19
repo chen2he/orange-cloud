@@ -668,7 +668,7 @@ export struct WorkerDetailPage {
     .width('100%')
   }
 
-  /// 调试分组：实时日志（tail）
+  /// 调试分组：实时日志（tail）+ 历史日志（Observability）
   @Builder
   debugSection() {
     Column({ space: 8 }) {
@@ -685,6 +685,27 @@ export struct WorkerDetailPage {
             }
             const param: NameParam = { name: this.scriptName };
             this.pathStack?.pushPathByName(Routes.TAIL, param);
+          },
+        })
+        Divider()
+          .color($r('sys.color.comp_divider'))
+          .margin({ left: 56 })
+        // 历史日志与实时日志互补：tail 只播放连接期间的调用，这里查已落库的事件
+        NavRow({
+          symbol: $r('sys.symbol.clock'),
+          title: '历史日志',
+          subtitle: '按时间范围回查已发生的调用',
+          locked: !this.entitlements.isPro,
+          onNav: () => {
+            if (!requirePro(this.pathStack, '历史日志')) {
+              return;
+            }
+            if (!authManager.hasScope(Scopes.WORKERS_OBSERVABILITY_READ)) {
+              this.toast('当前授权未包含 Workers 可观测性读取权限（workers-observability.read），可在「设置 → 身份」中升级授权');
+              return;
+            }
+            const param: NameParam = { name: this.scriptName };
+            this.pathStack?.pushPathByName(Routes.WORKER_LOGS, param);
           },
         })
       }
