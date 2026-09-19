@@ -417,8 +417,13 @@ export struct WorkerLogsPage {
             .width('100%')
             .layoutWeight(1)
           } else {
-            if (this.vm.total >= 0) {
-              Text(`命中 ${this.vm.total} 条，已载入 ${this.vm.events.length} 条`)
+            // 接口的 events.count 实测是「本页条数」（受 limit 封顶），不是总命中数，别写成「命中」
+            if (this.vm.events.length > 0) {
+              Text(this.vm.isLoading
+                ? '正在查询…'
+                : (this.vm.canLoadMore
+                  ? `已载入 ${this.vm.events.length} 条，上滑加载更早的日志`
+                  : `共 ${this.vm.events.length} 条`))
                 .fontSize(11)
                 .fontColor($r('sys.color.font_tertiary'))
                 .width('100%')
