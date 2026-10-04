@@ -198,6 +198,7 @@ struct WorkerLogsView: View {
             Button("重试") { Task { await viewModel.load() } }
                 .buttonStyle(.bordered)
                 .tint(Color.ocOrange)
+            APIErrorDocLink(message: message)
         }
         .padding(.top, 60)
     }

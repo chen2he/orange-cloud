@@ -35,18 +35,32 @@ actor CFAPIClient {
 
     // MARK: - 核心请求方法
 
-    func get<T: Codable & Sendable>(_ path: String, queryItems: [URLQueryItem] = []) async throws -> T {
-        try await request(method: "GET", path: path, queryItems: queryItems, body: nil)
+    // headers：少数端点要求的附加请求头（如 R2 区域限制桶的 cf-r2-jurisdiction），默认无。
+
+    func get<T: Codable & Sendable>(
+        _ path: String,
+        queryItems: [URLQueryItem] = [],
+        headers: [String: String] = [:]
+    ) async throws -> T {
+        try await request(method: "GET", path: path, queryItems: queryItems, body: nil, headers: headers)
     }
 
-    func post<T: Codable & Sendable, B: Codable & Sendable>(_ path: String, body: B) async throws -> T {
+    func post<T: Codable & Sendable, B: Codable & Sendable>(
+        _ path: String,
+        body: B,
+        headers: [String: String] = [:]
+    ) async throws -> T {
         let data = try JSONEncoder().encode(body)
-        return try await request(method: "POST", path: path, queryItems: [], body: data)
+        return try await request(method: "POST", path: path, queryItems: [], body: data, headers: headers)
     }
 
-    func put<T: Codable & Sendable, B: Codable & Sendable>(_ path: String, body: B) async throws -> T {
+    func put<T: Codable & Sendable, B: Codable & Sendable>(
+        _ path: String,
+        body: B,
+        headers: [String: String] = [:]
+    ) async throws -> T {
         let data = try JSONEncoder().encode(body)
-        return try await request(method: "PUT", path: path, queryItems: [], body: data)
+        return try await request(method: "PUT", path: path, queryItems: [], body: data, headers: headers)
     }
 
     func patch<T: Codable & Sendable, B: Codable & Sendable>(_ path: String, body: B) async throws -> T {
@@ -54,8 +68,8 @@ actor CFAPIClient {
         return try await request(method: "PATCH", path: path, queryItems: [], body: data)
     }
 
-    func delete(_ path: String) async throws {
-        let _: EmptyResponse = try await request(method: "DELETE", path: path, queryItems: [], body: nil)
+    func delete(_ path: String, headers: [String: String] = [:]) async throws {
+        let _: EmptyResponse = try await request(method: "DELETE", path: path, queryItems: [], body: nil, headers: headers)
     }
 
     /// 带 JSON 体的 DELETE（如 Rules List 批量删条目：{items:[{id}]}），返回解码结果
@@ -65,8 +79,14 @@ actor CFAPIClient {
     }
 
     /// 返回原始响应体（KV value 等非 JSON 信封端点）
-    func getRaw(_ path: String, queryItems: [URLQueryItem] = []) async throws -> Data {
-        try await performRequest(method: "GET", path: path, queryItems: queryItems, body: nil, contentType: nil).0
+    func getRaw(
+        _ path: String,
+        queryItems: [URLQueryItem] = [],
+        headers: [String: String] = [:]
+    ) async throws -> Data {
+        try await performRequest(
+            method: "GET", path: path, queryItems: queryItems, body: nil, contentType: nil, headers: headers
+        ).0
     }
 
     /// 原始响应体 + HTTP 响应（需读 Content-Type 的 boundary，如 Worker 源码 multipart）
@@ -84,9 +104,14 @@ actor CFAPIClient {
     }
 
     /// 原始字节 PUT（R2 对象上传等），自带 Content-Type
-    func putRaw<T: Codable & Sendable>(_ path: String, body: Data, contentType: String) async throws -> T {
+    func putRaw<T: Codable & Sendable>(
+        _ path: String,
+        body: Data,
+        contentType: String,
+        headers: [String: String] = [:]
+    ) async throws -> T {
         let (data, _) = try await performRequest(
-            method: "PUT", path: path, queryItems: [], body: body, contentType: contentType
+            method: "PUT", path: path, queryItems: [], body: body, contentType: contentType, headers: headers
         )
         return try Self.decode(data, path: path)
     }
@@ -94,13 +119,24 @@ actor CFAPIClient {
     // MARK: - 流式文件传输（R2 大对象 copy/move：过临时文件，不把整个对象灌进内存）
 
     /// 流式下载到临时文件（不进内存）。返回我们自管的临时文件 URL，调用方负责删除。
-    func downloadToFile(_ path: String, queryItems: [URLQueryItem] = []) async throws -> URL {
-        try await streamingDownload(path: path, queryItems: queryItems, isRetry: false)
+    func downloadToFile(
+        _ path: String,
+        queryItems: [URLQueryItem] = [],
+        headers: [String: String] = [:]
+    ) async throws -> URL {
+        try await streamingDownload(path: path, queryItems: queryItems, headers: headers, isRetry: false)
     }
 
-    private func streamingDownload(path: String, queryItems: [URLQueryItem], isRetry: Bool) async throws -> URL {
+    private func streamingDownload(
+        path: String,
+        queryItems: [URLQueryItem],
+        headers: [String: String],
+        isRetry: Bool
+    ) async throws -> URL {
         let requestSessionId = await authManager.currentSessionId
-        let request = try await buildRequest(method: "GET", path: path, queryItems: queryItems, contentType: nil)
+        let request = try await buildRequest(
+            method: "GET", path: path, queryItems: queryItems, contentType: nil, headers: headers
+        )
         let (tempURL, response): (URL, URLResponse)
         do {
             (tempURL, response) = try await session.download(for: request)
@@ -122,7 +158,7 @@ actor CFAPIClient {
                 try? FileManager.default.removeItem(at: tempURL)
                 throw APIError.unauthorized
             }
-            return try await streamingDownload(path: path, queryItems: queryItems, isRetry: true)
+            return try await streamingDownload(path: path, queryItems: queryItems, headers: headers, isRetry: true)
         }
         guard (200...299).contains(http.statusCode) else {
             let data = (try? Data(contentsOf: tempURL)) ?? Data()
@@ -144,20 +180,27 @@ actor CFAPIClient {
         _ path: String,
         fileURL: URL,
         contentType: String,
+        headers: [String: String] = [:],
         onProgress: (@Sendable (Double) -> Void)? = nil
     ) async throws -> T {
-        try await streamingUpload(path: path, fileURL: fileURL, contentType: contentType, onProgress: onProgress, isRetry: false)
+        try await streamingUpload(
+            path: path, fileURL: fileURL, contentType: contentType,
+            headers: headers, onProgress: onProgress, isRetry: false
+        )
     }
 
     private func streamingUpload<T: Codable & Sendable>(
         path: String,
         fileURL: URL,
         contentType: String,
+        headers: [String: String],
         onProgress: (@Sendable (Double) -> Void)?,
         isRetry: Bool
     ) async throws -> T {
         let requestSessionId = await authManager.currentSessionId
-        let request = try await buildRequest(method: "PUT", path: path, queryItems: [], contentType: contentType)
+        let request = try await buildRequest(
+            method: "PUT", path: path, queryItems: [], contentType: contentType, headers: headers
+        )
         let delegate = onProgress.map { UploadProgressDelegate(onProgress: $0) }
         let (data, response): (Data, URLResponse)
         do {
@@ -178,7 +221,10 @@ actor CFAPIClient {
             } catch {
                 throw APIError.unauthorized
             }
-            return try await streamingUpload(path: path, fileURL: fileURL, contentType: contentType, onProgress: onProgress, isRetry: true)
+            return try await streamingUpload(
+                path: path, fileURL: fileURL, contentType: contentType,
+                headers: headers, onProgress: onProgress, isRetry: true
+            )
         }
         guard (200...299).contains(http.statusCode) else {
             Self.logHTTPFailure("PUT /\(Self.logPath(path)) -> \(http.statusCode)\(Self.cfErrorSummary(data))",
@@ -189,7 +235,13 @@ actor CFAPIClient {
     }
 
     /// 构造带 Bearer 的 URLRequest（流式传输用，复用 path 已编码约定 + 临期刷新）
-    private func buildRequest(method: String, path: String, queryItems: [URLQueryItem], contentType: String?) async throws -> URLRequest {
+    private func buildRequest(
+        method: String,
+        path: String,
+        queryItems: [URLQueryItem],
+        contentType: String?,
+        headers: [String: String] = [:]
+    ) async throws -> URLRequest {
         let token = try await validAccessToken()
         var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
         components.percentEncodedPath += "/" + path
@@ -198,6 +250,7 @@ actor CFAPIClient {
         request.httpMethod = method
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         if let contentType { request.setValue(contentType, forHTTPHeaderField: "Content-Type") }
+        for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
         return request
     }
 
@@ -511,10 +564,12 @@ actor CFAPIClient {
         method: String,
         path: String,
         queryItems: [URLQueryItem],
-        body: Data?
+        body: Data?,
+        headers: [String: String] = [:]
     ) async throws -> T {
         let (data, _) = try await performRequest(
-            method: method, path: path, queryItems: queryItems, body: body, contentType: "application/json"
+            method: method, path: path, queryItems: queryItems, body: body,
+            contentType: "application/json", headers: headers
         )
         // 少数端点（如 Workers 自定义域名 DELETE）2xx 时返回空 body 而非 CF 标准信封，
         // 期待 EmptyResponse 时空体即成功，别硬解 JSON（Sentry APPLE-IOS-C）。
@@ -531,6 +586,7 @@ actor CFAPIClient {
         queryItems: [URLQueryItem],
         body: Data?,
         contentType: String?,
+        headers: [String: String] = [:],
         isRetry: Bool = false
     ) async throws -> (Data, HTTPURLResponse) {
 
@@ -553,6 +609,9 @@ actor CFAPIClient {
         urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         if let contentType {
             urlRequest.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        }
+        for (name, value) in headers {
+            urlRequest.setValue(value, forHTTPHeaderField: name)
         }
         urlRequest.httpBody = body
 
@@ -588,7 +647,7 @@ actor CFAPIClient {
             }
             return try await performRequest(
                 method: method, path: path, queryItems: queryItems,
-                body: body, contentType: contentType, isRetry: true
+                body: body, contentType: contentType, headers: headers, isRetry: true
             )
         }
 
@@ -611,7 +670,9 @@ actor CFAPIClient {
         default:
             if let envelope = try? JSONDecoder().decode(CFAPIResponse<EmptyResponse>.self, from: data),
                let first = envelope.errors.first {
-                throw APIError.cloudflareError(code: first.code, message: first.message)
+                // documentation_url（2026-08-21 起 403 错误体可能带）一并透出，UI 据此给「查看所需权限」
+                throw APIError.cloudflareError(code: first.code, message: first.message,
+                                               documentationURL: first.documentationURL)
             }
             switch http.statusCode {
             case 403:       throw APIError.forbidden

@@ -2,7 +2,7 @@
 //  WorkerDetailView.swift
 //  Orange Cloud
 //
-//  Workers 脚本详情：元数据 + 指标（请求/错误/CPU/状态分解/趋势图）+ 实时日志入口。
+//  Workers 脚本详情：元数据 + 指标（请求/错误/CPU/状态分解/趋势图）+ 实时日志 / 问题入口。
 //
 
 import SwiftUI
@@ -20,6 +20,8 @@ struct WorkerDetailView: View {
     @State private var showUpload = false
     @State private var uploadDenied = false
     @State private var editPaywallPresented = false
+    /// 该 Worker 的活跃问题数（Workers Issues 汇总，service=脚本名）；未加载 / 不可用为 nil
+    @State private var activeIssueCount: Int?
 
     init(script: CachedWorkerScript, session: SessionStore) {
         self.script = script
@@ -37,6 +39,8 @@ struct WorkerDetailView: View {
 
     private var canViewMetrics: Bool { auth.hasScope("account-analytics.read") }
     private var canWrite: Bool { auth.hasScope("workers-scripts.write") }
+    /// 问题入口与历史日志同一 Pro 门槛（workerTail）与读权限
+    private var canViewIssues: Bool { entitlements.isPro && auth.hasScope("workers-observability.read") }
 
     var body: some View {
         List {
@@ -150,6 +154,34 @@ struct WorkerDetailView: View {
                 ) {
                     WorkerLogsView(accountId: script.accountId, scriptName: script.id, session: session)
                 }
+                // Workers Issues：该 Worker 的活跃问题数，点进按 service 过滤的问题列表
+                if canViewIssues {
+                    NavigationLink {
+                        WorkerIssuesView(accountId: script.accountId, scriptName: script.id, session: session)
+                    } label: {
+                        HStack(spacing: 12) {
+                            TintIcon(systemImage: "exclamationmark.bubble", color: .ocOrange)
+                            Text("问题").foregroundStyle(.primary)
+                            Spacer()
+                            if let count = activeIssueCount {
+                                Text(count.formatted())
+                                    .font(.subheadline.weight(count > 0 ? .semibold : .regular))
+                                    .foregroundStyle(count > 0 ? Color.red : Color.secondary)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                } else {
+                    // 未解锁 / 缺 scope：沿用门控行的付费墙与重授权提示
+                    ProGatedNavigationLink(
+                        label: String(localized: "问题"),
+                        systemImage: "exclamationmark.bubble",
+                        requiredScope: "workers-observability.read",
+                        feature: .workerTail
+                    ) {
+                        WorkerIssuesView(accountId: script.accountId, scriptName: script.id, session: session)
+                    }
+                }
             }
             .glassRow()
         }
@@ -172,9 +204,21 @@ struct WorkerDetailView: View {
             guard canViewMetrics else { return }
             await metricsViewModel.load()
         }
+        .task { await loadIssueCount() }
         .refreshable {
+            await loadIssueCount()
             guard canViewMetrics else { return }
             await metricsViewModel.refresh()
+        }
+    }
+
+    /// 活跃问题数（best-effort：公开测试端点失败时不显示数字，入口照常可点）
+    private func loadIssueCount() async {
+        guard canViewIssues else { return }
+        if let summary = try? await session.workerIssuesService.summary(
+            accountId: script.accountId, service: script.id
+        ) {
+            activeIssueCount = summary.activeIssues ?? 0
         }
     }
 

@@ -113,6 +113,7 @@ struct TurnstileListView: View {
             get: { viewModel.error != nil && !viewModel.isLoading },
             set: { if !$0 { viewModel.error = nil } }
         )) {
+            apiErrorDocButton(for: viewModel.error)
             Button("好", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")

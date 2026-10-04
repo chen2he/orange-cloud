@@ -69,7 +69,7 @@ final class D1IndexListViewModel {
             loaded = true
         } catch {
             // 索引卡是补充信息，失败不打断表浏览，只在卡里提示
-            self.error = error.localizedDescription
+            self.error = D1FreeTierLimit.message(for: error)
             loaded = true
         }
     }

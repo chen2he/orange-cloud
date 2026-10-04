@@ -56,6 +56,8 @@ final class SessionStore {
     let zoneRulesetService:        ZoneRulesetService
     let turnstileService:          TurnstileService
     let r2SQLService:              R2SQLService
+    let workerIssuesService:       WorkerIssuesService
+    let securityInsightService:    SecurityInsightService
 
     var accounts: [Account] = []
     var selectedAccount: Account? {
@@ -124,6 +126,8 @@ final class SessionStore {
         self.zoneRulesetService        = ZoneRulesetService(client: client)
         self.turnstileService          = TurnstileService(client: client)
         self.r2SQLService              = R2SQLService(client: client)
+        self.workerIssuesService       = WorkerIssuesService(client: client)
+        self.securityInsightService    = SecurityInsightService(client: client)
     }
 
     /// 幂等加载账号列表，选中上次选定的账号（没有则首个）

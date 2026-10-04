@@ -278,6 +278,7 @@ struct ZonePhaseRulesListView: View {
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
+            apiErrorDocButton(for: viewModel.error)
             Button("好", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")
@@ -488,6 +489,7 @@ struct PageRulesListView: View {
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
+            apiErrorDocButton(for: viewModel.error)
             Button("好", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")
@@ -553,6 +555,7 @@ struct URLNormalizationView: View {
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
+            apiErrorDocButton(for: viewModel.error)
             Button("好", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")

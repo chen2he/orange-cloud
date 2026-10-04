@@ -65,8 +65,10 @@ extension FeaturePermission {
             icon: "bolt.circle",
             // workers-scripts.* 是 account 级（脚本/子域/自定义域）；workers-routes.* 是 zone 级
             // （/zones/{id}/workers/routes 单独的权限组），缺它会让路由查询 403 cf=10000。
-            readScopes: ["workers-scripts.read", "workers-routes.read"],
-            editScopes: ["workers-scripts.write", "workers-routes.write"],
+            // workers-observability.*：历史日志与 Workers Issues（问题）读、改问题状态写
+            // （与 Android 一致并入 Workers 功能；.read 同时留在「流量分析」，Set 去重不影响）。
+            readScopes: ["workers-scripts.read", "workers-routes.read", "workers-observability.read"],
+            editScopes: ["workers-scripts.write", "workers-routes.write", "workers-observability.write"],
             isRequired: false
         ),
         .init(

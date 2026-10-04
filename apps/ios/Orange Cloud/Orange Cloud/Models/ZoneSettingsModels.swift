@@ -19,6 +19,23 @@ nonisolated struct ZoneSettingUpdate: Codable, Sendable {
     let value: String
 }
 
+/// 缓存「清除」还是「标记过期」。2026-09-28 GA 的 invalidate_cache 与 purge_cache
+/// 请求体完全一致（files / tags / hosts / prefixes / purge_everything），权限同为 cache.purge、
+/// 共用限速；区别只在服务端：invalidate 保留缓存但标记为过期，下次请求带条件头回源校验，
+/// 源站回 304 就继续用缓存（需源站返回 ETag 或 Last-Modified）。
+nonisolated enum CacheClearAction: String, Sendable {
+    case purge
+    case invalidate
+
+    /// 端点名：两者只差这一段路径
+    var endpoint: String {
+        switch self {
+        case .purge:      "purge_cache"
+        case .invalidate: "invalidate_cache"
+        }
+    }
+}
+
 /// POST /zones/{id}/purge_cache —— 全量清理
 nonisolated struct PurgeRequest: Codable, Sendable {
     let purgeEverything: Bool

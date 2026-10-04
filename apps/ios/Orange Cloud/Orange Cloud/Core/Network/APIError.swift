@@ -26,7 +26,10 @@ nonisolated enum APIError: LocalizedError {
         case .notFound:                    return String(localized: "资源不存在")
         case .rateLimited:                 return String(localized: "请求太频繁，请稍后再试")
         case .serverError(let code):       return String(localized: "服务器错误（\(code)）")
-        case .cloudflareError(_, let msg, _): return msg
+        case .cloudflareError(_, let msg, let doc):
+            // 记下「文案 → 所需权限文档」，错误弹窗据此给「查看所需权限」（见 APIErrorDocLinks）
+            APIErrorDocLinks.record(message: msg, documentationURL: doc)
+            return msg
         case .decodingError:               return String(localized: "数据解析失败")
         case .networkError(let e):         return String(localized: "网络错误：\(e.localizedDescription)")
         case .accountNotAuthorized:        return String(localized: "此账号暂无账户级数据查询权限")

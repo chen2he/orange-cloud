@@ -69,6 +69,7 @@ struct WorkerTriggersView: View {
             get: { viewModel.error != nil && !showAdd },
             set: { if !$0 { viewModel.error = nil } }
         )) {
+            apiErrorDocButton(for: viewModel.error)
             Button("好", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")

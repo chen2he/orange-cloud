@@ -143,7 +143,10 @@ final class WorkerBindingsViewModel {
             kvNamespaces = (try? await kvService.listNamespaces(accountId: accountId)) ?? kvNamespaces
         }
         if canReadR2 {
-            r2Buckets = (try? await r2Service.listBuckets(accountId: accountId)) ?? r2Buckets
+            // 绑定只按桶名引用；区域限制桶的绑定还要带 jurisdiction 字段（本页不支持），
+            // 只列默认辖区的桶，免得选了 EU / US 桶部署出一个指向错误辖区的绑定
+            r2Buckets = (try? await r2Service.listBuckets(accountId: accountId))?
+                .filter { $0.jurisdictionHeader == nil } ?? r2Buckets
         }
         resourcesLoaded = true
     }

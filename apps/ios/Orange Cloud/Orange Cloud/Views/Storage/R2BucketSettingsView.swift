@@ -24,6 +24,8 @@ struct R2BucketSettingsView: View {
 
     // 文件 App 挂载（Pro）
     private let bucketName: String
+    /// 区域限制桶的辖区：挂载时编进 domain，extension 的每个请求都要带 cf-r2-jurisdiction 头
+    private let jurisdiction: String?
     private let accountId: String
     private let session: SessionStore
     @State private var isMounted = false
@@ -33,12 +35,14 @@ struct R2BucketSettingsView: View {
     init(bucket: R2Bucket, session: SessionStore, canWrite: Bool) {
         self.canWrite = canWrite
         self.bucketName = bucket.name
+        self.jurisdiction = bucket.jurisdiction
         self.accountId = session.selectedAccount?.id ?? ""
         self.session = session
         _viewModel = State(initialValue: R2BucketSettingsViewModel(
             service: session.r2Service,
             accountId: session.selectedAccount?.id ?? "",
-            bucketName: bucket.name
+            bucketName: bucket.name,
+            jurisdiction: bucket.jurisdiction
         ))
         _catalogViewModel = State(initialValue: R2CatalogViewModel(
             service: session.r2CatalogService,
@@ -101,6 +105,7 @@ struct R2BucketSettingsView: View {
                 get: { viewModel.error != nil },
                 set: { if !$0 { viewModel.error = nil } }
             )) {
+                apiErrorDocButton(for: viewModel.error)
                 Button("好", role: .cancel) {}
             } message: {
                 Text(viewModel.error ?? "")
@@ -144,7 +149,7 @@ struct R2BucketSettingsView: View {
     private func refreshMountState() async {
         guard entitlements.isPro, let sid = auth.currentSessionId, !accountId.isEmpty else { return }
         isMounted = await FileProviderMountManager.isMounted(
-            sessionId: sid, accountId: accountId, bucketName: bucketName
+            sessionId: sid, accountId: accountId, bucketName: bucketName, jurisdiction: jurisdiction
         )
     }
 
@@ -154,16 +159,20 @@ struct R2BucketSettingsView: View {
         defer { isMountBusy = false }
         do {
             if want {
-                try await FileProviderMountManager.mount(sessionId: sid, accountId: accountId, bucketName: bucketName)
+                try await FileProviderMountManager.mount(
+                    sessionId: sid, accountId: accountId, bucketName: bucketName, jurisdiction: jurisdiction
+                )
             } else {
-                try await FileProviderMountManager.unmount(sessionId: sid, accountId: accountId, bucketName: bucketName)
+                try await FileProviderMountManager.unmount(
+                    sessionId: sid, accountId: accountId, bucketName: bucketName, jurisdiction: jurisdiction
+                )
             }
         } catch {
             viewModel.error = error.localizedDescription
         }
         // 以系统真实状态为准回填开关
         isMounted = await FileProviderMountManager.isMounted(
-            sessionId: sid, accountId: accountId, bucketName: bucketName
+            sessionId: sid, accountId: accountId, bucketName: bucketName, jurisdiction: jurisdiction
         )
     }
 

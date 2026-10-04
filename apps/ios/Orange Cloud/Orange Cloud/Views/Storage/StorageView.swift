@@ -220,7 +220,8 @@ private struct StorageContent: View {
                     StorageRow(
                         icon: "externaldrive", tint: .ocOrange, mono: false,
                         name: bucket.name,
-                        sub: r2Subtitle(for: bucket)
+                        sub: r2Subtitle(for: bucket),
+                        badge: bucket.jurisdictionBadge
                     )
                 }
                 .swipeActions(edge: .trailing) {
@@ -239,7 +240,10 @@ private struct StorageContent: View {
 
     /// 桶副标题：有用量数据时显示存储/对象/请求，否则回退到位置 · 创建日期
     private func r2Subtitle(for bucket: R2Bucket) -> String {
-        if let usage = r2ViewModel.usageByBucket[bucket.name], usage.storageBytes > 0 || usage.objectCount > 0 {
+        // 用量按桶名聚合（GraphQL 里区域限制桶的 bucketName 带辖区前缀），只对默认辖区桶按名取用量，
+        // 免得同名的 EU 桶误显示默认桶的数据
+        if bucket.jurisdictionHeader == nil,
+           let usage = r2ViewModel.usageByBucket[bucket.name], usage.storageBytes > 0 || usage.objectCount > 0 {
             var parts = [Int64(usage.storageBytes).ocBytes]
             if usage.objectCount > 0 { parts.append(String(localized: "\(usage.objectCount) 个对象")) }
             if usage.totalRequests > 0 { parts.append(String(localized: "本月 \(usage.totalRequests.formatted()) 次操作")) }
@@ -372,6 +376,7 @@ private struct StorageContent: View {
         } actions: {
             Button("重试") { Task { await load() } }
                 .buttonStyle(.borderedProminent)
+            APIErrorDocLink(message: message)
         }
     }
 
@@ -387,6 +392,24 @@ private struct StorageContent: View {
     }
 }
 
+// MARK: - 辖区徽章
+
+/// 区域限制桶的小徽章（欧盟 / 美国 / FedRAMP），用于存储桶列表行
+struct R2JurisdictionBadge: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(Color.ocOrangeText)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 1)
+            .background(Color.ocOrange.opacity(0.14), in: Capsule())
+            .fixedSize()
+            .accessibilityLabel(text)
+    }
+}
+
 // MARK: - 存储行（设计稿 StorageRow）
 
 private struct StorageRow: View {
@@ -395,14 +418,21 @@ private struct StorageRow: View {
     let mono: Bool
     let name: String
     let sub: String
+    /// 区域限制桶的辖区徽章（欧盟 / 美国 / FedRAMP），默认辖区为 nil
+    var badge: String? = nil
 
     var body: some View {
         HStack(spacing: 12) {
             TintIcon(systemImage: icon, color: tint)
             VStack(alignment: .leading, spacing: 2) {
-                Text(name)
-                    .font(mono ? .callout.weight(.semibold).monospaced() : .body.weight(.semibold))
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(name)
+                        .font(mono ? .callout.weight(.semibold).monospaced() : .body.weight(.semibold))
+                        .lineLimit(1)
+                    if let badge {
+                        R2JurisdictionBadge(text: badge)
+                    }
+                }
                 if !sub.isEmpty {
                     Text(sub)
                         .font(.caption)

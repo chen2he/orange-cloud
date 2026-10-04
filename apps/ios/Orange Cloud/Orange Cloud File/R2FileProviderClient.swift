@@ -34,6 +34,9 @@ actor R2FileProviderClient {
         let sessionId: UUID
         let accountId: String
         let bucketName: String
+        /// 区域限制桶的辖区（eu / us / fedramp…）；默认辖区为 nil。非空时每个桶级请求都带
+        /// cf-r2-jurisdiction 头，否则 R2 按默认辖区找桶、一律 404。
+        let jurisdiction: String?
     }
 
     let credentials: Credentials
@@ -243,6 +246,9 @@ actor R2FileProviderClient {
         let token = try await validAccessToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         if let contentType { request.setValue(contentType, forHTTPHeaderField: "Content-Type") }
+        if let jurisdiction = credentials.jurisdiction {
+            request.setValue(jurisdiction, forHTTPHeaderField: "cf-r2-jurisdiction")
+        }
         if let body { request.httpBody = body }
         return request
     }

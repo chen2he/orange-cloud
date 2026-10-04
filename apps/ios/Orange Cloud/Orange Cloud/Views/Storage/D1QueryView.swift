@@ -56,9 +56,13 @@ struct D1QueryView: View {
                 sqlEditor
 
                 if let error = viewModel.error {
+                    // D1 免费额度超限时文案已由 ViewModel 补上中文说明（D1FreeTierLimit），原文在后
                     Text(error)
                         .font(.footnote)
                         .foregroundStyle(.red)
+                        .textSelection(.enabled)
+                        .padding(.horizontal, 4)
+                    APIErrorDocLink(message: error)
                         .padding(.horizontal, 4)
                 }
 

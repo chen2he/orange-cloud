@@ -125,6 +125,7 @@ struct DNSListView: View {
             get: { viewModel.error != nil && formMode == nil && deniedScope == nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
+            apiErrorDocButton(for: viewModel.error)
             Button("好", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")

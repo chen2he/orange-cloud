@@ -15,6 +15,10 @@
 //  所以这里每次只发一个字段，既不会覆盖别的设置，也不会把 GET 回来的
 //  只读字段（using_latest_model / stale_zone_configuration）回写过去。
 //
+//  2026-09-15 起（全套餐）单一的 ai_bots_protection 拆成三类行为：ai_search / ai_user /
+//  ai_training，托管 robots.txt 改为按这三项偏好生成（bot_preference_sync_enabled）。
+//  新字段同样全部可选：老 zone / 未迁移的响应不带它们时，UI 回退到旧字段。
+//
 
 import Foundation
 
@@ -29,6 +33,14 @@ nonisolated struct BotManagementConfig: Codable, Sendable {
     let cfRobotsVariant:       String?
     /// 启用 Cloudflare 托管 robots.txt（会前置到既有 robots.txt 之前）
     let isRobotsTxtManaged:    Bool?
+    /// AI 搜索类爬虫（为回答问题而索引）：disabled / block / only_on_ad_pages
+    let aiSearch:              String?
+    /// AI 助手与 Agent（代表用户实时抓取）：disabled / block / only_on_ad_pages
+    let aiUser:                String?
+    /// AI 训练类爬虫：disabled / disallow（仅在 robots.txt 声明）/ block / only_on_ad_pages
+    let aiTraining:            String?
+    /// Bot Preference Sync：按上面三项偏好由 Cloudflare 生成 robots.txt
+    let botPreferenceSyncEnabled: Bool?
 
     enum CodingKeys: String, CodingKey {
         case aiBotsProtection      = "ai_bots_protection"
@@ -36,6 +48,15 @@ nonisolated struct BotManagementConfig: Codable, Sendable {
         case contentBotsProtection = "content_bots_protection"
         case cfRobotsVariant       = "cf_robots_variant"
         case isRobotsTxtManaged    = "is_robots_txt_managed"
+        case aiSearch              = "ai_search"
+        case aiUser                = "ai_user"
+        case aiTraining            = "ai_training"
+        case botPreferenceSyncEnabled = "bot_preference_sync_enabled"
+    }
+
+    /// 响应带了三项新 AI 爬虫策略中的任意一项 → 用新三项替换旧的「AI 爬虫」单选
+    var hasAICrawlerPolicies: Bool {
+        aiSearch != nil || aiUser != nil || aiTraining != nil
     }
 }
 
@@ -58,6 +79,38 @@ nonisolated enum AIBotsProtection: String, CaseIterable, Identifiable, Sendable 
         case .onlyOnAdPages: String(localized: "仅拦广告页")
         case .block:         String(localized: "全站拦截")
         }
+    }
+}
+
+/// 2026-09 拆分后的 AI 爬虫策略取值（ai_search / ai_user / ai_training 共用一套枚举）。
+/// disallow 仅 ai_training 支持（只在 robots.txt 里声明禁止、不做拦截）。
+nonisolated enum AICrawlerPolicy: String, CaseIterable, Identifiable, Sendable {
+    case disabled
+    case disallow
+    case block
+    case onlyOnAdPages = "only_on_ad_pages"
+
+    var id: String { rawValue }
+
+    /// AI 搜索 / AI 助手可选的三档
+    static let searchOptions: [AICrawlerPolicy] = [.disabled, .block, .onlyOnAdPages]
+    /// AI 训练多一档「在 robots.txt 中声明禁止」
+    static let trainingOptions: [AICrawlerPolicy] = [.disabled, .disallow, .block, .onlyOnAdPages]
+
+    var label: String {
+        switch self {
+        case .disabled:      String(localized: "允许")
+        case .disallow:      String(localized: "在 robots.txt 中声明禁止")
+        case .block:         String(localized: "全部拦截")
+        case .onlyOnAdPages: String(localized: "仅拦截含广告的页面")
+        }
+    }
+
+    /// 当前值的展示文案。缺省按「允许」（没设策略即放行）；
+    /// 未知取值（CF 日后加档）原样显示，不猜语义也不崩。
+    static func displayLabel(for raw: String?) -> String {
+        guard let raw, !raw.isEmpty else { return AICrawlerPolicy.disabled.label }
+        return AICrawlerPolicy(rawValue: raw)?.label ?? raw
     }
 }
 
@@ -90,4 +143,8 @@ nonisolated enum BotManagementField: String, CodingKey, Sendable {
     case contentBotsProtection = "content_bots_protection"
     case cfRobotsVariant       = "cf_robots_variant"
     case isRobotsTxtManaged    = "is_robots_txt_managed"
+    case aiSearch              = "ai_search"
+    case aiUser                = "ai_user"
+    case aiTraining            = "ai_training"
+    case botPreferenceSyncEnabled = "bot_preference_sync_enabled"
 }

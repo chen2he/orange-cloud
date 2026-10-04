@@ -25,14 +25,16 @@ actor FileProviderIdentifierStore {
     private var prefixToFolderID: [String: String] = [:]
     private var loaded = false
 
-    init(accountId: String, bucketName: String) {
+    init(accountId: String, bucketName: String, jurisdiction: String? = nil) {
         let base = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: Self.appGroup)?
             .appendingPathComponent("FileProviderMaps", isDirectory: true)
             ?? FileManager.default.temporaryDirectory
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-        // accountId 是十六进制、bucket 仅 [a-z0-9-]，直接拼文件名安全
-        self.fileURL = base.appendingPathComponent("\(accountId)__\(bucketName).json")
+        // accountId 是十六进制、bucket 仅 [a-z0-9-]，直接拼文件名安全。
+        // 区域限制桶追加辖区（同名桶在不同辖区是两个桶，映射不能共用）；默认辖区沿用老文件名
+        let suffix = jurisdiction.map { "__\($0)" } ?? ""
+        self.fileURL = base.appendingPathComponent("\(accountId)__\(bucketName)\(suffix).json")
     }
 
     // MARK: - 标识种类（仅看前缀，无需查表）

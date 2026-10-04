@@ -27,7 +27,7 @@ enum DashboardResourceRoute: Hashable, Identifiable {
         switch self {
         case .zone(let zone):           "zone|\(zone.id)"
         case .worker(let script):       "worker|\(script.id)"
-        case .bucket(let bucket):       "r2|\(bucket.name)"
+        case .bucket(let bucket):       "r2|\(bucket.id)"
         case .database(let database):   "d1|\(database.uuid)"
         case .namespace(let namespace): "kv|\(namespace.id)"
         case .tunnel(let tunnel):       "tunnel|\(tunnel.id)"
@@ -101,10 +101,12 @@ enum DashboardResourceCatalog {
             ))
         }
         for bucket in buckets {
+            // bucket.id：默认辖区即桶名（老置顶不受影响），区域限制桶为「辖区/桶名」，与同名默认桶区分
+            let subtitle = bucket.location ?? String(localized: "R2 存储桶")
             items.append(DashboardResourceItem(
-                pin: PinnedResource(type: .r2, resourceId: bucket.name),
+                pin: PinnedResource(type: .r2, resourceId: bucket.id),
                 title: bucket.name,
-                subtitle: bucket.location ?? String(localized: "R2 存储桶"),
+                subtitle: bucket.jurisdictionBadge.map { "\($0) · \(subtitle)" } ?? subtitle,
                 route: .bucket(bucket)
             ))
         }

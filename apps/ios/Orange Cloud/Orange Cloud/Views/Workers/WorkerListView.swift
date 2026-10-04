@@ -129,6 +129,21 @@ struct WorkerListView: View {
 
     private var scriptList: some View {
         List {
+            // Workers Issues（全账户）：与历史日志同一 Pro 门槛与读权限；目的页是叶子（详情走 sheet）
+            if searchText.isEmpty, let accountId = session.selectedAccount?.id {
+                Section {
+                    ProGatedNavigationLink(
+                        label: String(localized: "问题"),
+                        systemImage: "exclamationmark.bubble",
+                        requiredScope: "workers-observability.read",
+                        feature: .workerTail
+                    ) {
+                        WorkerIssuesView(accountId: accountId, scriptName: nil, session: session)
+                    }
+                }
+                .glassRow()
+            }
+
             Section {
                 ForEach(filteredScripts) { script in
                     NavigationLink(value: script) {

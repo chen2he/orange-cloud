@@ -2,7 +2,7 @@
 //  ZoneSettingsService.swift
 //  Orange Cloud
 //
-//  Zone 设置读写（Under Attack / 开发模式）+ 全量缓存清理。
+//  Zone 设置读写（Under Attack / 开发模式）+ 缓存清除 / 标记过期。
 //
 
 import Foundation
@@ -48,55 +48,36 @@ struct ZoneSettingsService {
         return result.value
     }
 
-    /// 清空该 Zone 在边缘的全部缓存
-    func purgeAllCache(zoneId: String) async throws {
-        let response: CFAPIResponse<PurgeResult> = try await client.post(
-            "zones/\(zoneId)/purge_cache",
-            body: PurgeRequest(purgeEverything: true)
-        )
-        guard response.success else {
-            throw response.toAPIError()
-        }
+    /// 全部缓存：清除（purge_cache）或标记过期（invalidate_cache），请求体相同
+    func purgeAllCache(zoneId: String, action: CacheClearAction = .purge) async throws {
+        try await clearCache(zoneId: zoneId, action: action, body: PurgeRequest(purgeEverything: true))
     }
 
-    /// 按 URL 清理缓存（单文件 purge，单次最多 30 个 URL；2025-04 起所有套餐可用）
-    func purgeFiles(zoneId: String, urls: [String]) async throws {
-        let response: CFAPIResponse<PurgeResult> = try await client.post(
-            "zones/\(zoneId)/purge_cache",
-            body: PurgeFilesRequest(files: urls)
-        )
-        guard response.success else {
-            throw response.toAPIError()
-        }
+    /// 按 URL 清理 / 标记过期（单文件，单次最多 30 个 URL；2025-04 起所有套餐可用）
+    func purgeFiles(zoneId: String, urls: [String], action: CacheClearAction = .purge) async throws {
+        try await clearCache(zoneId: zoneId, action: action, body: PurgeFilesRequest(files: urls))
     }
 
-    /// 按 URL 前缀清理缓存（单次最多 30 个；2025-04 起所有套餐可用）
-    func purgePrefixes(zoneId: String, prefixes: [String]) async throws {
-        let response: CFAPIResponse<PurgeResult> = try await client.post(
-            "zones/\(zoneId)/purge_cache",
-            body: PurgePrefixesRequest(prefixes: prefixes)
-        )
-        guard response.success else {
-            throw response.toAPIError()
-        }
+    /// 按 URL 前缀清理 / 标记过期（单次最多 30 个；2025-04 起所有套餐可用）
+    func purgePrefixes(zoneId: String, prefixes: [String], action: CacheClearAction = .purge) async throws {
+        try await clearCache(zoneId: zoneId, action: action, body: PurgePrefixesRequest(prefixes: prefixes))
     }
 
-    /// 按主机名清理缓存（单次最多 30 个；2025-04 起所有套餐可用）
-    func purgeHosts(zoneId: String, hosts: [String]) async throws {
-        let response: CFAPIResponse<PurgeResult> = try await client.post(
-            "zones/\(zoneId)/purge_cache",
-            body: PurgeHostsRequest(hosts: hosts)
-        )
-        guard response.success else {
-            throw response.toAPIError()
-        }
+    /// 按主机名清理 / 标记过期（单次最多 30 个；2025-04 起所有套餐可用）
+    func purgeHosts(zoneId: String, hosts: [String], action: CacheClearAction = .purge) async throws {
+        try await clearCache(zoneId: zoneId, action: action, body: PurgeHostsRequest(hosts: hosts))
     }
 
-    /// 按 Cache-Tag 清理缓存（单次最多 30 个；2025-04 起所有套餐可用）
-    func purgeTags(zoneId: String, tags: [String]) async throws {
+    /// 按 Cache-Tag 清理 / 标记过期（单次最多 30 个；2025-04 起所有套餐可用）
+    func purgeTags(zoneId: String, tags: [String], action: CacheClearAction = .purge) async throws {
+        try await clearCache(zoneId: zoneId, action: action, body: PurgeTagsRequest(tags: tags))
+    }
+
+    /// purge_cache / invalidate_cache 共用：只差端点名
+    private func clearCache<B: Codable & Sendable>(zoneId: String, action: CacheClearAction, body: B) async throws {
         let response: CFAPIResponse<PurgeResult> = try await client.post(
-            "zones/\(zoneId)/purge_cache",
-            body: PurgeTagsRequest(tags: tags)
+            "zones/\(zoneId)/\(action.endpoint)",
+            body: body
         )
         guard response.success else {
             throw response.toAPIError()

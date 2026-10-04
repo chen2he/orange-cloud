@@ -3,8 +3,9 @@
 //  Orange Cloud File
 //
 //  把一个 R2 存储桶呈现为系统「文件」App 里的 NSFileProviderReplicatedExtension。
-//  domain identifier 编码 sessionId|accountId|bucketName，init 解析后构造 R2 客户端
+//  domain identifier 编码 sessionId|accountId|bucketName[|jurisdiction]，init 解析后构造 R2 客户端
 //  （自共享 Keychain 取 token）+ 标识映射存储（[[FileProviderIdentifierStore]]）。
+//  第四段是区域限制桶的辖区（eu / us / fedramp…），客户端据此给每个请求带 cf-r2-jurisdiction 头。
 //
 //  v1.1 能力：枚举 / 读取 / 新建文件夹 / 上传 / 改写内容 / 删除 / **改名 / 移动**。
 //  改名移动靠稳定标识映射：标识不变，只改映射里的 R2 key/prefix；R2 无原子 rename，
@@ -24,9 +25,12 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
     required init(domain: NSFileProviderDomain) {
         if let parsed = Self.parseDomain(domain.identifier.rawValue) {
             self.client = R2FileProviderClient(credentials: .init(
-                sessionId: parsed.sessionId, accountId: parsed.accountId, bucketName: parsed.bucketName
+                sessionId: parsed.sessionId, accountId: parsed.accountId, bucketName: parsed.bucketName,
+                jurisdiction: parsed.jurisdiction
             ))
-            self.store = FileProviderIdentifierStore(accountId: parsed.accountId, bucketName: parsed.bucketName)
+            self.store = FileProviderIdentifierStore(
+                accountId: parsed.accountId, bucketName: parsed.bucketName, jurisdiction: parsed.jurisdiction
+            )
             self.bucketName = parsed.bucketName
         } else {
             self.client = nil
@@ -316,11 +320,18 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         return "application/octet-stream"
     }
 
-    private static func parseDomain(_ identifier: String) -> (sessionId: UUID, accountId: String, bucketName: String)? {
+    /// 与主 App Shared/FileProviderDomainID.parse 同口径（extension 不编译 Shared）：
+    /// 三段 = 默认辖区；第四段为区域限制桶的辖区，空 / default 视同默认。
+    private static func parseDomain(_ identifier: String) -> (sessionId: UUID, accountId: String, bucketName: String, jurisdiction: String?)? {
         let parts = identifier.split(separator: "|", omittingEmptySubsequences: false).map(String.init)
-        guard parts.count == 3, let sessionId = UUID(uuidString: parts[0]),
+        guard parts.count == 3 || parts.count == 4, let sessionId = UUID(uuidString: parts[0]),
               !parts[1].isEmpty, !parts[2].isEmpty else { return nil }
-        return (sessionId, parts[1], parts[2])
+        var jurisdiction: String?
+        if parts.count == 4 {
+            let value = parts[3].trimmingCharacters(in: .whitespaces).lowercased()
+            jurisdiction = (value.isEmpty || value == "default") ? nil : value
+        }
+        return (sessionId, parts[1], parts[2], jurisdiction)
     }
 
     private static func mapError(_ error: Error) -> Error {

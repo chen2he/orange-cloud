@@ -4,6 +4,8 @@
 //
 //  按目标清理缓存：URL / 前缀 / 主机名 / Cache-Tag 四种粒度。
 //  每行一个目标，单次最多 30 个。2025-04 起所有套餐均可用全部粒度。
+//  顶部「清除 / 标记过期」切换动作：标记过期走 invalidate_cache（2026-09-28 GA），
+//  请求体与权限都和清除相同，只是保留缓存、下次请求回源校验。
 //
 
 import SwiftUI
@@ -39,10 +41,11 @@ nonisolated enum PurgeMode: String, CaseIterable, Identifiable {
 struct PurgeCacheSheet: View {
 
     let zoneName: String
-    /// 交给 ViewModel 执行；调用方按 mode 分发到对应的 purge 方法
-    let onPurge: (PurgeMode, [String]) async -> Void
+    /// 交给 ViewModel 执行；调用方按 mode 分发到对应的 purge 方法，action 区分清除 / 标记过期
+    let onPurge: (PurgeMode, [String], CacheClearAction) async -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @State private var action: CacheClearAction = .purge
     @State private var mode: PurgeMode = .url
     @State private var text = ""
     @State private var isPurging = false
@@ -74,6 +77,19 @@ struct PurgeCacheSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
+                    Picker("操作", selection: $action) {
+                        Text("清除").tag(CacheClearAction.purge)
+                        Text("标记过期").tag(CacheClearAction.invalidate)
+                    }
+                    .pickerStyle(.segmented)
+
+                    if action == .invalidate {
+                        Label("保留缓存但标记为过期，下次请求时向源站校验；内容没变（304）就继续用缓存。需要源站返回 ETag 或 Last-Modified。",
+                              systemImage: "clock.arrow.circlepath")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
                     Picker("清理粒度", selection: $mode) {
                         ForEach(PurgeMode.allCases) { m in
                             Text(m.label).tag(m)
@@ -123,12 +139,13 @@ struct PurgeCacheSheet: View {
                     if isPurging {
                         ProgressView()
                     } else {
-                        Button("清理") {
+                        Button(action == .invalidate ? String(localized: "标记过期") : String(localized: "清理")) {
                             let targets = items
                             let m = mode
+                            let a = action
                             Task {
                                 isPurging = true
-                                await onPurge(m, targets)
+                                await onPurge(m, targets, a)
                                 isPurging = false
                                 dismiss()
                             }

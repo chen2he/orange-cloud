@@ -2,7 +2,7 @@
 //  ZoneActionsViewModel.swift
 //  Orange Cloud
 //
-//  Zone 详情页「操作」区：Under Attack / 开发模式 / 暂停 Cloudflare 开关 + 缓存清理，
+//  Zone 详情页「操作」区：Under Attack / 开发模式 / 暂停 Cloudflare 开关 + 缓存清理 / 标记过期，
 //  以及「AI 内容控制」区：AI 训练重定向 / 面向 Agent 的 Markdown。
 //
 //  注意暂停态与另两个开关的数据源不同：Under Attack / 开发模式读写 zone settings
@@ -48,6 +48,15 @@ final class ZoneActionsViewModel {
     private(set) var managedRobotsTxt = false
     private(set) var botConfigLoaded = false
 
+    // 2026-09 拆分后的三项 AI 爬虫策略（原始取值，未知档位原样保留）。
+    // 响应带任一项即 usesAICrawlerPolicies，UI 用三个选择行替换旧「AI 爬虫」。
+    private(set) var aiSearch: String?
+    private(set) var aiUser: String?
+    private(set) var aiTraining: String?
+    private(set) var usesAICrawlerPolicies = false
+    /// Bot Preference Sync（按偏好生成 robots.txt）；nil = 响应未带该字段，UI 回退旧「托管 robots.txt」
+    private(set) var botPreferenceSync: Bool?
+
     var isTogglingUnderAttack = false
     var isTogglingDevMode = false
     var isTogglingAITrainingRedirect = false
@@ -57,6 +66,7 @@ final class ZoneActionsViewModel {
     var isTogglingPause = false
     var isPurging = false
     var didPurge = false       // sensoryFeedback / 提示触发器
+    var didInvalidate = false  // 「已标记为过期」提示触发器
     var error: String?
 
     private let service: ZoneSettingsService
@@ -117,6 +127,11 @@ final class ZoneActionsViewModel {
         contentBotsProtection = config.contentBotsProtection == "block"
         robotsLicense         = config.cfRobotsVariant == "policy_only"
         managedRobotsTxt      = config.isRobotsTxtManaged == true
+        aiSearch              = config.aiSearch
+        aiUser                = config.aiUser
+        aiTraining            = config.aiTraining
+        usesAICrawlerPolicies = config.hasAICrawlerPolicies
+        botPreferenceSync     = config.botPreferenceSyncEnabled
     }
 
     /// 写单个字段。PUT 是合并语义，只发改动的那一个，不会动 sbfm_* 等套餐专属配置。
@@ -153,6 +168,22 @@ final class ZoneActionsViewModel {
 
     func setManagedRobotsTxt(_ on: Bool) async {
         await updateBot(.isRobotsTxtManaged, on)
+    }
+
+    func setAISearch(_ policy: AICrawlerPolicy) async {
+        await updateBot(.aiSearch, policy.rawValue)
+    }
+
+    func setAIUser(_ policy: AICrawlerPolicy) async {
+        await updateBot(.aiUser, policy.rawValue)
+    }
+
+    func setAITraining(_ policy: AICrawlerPolicy) async {
+        await updateBot(.aiTraining, policy.rawValue)
+    }
+
+    func setBotPreferenceSync(_ on: Bool) async {
+        await updateBot(.botPreferenceSyncEnabled, on)
     }
 
     func setAITrainingRedirect(_ on: Bool) async {
@@ -247,50 +278,62 @@ final class ZoneActionsViewModel {
         }
     }
 
-    func purgeCache() async {
+    /// 全部缓存：清除（purge）或标记过期（invalidate）。两者同权限（cache.purge）、同限速。
+    func purgeCache(action: CacheClearAction = .purge) async {
         guard !isPurging else { return }
         isPurging = true
         error = nil
         do {
-            try await service.purgeAllCache(zoneId: zoneId)
-            didPurge.toggle()
+            try await service.purgeAllCache(zoneId: zoneId, action: action)
+            signalDone(action)
         } catch {
             self.error = error.localizedDescription
         }
         isPurging = false
     }
 
-    /// 按 URL 清理缓存（单文件 purge，调用方负责限制 ≤ 30 个 URL）
-    func purgeURLs(_ urls: [String]) async {
-        await runPurge(urls) { try await service.purgeFiles(zoneId: zoneId, urls: $0) }
+    /// 按 URL 清理 / 标记过期（单文件，调用方负责限制 ≤ 30 个 URL）
+    func purgeURLs(_ urls: [String], action: CacheClearAction = .purge) async {
+        await runPurge(urls, action) { try await service.purgeFiles(zoneId: zoneId, urls: $0, action: action) }
     }
 
-    /// 按 URL 前缀清理缓存（调用方负责限制 ≤ 30 个）
-    func purgePrefixes(_ prefixes: [String]) async {
-        await runPurge(prefixes) { try await service.purgePrefixes(zoneId: zoneId, prefixes: $0) }
+    /// 按 URL 前缀清理 / 标记过期（调用方负责限制 ≤ 30 个）
+    func purgePrefixes(_ prefixes: [String], action: CacheClearAction = .purge) async {
+        await runPurge(prefixes, action) { try await service.purgePrefixes(zoneId: zoneId, prefixes: $0, action: action) }
     }
 
-    /// 按主机名清理缓存（调用方负责限制 ≤ 30 个）
-    func purgeHosts(_ hosts: [String]) async {
-        await runPurge(hosts) { try await service.purgeHosts(zoneId: zoneId, hosts: $0) }
+    /// 按主机名清理 / 标记过期（调用方负责限制 ≤ 30 个）
+    func purgeHosts(_ hosts: [String], action: CacheClearAction = .purge) async {
+        await runPurge(hosts, action) { try await service.purgeHosts(zoneId: zoneId, hosts: $0, action: action) }
     }
 
-    /// 按 Cache-Tag 清理缓存（调用方负责限制 ≤ 30 个）
-    func purgeTags(_ tags: [String]) async {
-        await runPurge(tags) { try await service.purgeTags(zoneId: zoneId, tags: $0) }
+    /// 按 Cache-Tag 清理 / 标记过期（调用方负责限制 ≤ 30 个）
+    func purgeTags(_ tags: [String], action: CacheClearAction = .purge) async {
+        await runPurge(tags, action) { try await service.purgeTags(zoneId: zoneId, tags: $0, action: action) }
     }
 
-    /// 缓存清理统一执行：去重并发、清空错误、成功翻 didPurge 触发反馈
-    private func runPurge(_ items: [String], _ op: ([String]) async throws -> Void) async {
+    /// 缓存清理统一执行：去重并发、清空错误、成功按动作翻 didPurge / didInvalidate 触发反馈
+    private func runPurge(
+        _ items: [String],
+        _ action: CacheClearAction,
+        _ op: ([String]) async throws -> Void
+    ) async {
         guard !isPurging, !items.isEmpty else { return }
         isPurging = true
         error = nil
         do {
             try await op(items)
-            didPurge.toggle()
+            signalDone(action)
         } catch {
             self.error = error.localizedDescription
         }
         isPurging = false
+    }
+
+    private func signalDone(_ action: CacheClearAction) {
+        switch action {
+        case .purge:      didPurge.toggle()
+        case .invalidate: didInvalidate.toggle()
+        }
     }
 }

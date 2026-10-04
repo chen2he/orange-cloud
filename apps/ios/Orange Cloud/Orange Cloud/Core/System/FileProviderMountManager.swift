@@ -5,6 +5,8 @@
 //  主 App 侧：把某个 R2 桶注册为系统「文件」App 里的一个 NSFileProviderDomain
 //  （挂载 / 卸载 / 查询是否已挂载）。真正的读写由 OrangeCloudFileProvider extension 承担。
 //  domain identifier 用 [[FileProviderDomainID]] 编码，extension 据此还原凭证与 R2 目标。
+//  区域限制桶的辖区（eu / us / fedramp…）也编进 identifier，extension 每个请求据此带
+//  cf-r2-jurisdiction 头；同名桶在不同辖区是两个 domain。
 //
 //  仅在工程已包含 File Provider extension target 时生效；该框架对主 App 可用。
 //
@@ -16,38 +18,47 @@ import FileProvider
 enum FileProviderMountManager {
 
     /// 当前账号 + 桶是否已在「文件」中挂载
-    static func isMounted(sessionId: UUID, accountId: String, bucketName: String) async -> Bool {
-        let target = FileProviderDomainID.make(sessionId: sessionId, accountId: accountId, bucketName: bucketName)
+    static func isMounted(sessionId: UUID, accountId: String, bucketName: String, jurisdiction: String?) async -> Bool {
+        let target = FileProviderDomainID.make(
+            sessionId: sessionId, accountId: accountId, bucketName: bucketName, jurisdiction: jurisdiction
+        )
         let domains = (try? await allDomains()) ?? []
         return domains.contains { $0.identifier.rawValue == target }
     }
 
     /// 挂载：新增一个 domain（已存在则幂等返回）。
-    /// 不变式：同一 (account, bucket) 在「文件」里只允许一个 domain。挂载前先清掉任何旧身份
+    /// 不变式：同一 (account, bucket, 辖区) 在「文件」里只允许一个 domain。挂载前先清掉任何旧身份
     /// 残留的同桶 domain（sessionId 不同但 account+bucket 相同）——否则会在侧边栏出现同名、
     /// App 又触达不到的重复挂载目录（重装后 sessionId 重置 + 系统保留旧 domain 的典型表现）。
-    static func mount(sessionId: UUID, accountId: String, bucketName: String) async throws {
-        let id = FileProviderDomainID.make(sessionId: sessionId, accountId: accountId, bucketName: bucketName)
+    static func mount(sessionId: UUID, accountId: String, bucketName: String, jurisdiction: String?) async throws {
+        let id = FileProviderDomainID.make(
+            sessionId: sessionId, accountId: accountId, bucketName: bucketName, jurisdiction: jurisdiction
+        )
         let domains = (try? await allDomains()) ?? []
+        let wantedJurisdiction = FileProviderDomainID.parse(id)?.jurisdiction
 
         for existing in domains {
             guard existing.identifier.rawValue != id,
                   let parsed = FileProviderDomainID.parse(existing.identifier.rawValue),
-                  parsed.accountId == accountId, parsed.bucketName == bucketName else { continue }
+                  parsed.accountId == accountId, parsed.bucketName == bucketName,
+                  parsed.jurisdiction == wantedJurisdiction else { continue }
             try? await remove(existing)   // 清掉同桶的孤儿 domain，best-effort
         }
 
         if domains.contains(where: { $0.identifier.rawValue == id }) { return }   // 已挂载，幂等
         let domain = NSFileProviderDomain(
             identifier: NSFileProviderDomainIdentifier(rawValue: id),
-            displayName: bucketName
+            // 区域限制桶在侧边栏标出辖区，免得与同名的默认辖区桶分不清
+            displayName: wantedJurisdiction.map { "\(bucketName) (\($0.uppercased()))" } ?? bucketName
         )
         try await add(domain)
     }
 
     /// 卸载：移除该 domain（连同系统侧已下载的副本）
-    static func unmount(sessionId: UUID, accountId: String, bucketName: String) async throws {
-        let id = FileProviderDomainID.make(sessionId: sessionId, accountId: accountId, bucketName: bucketName)
+    static func unmount(sessionId: UUID, accountId: String, bucketName: String, jurisdiction: String?) async throws {
+        let id = FileProviderDomainID.make(
+            sessionId: sessionId, accountId: accountId, bucketName: bucketName, jurisdiction: jurisdiction
+        )
         let domains = try await allDomains()
         guard let domain = domains.first(where: { $0.identifier.rawValue == id }) else { return }
         try await remove(domain)

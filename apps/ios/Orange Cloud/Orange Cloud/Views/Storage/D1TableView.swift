@@ -88,6 +88,7 @@ struct D1TableView: View {
             get: { viewModel.error != nil && editingRow == nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
+            apiErrorDocButton(for: viewModel.error)
             Button("好", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")

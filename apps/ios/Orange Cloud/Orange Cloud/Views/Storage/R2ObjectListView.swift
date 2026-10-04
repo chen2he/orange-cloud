@@ -34,7 +34,8 @@ struct R2ObjectListView: View {
         _viewModel = State(initialValue: R2ObjectListViewModel(
             service: session.r2Service,
             accountId: session.selectedAccount?.id ?? "",
-            bucketName: bucket.name
+            bucketName: bucket.name,
+            jurisdiction: bucket.jurisdiction
         ))
     }
 
@@ -151,6 +152,7 @@ struct R2ObjectListView: View {
             get: { viewModel.error != nil && selectedObject == nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
+            apiErrorDocButton(for: viewModel.error)
             Button("好", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")

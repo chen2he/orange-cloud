@@ -47,6 +47,7 @@ struct ZoneDNSSettingsView: View {
         .alert("出错了", isPresented: .init(
             get: { viewModel.error != nil }, set: { if !$0 { viewModel.error = nil } }
         )) {
+            apiErrorDocButton(for: viewModel.error)
             Button("好", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")
