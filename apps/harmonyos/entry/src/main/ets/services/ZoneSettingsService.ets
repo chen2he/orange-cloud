@@ -5,6 +5,8 @@ import { CFApiClient, apiClient } from '../core/network/CFApiClient';
 interface ZoneSetting {
   id: string;
   value: string;
+  // 当前套餐能否修改这项。套餐不够时照样读得到值，只是 editable 为 false、PATCH 一律 400
+  editable?: boolean;
 }
 
 interface ZoneSettingUpdate {
@@ -55,6 +57,12 @@ export class ZoneSettingsService {
   async getSetting(zoneId: string, setting: string): Promise<string> {
     const result = await this.client.getObject<ZoneSetting>(`/zones/${zoneId}/settings/${setting}`);
     return result.value;
+  }
+
+  /// 读值；当前套餐不允许修改这项（editable 为 false）时返回 null，调用方据此隐藏开关
+  async getSettingIfEditable(zoneId: string, setting: string): Promise<string | null> {
+    const result = await this.client.getObject<ZoneSetting>(`/zones/${zoneId}/settings/${setting}`);
+    return result.editable === false ? null : result.value;
   }
 
   async setSetting(zoneId: string, setting: string, value: string): Promise<string> {

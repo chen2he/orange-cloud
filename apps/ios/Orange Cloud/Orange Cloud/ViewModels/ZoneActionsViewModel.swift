@@ -23,14 +23,16 @@ final class ZoneActionsViewModel {
     /// 是否暂停 Cloudflare 代理。初值取自本地缓存，进页后再用 API 校准。
     private(set) var paused: Bool
 
-    // MARK: AI 内容控制（Pro/Business 起；免费套餐读取即失败，整卡隐藏）
+    // MARK: AI 内容控制（Pro 起；免费套餐读得到但不可改，对应开关隐藏）
 
     /// Redirects for AI Training —— 把 AI 训练类爬虫重定向走
     private(set) var aiTrainingRedirect = false
     /// Markdown for Agents —— 按 Accept: text/markdown 把 HTML 转 Markdown 供 agent 消费
     private(set) var markdownForAgents = false
-    /// 两项中至少一项读到了，才认为该 Zone 支持这组设置
-    private(set) var aiSettingsAvailable = false
+    /// 上面两项各自读到且可改才显示
+    private(set) var aiTrainingRedirectAvailable = false
+    private(set) var markdownForAgentsAvailable = false
+    var aiSettingsAvailable: Bool { aiTrainingRedirectAvailable || markdownForAgentsAvailable }
 
     // MARK: 机器人管控（bot-management.read/.write，全套餐可用）
 
@@ -87,18 +89,18 @@ final class ZoneActionsViewModel {
         settingsLoaded = true
     }
 
-    /// 读 AI 内容控制两项。免费套餐不支持这两个 setting，读取会失败——
-    /// 此时 aiSettingsAvailable 保持 false，调用方整卡隐藏，不给用户一个永远打不开的锁。
+    /// 读 AI 内容控制两项。免费套餐也读得到值，只是 editable == false、一写就 400——
+    /// 读不到或不可改都当不支持，隐藏对应开关，不给用户一个永远打不开的锁。
     func loadAISettings() async {
         guard !aiSettingsAvailable else { return }
-        async let redirectTask = service.getSetting(zoneId: zoneId, setting: "redirects_for_ai_training")
-        async let converterTask = service.getSetting(zoneId: zoneId, setting: "content_converter")
+        async let redirectTask = service.getSettingIfEditable(zoneId: zoneId, setting: "redirects_for_ai_training")
+        async let converterTask = service.getSettingIfEditable(zoneId: zoneId, setting: "content_converter")
         let redirect = try? await redirectTask
         let converter = try? await converterTask
-        guard redirect != nil || converter != nil else { return }
         aiTrainingRedirect = redirect == "on"
         markdownForAgents = converter == "on"
-        aiSettingsAvailable = true
+        aiTrainingRedirectAvailable = redirect != nil
+        markdownForAgentsAvailable = converter != nil
     }
 
     /// 读机器人管控配置。四种套餐形态共用 base_config，任何套餐都能读到。

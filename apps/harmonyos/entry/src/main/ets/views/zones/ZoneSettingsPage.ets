@@ -71,11 +71,12 @@ class ZoneSettingsVM {
   @Trace developmentMode: boolean = false;
   @Trace underAttack: boolean = false;
   @Trace paused: boolean = false;
-  // AI 内容控制（Pro/Business 起）。免费套餐读取即失败，aiSettingsAvailable 保持 false，
-  // 界面整组隐藏——不给用户两个永远打不开的开关。
+  // AI 内容控制（Pro 起）。免费套餐读得到值但 editable 为 false、一写就 400，
+  // 读不到或不可改都隐藏对应开关——不给用户一个永远打不开的开关。
   @Trace aiTrainingRedirect: boolean = false;
   @Trace markdownForAgents: boolean = false;
-  @Trace aiSettingsAvailable: boolean = false;
+  @Trace aiTrainingRedirectAvailable: boolean = false;
+  @Trace markdownForAgentsAvailable: boolean = false;
   // 机器人管控（bot-management.*，全套餐可用；与 zone-settings.* 是两条权限链路）
   @Trace aiBotsProtection: string = 'disabled';
   @Trace crawlerProtection: boolean = false;
@@ -102,18 +103,20 @@ class ZoneSettingsVM {
         this.underAttack = (await this.service.getSetting(zoneId, 'security_level')) === 'under_attack';
       } catch (e) {
       }
-      let aiAvailable: boolean = false;
+      let aiRedirect: string | null = null;
       try {
-        this.aiTrainingRedirect = (await this.service.getSetting(zoneId, 'redirects_for_ai_training')) === 'on';
-        aiAvailable = true;
+        aiRedirect = await this.service.getSettingIfEditable(zoneId, 'redirects_for_ai_training');
       } catch (e) {
       }
+      this.aiTrainingRedirect = aiRedirect === 'on';
+      this.aiTrainingRedirectAvailable = aiRedirect !== null;
+      let converter: string | null = null;
       try {
-        this.markdownForAgents = (await this.service.getSetting(zoneId, 'content_converter')) === 'on';
-        aiAvailable = true;
+        converter = await this.service.getSettingIfEditable(zoneId, 'content_converter');
       } catch (e) {
       }
-      this.aiSettingsAvailable = aiAvailable;
+      this.markdownForAgents = converter === 'on';
+      this.markdownForAgentsAvailable = converter !== null;
       // 暂停态只需 zone.read，缺 zone-settings.read 时这一项照常能读到
       try {
         const zone: Zone = await this.zoneService.fetchZone(zoneId);
@@ -379,8 +382,8 @@ export struct ZoneSettingsPage {
                       });
                     },
                   })
-                  // 仅在该域名支持这组设置时出现（免费套餐读取即失败）
-                  if (this.vm.aiSettingsAvailable) {
+                  // 仅在当前套餐可改时出现（Pro 起；免费套餐读得到但不可改）
+                  if (this.vm.aiTrainingRedirectAvailable) {
                     ToggleRow({
                       title: 'AI 训练重定向',
                       subtitle: '把用于模型训练的爬虫引走',
@@ -392,6 +395,8 @@ export struct ZoneSettingsPage {
                         });
                       },
                     })
+                  }
+                  if (this.vm.markdownForAgentsAvailable) {
                     ToggleRow({
                       title: '面向 Agent 的 Markdown',
                       subtitle: '按请求把页面转成 Markdown 返回',

@@ -17,13 +17,23 @@ struct ZoneSettingsService {
 
     /// 读单项设置的当前值（如 security_level → "medium"，development_mode → "on"/"off"）
     func getSetting(zoneId: String, setting: String) async throws -> String {
+        try await fetchSetting(zoneId: zoneId, setting: setting).value
+    }
+
+    /// 读单项设置的当前值；当前套餐不允许修改这项（editable == false）时返回 nil，调用方据此隐藏开关
+    func getSettingIfEditable(zoneId: String, setting: String) async throws -> String? {
+        let result = try await fetchSetting(zoneId: zoneId, setting: setting)
+        return result.editable == false ? nil : result.value
+    }
+
+    private func fetchSetting(zoneId: String, setting: String) async throws -> ZoneSetting {
         let response: CFAPIResponse<ZoneSetting> = try await client.get(
             "zones/\(zoneId)/settings/\(setting)"
         )
         guard response.success, let result = response.result else {
             throw response.toAPIError()
         }
-        return result.value
+        return result
     }
 
     /// 写单项设置，返回生效后的值

@@ -38,8 +38,9 @@ data class ZoneSettingsUiState(
     val aiTrainingRedirect: Boolean = false,
     /** 面向 Agent 的 Markdown（content_converter）。Pro/Business 起。 */
     val markdownForAgents: Boolean = false,
-    /** 两项中至少一项读到了，才认为该域名支持这组设置；否则整组隐藏。 */
-    val aiSettingsAvailable: Boolean = false,
+    /** 上面两项各自读到且可改才显示，否则隐藏对应开关。 */
+    val aiTrainingRedirectAvailable: Boolean = false,
+    val markdownForAgentsAvailable: Boolean = false,
     // 机器人管控（全套餐可用，但需 bot-management.read）
     val aiBotsProtection: String = "disabled",
     val crawlerProtection: Boolean = false,
@@ -154,12 +155,14 @@ class ZoneSettingsViewModel @Inject constructor(
             try {
                 val dev = async { runCatching { repository.getSetting(zoneId, "development_mode") }.getOrNull() }
                 val sec = async { runCatching { repository.getSetting(zoneId, "security_level") }.getOrNull() }
-                // 免费套餐不支持这两项，读取会失败——读不到就整组隐藏，
-                // 而不是给用户两个永远打不开的开关。
-                val aiRedirect =
-                    async { runCatching { repository.getSetting(zoneId, "redirects_for_ai_training") }.getOrNull() }
-                val converter =
-                    async { runCatching { repository.getSetting(zoneId, "content_converter") }.getOrNull() }
+                // 这两项 Pro 起。免费套餐也读得到值，只是 editable=false、一写就 400——
+                // 读不到或不可改都隐藏对应开关，而不是给用户一个永远打不开的开关。
+                val aiRedirect = async {
+                    runCatching { repository.getSettingIfEditable(zoneId, "redirects_for_ai_training") }.getOrNull()
+                }
+                val converter = async {
+                    runCatching { repository.getSettingIfEditable(zoneId, "content_converter") }.getOrNull()
+                }
                 val aiRedirectValue = aiRedirect.await()
                 val converterValue = converter.await()
                 _uiState.update {
@@ -168,7 +171,8 @@ class ZoneSettingsViewModel @Inject constructor(
                         underAttack = sec.await() == "under_attack",
                         aiTrainingRedirect = aiRedirectValue == "on",
                         markdownForAgents = converterValue == "on",
-                        aiSettingsAvailable = aiRedirectValue != null || converterValue != null,
+                        aiTrainingRedirectAvailable = aiRedirectValue != null,
+                        markdownForAgentsAvailable = converterValue != null,
                     )
                 }
             } finally {

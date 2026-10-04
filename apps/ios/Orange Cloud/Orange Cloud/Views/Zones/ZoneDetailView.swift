@@ -238,7 +238,7 @@ struct ZoneDetailView: View {
 
                 // 整卡仅在读到任一组配置时出现：
                 // 机器人管控全套餐可用但需 bot-management.read；
-                // 上面两个 zone setting 是 Pro/Business 起，免费套餐读取即失败。
+                // 两个 zone setting 是 Pro 起，免费套餐读得到但不可改（editable == false）。
                 // 与其给用户一排永远打不开的锁，不如不显示。
                 if actionsViewModel.botConfigLoaded || actionsViewModel.aiSettingsAvailable {
                     sectionCard(String(localized: "AI 内容控制")) {
@@ -318,7 +318,7 @@ struct ZoneDetailView: View {
                             )
                         }
 
-                        if actionsViewModel.aiSettingsAvailable {
+                        if actionsViewModel.aiTrainingRedirectAvailable {
                             settingToggleRow(
                                 title: String(localized: "AI 训练重定向"),
                                 subtitle: String(localized: "把用于模型训练的爬虫引走"),
@@ -333,7 +333,9 @@ struct ZoneDetailView: View {
                                     Task { await actionsViewModel.setAITrainingRedirect(on) }
                                 }
                             )
+                        }
 
+                        if actionsViewModel.markdownForAgentsAvailable {
                             settingToggleRow(
                                 title: String(localized: "面向 Agent 的 Markdown"),
                                 subtitle: String(localized: "按请求把页面转成 Markdown 返回"),

@@ -9,8 +9,10 @@ import Foundation
 
 /// GET/PATCH /zones/{id}/settings/{setting} 的 result
 nonisolated struct ZoneSetting: Codable, Sendable {
-    let id:    String?
-    let value: String
+    let id:       String?
+    let value:    String
+    /// 当前套餐能否修改这项。套餐不够时照样读得到值，只是 editable == false、PATCH 一律 400
+    let editable: Bool?
 }
 
 nonisolated struct ZoneSettingUpdate: Codable, Sendable {

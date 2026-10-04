@@ -21,6 +21,10 @@ class ZoneSettingsRepository @Inject constructor(
     suspend fun getSetting(zoneId: String, setting: String): String =
         api.get<ZoneSetting>("zones/$zoneId/settings/$setting").value
 
+    /** 读值；当前套餐不允许修改这项（editable=false）时返回 null，调用方据此隐藏开关。 */
+    suspend fun getSettingIfEditable(zoneId: String, setting: String): String? =
+        api.get<ZoneSetting>("zones/$zoneId/settings/$setting").takeIf { it.editable != false }?.value
+
     suspend fun setSetting(zoneId: String, setting: String, value: String): String =
         api.patch<ZoneSetting, ZoneSettingUpdate>("zones/$zoneId/settings/$setting", ZoneSettingUpdate(value)).value
 
