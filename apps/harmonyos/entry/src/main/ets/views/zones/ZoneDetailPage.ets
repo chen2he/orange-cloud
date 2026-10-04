@@ -3,7 +3,7 @@ import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zone 详情 hub（对照 iOS ZoneDetailView）：Hero 卡（头像+名字+状态+套餐）+
-// 分组（小标签 + 玻璃岛行入口）+ 缓存清除。
+// 分组（小标签 + 玻璃岛行入口）+ 缓存清除 / 标记过期。
 import { Zone, zoneDisplayStatus } from '../../models/Models';
 import { Routes, ZoneRouteParam } from '../../models/Routes';
 import { ZoneService } from '../../services/ZoneService';
@@ -43,6 +43,8 @@ const SECTIONS: ModuleSection[] = [
     entries: [
       { symbol: $r('sys.symbol.checkmark_shield'), title: 'WAF 自定义规则', subtitle: '查看 / 启停 / 新建', route: Routes.WAF, proFeature: 'WAF 自定义规则' },
       { symbol: $r('sys.symbol.nosign'), title: 'IP 访问规则', subtitle: '封禁 / 质询 / 白名单', route: Routes.ACCESS_RULES },
+      // 安全洞察全套餐可用（Security Center 按需扫描），不挂 Pro 闸门
+      { symbol: $r('sys.symbol.lock_shield'), title: '安全洞察', subtitle: '配置风险与修复建议', route: Routes.SECURITY_INSIGHTS },
       { symbol: $r('sys.symbol.timer'), title: '速率限制', subtitle: 'Rate Limiting 规则', route: Routes.RATE_LIMIT },
       { symbol: $r('sys.symbol.lock'), title: 'SSL/TLS', subtitle: '加密模式与证书', route: Routes.SSL },
     ],
@@ -78,6 +80,7 @@ export struct ZoneDetailPage {
   /// 名称服务器与 Zone ID（对齐 iOS ZoneDetailView 底部的 Name Servers / Zone ID 区）
   @Local zoneNameServers: string[] = [];
   @Local isPurging: boolean = false;
+  @Local isInvalidating: boolean = false;
   /// 固定域名（共享可观察实例，与 Dashboard / 域名列表联动）
   @Local pins: PinnedZonesStore = pinnedZones;
   /// 观察权益：购买后 Pro 徽章即时消失
@@ -115,6 +118,30 @@ export struct ZoneDetailPage {
           }).catch((e: Error) => {
             this.isPurging = false;
             ocSnack(this.getUIContext(), e.message ?? '清除失败');
+          });
+        },
+      },
+    });
+  }
+
+  /// 全部缓存标记过期（invalidate_cache）：保留缓存、下次请求向源站校验，比清除温和
+  private confirmInvalidate(): void {
+    this.getUIContext().showAlertDialog({
+      title: '标记过期',
+      message: '将把该域名的全部缓存标记为过期。\n\n保留缓存但标记为过期，下次请求时向源站校验；内容没变（304）就继续用缓存。需要源站返回 ETag 或 Last-Modified。',
+      primaryButton: { value: '取消', action: () => {
+      } },
+      secondaryButton: {
+        value: '标记过期',
+        fontColor: BRAND_ORANGE,
+        action: () => {
+          this.isInvalidating = true;
+          this.zoneService.invalidateAllCache(this.zoneId).then(() => {
+            this.isInvalidating = false;
+            ocSnack(this.getUIContext(), '已标记为过期');
+          }).catch((e: Error) => {
+            this.isInvalidating = false;
+            ocSnack(this.getUIContext(), e.message ?? '标记失败');
           });
         },
       },
@@ -301,18 +328,32 @@ export struct ZoneDetailPage {
 
           this.identitySection()
 
-          Button(this.isPurging ? '正在清除缓存…' : '清除全部缓存')
-            .width('100%')
-            .height(46)
-            .fontSize(15)
-            .fontColor('#DC2626')
-            .backgroundColor($r('sys.color.comp_background_list_card'))
-            .borderRadius(OCLayout.chipRadius)
-            .enabled(!this.isPurging)
-            .margin({ bottom: 8 })
-            .onClick(() => {
-              this.confirmPurge();
-            })
+          Row({ space: 10 }) {
+            Button(this.isPurging ? '正在清除缓存…' : '清除全部缓存')
+              .layoutWeight(1)
+              .height(46)
+              .fontSize(15)
+              .fontColor('#DC2626')
+              .backgroundColor($r('sys.color.comp_background_list_card'))
+              .borderRadius(OCLayout.chipRadius)
+              .enabled(!this.isPurging && !this.isInvalidating)
+              .onClick(() => {
+                this.confirmPurge();
+              })
+            Button(this.isInvalidating ? '正在标记…' : '标记过期')
+              .layoutWeight(1)
+              .height(46)
+              .fontSize(15)
+              .fontColor($r('app.color.oc_brand_text'))
+              .backgroundColor($r('sys.color.comp_background_list_card'))
+              .borderRadius(OCLayout.chipRadius)
+              .enabled(!this.isPurging && !this.isInvalidating)
+              .onClick(() => {
+                this.confirmInvalidate();
+              })
+          }
+          .width('100%')
+          .margin({ bottom: 8 })
         }
         .width('100%')
         .padding(OCLayout.pagePadding)

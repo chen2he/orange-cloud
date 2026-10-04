@@ -4,7 +4,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 // 总览 Tab：身份/账户切换 + 域名概况 + 账号级模块入口（对齐 Android DashboardScreen）。
 import { Account, Zone, DNSRecord } from '../../models/Models';
 import { tabBarScroll } from '../common/PlatformCompat';
-import { Routes, ZoneRouteParam, IdNameParam, NameParam } from '../../models/Routes';
+import { Routes, ZoneRouteParam, IdNameParam, NameParam, R2BucketParam } from '../../models/Routes';
 import { AccountStore, accountStore } from '../../core/store/AccountStore';
 import { authManager, AuthManager, AuthSessionMeta } from '../../core/auth/AuthManager';
 import { ZoneService } from '../../services/ZoneService';
@@ -400,8 +400,10 @@ export struct DashboardView {
       if (!requirePro(this.pathStack, 'R2 对象存储')) {
         return;
       }
-      const nameParam: NameParam = { name: resourceId };
-      this.pathStack.pushPathByName(Routes.R2_OBJECTS, nameParam);
+      // 区域限制桶要把 jurisdiction 带进对象页（桶级请求靠它加 cf-r2-jurisdiction 头）
+      const bucket = this.buckets.find((b: R2Bucket) => b.name === resourceId);
+      const bucketParam: R2BucketParam = { name: resourceId, jurisdiction: bucket?.jurisdiction ?? '' };
+      this.pathStack.pushPathByName(Routes.R2_OBJECTS, bucketParam);
       return;
     }
     if (kind === ResKind.D1) {

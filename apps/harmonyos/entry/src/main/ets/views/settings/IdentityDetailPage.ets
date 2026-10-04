@@ -34,7 +34,17 @@ export struct IdentityDetailPage {
     });
   }
 
-  /// 补齐 missingModules 需要并入的 scope 全集（读 + 写）
+  /// 已授读写、但缺上线后新增写权限的模块（如 Workers 读写新增 workers-observability.write）
+  private staleModules(): ScopeModule[] {
+    const granted = this.grantedScopes();
+    return Scopes.modules.filter((module: ScopeModule) => {
+      const hasWrite = module.writeScopes.some((s: string) => granted.includes(s));
+      return hasWrite && module.writeScopes.some((s: string) =>
+        Scopes.addedWriteScopes.includes(s) && !granted.includes(s));
+    });
+  }
+
+  /// 补齐 missingModules 需要并入的 scope 全集（读 + 写），外加 staleModules 缺的新增写权限
   private upgradeScopes(): string[] {
     const scopes: string[] = [];
     for (const module of this.missingModules()) {
@@ -44,7 +54,20 @@ export struct IdentityDetailPage {
         }
       }
     }
+    const granted = this.grantedScopes();
+    for (const module of this.staleModules()) {
+      for (const s of module.writeScopes) {
+        if (Scopes.addedWriteScopes.includes(s) && !granted.includes(s) && !scopes.includes(s)) {
+          scopes.push(s);
+        }
+      }
+    }
     return scopes;
+  }
+
+  /// 有整模块未授或新增写权限待补
+  private hasUpgrades(): boolean {
+    return this.missingModules().length > 0 || this.staleModules().length > 0;
   }
 
   private isReauthorizing(): boolean {
@@ -209,7 +232,7 @@ export struct IdentityDetailPage {
             .width('100%')
 
             // ── 升级授权：缺 refresh token 或有未授予模块时展示 ──
-            if (authManager.needsReauth(this.sessionId) || this.missingModules().length > 0) {
+            if (authManager.needsReauth(this.sessionId) || this.hasUpgrades()) {
               Column({ space: 8 }) {
                 this.groupHeader('升级授权')
                 Column() {
@@ -242,6 +265,23 @@ export struct IdentityDetailPage {
                     .width('100%')
                     .padding({ left: 16, right: 16, top: 7, bottom: 7 })
                   }, (module: ScopeModule) => module.id)
+                  ForEach(this.staleModules(), (module: ScopeModule) => {
+                    Row({ space: 10 }) {
+                      Text(module.icon)
+                        .fontSize(14)
+                        .width(22)
+                        .textAlign(TextAlign.Center)
+                      Text(module.title)
+                        .fontSize(14)
+                        .fontColor($r('sys.color.font_primary'))
+                        .layoutWeight(1)
+                      Text('有新增权限')
+                        .fontSize(12)
+                        .fontColor($r('sys.color.font_tertiary'))
+                    }
+                    .width('100%')
+                    .padding({ left: 16, right: 16, top: 7, bottom: 7 })
+                  }, (module: ScopeModule) => `stale-${module.id}`)
 
                   Divider()
                     .strokeWidth(0.5)
@@ -258,7 +298,7 @@ export struct IdentityDetailPage {
                         .fontSize(14)
                         .fontColor($r('sys.color.font_secondary'))
                     } else {
-                      Text(this.missingModules().length > 0 ? '🔓 补齐授权' : '🔓 重新授权')
+                      Text(this.hasUpgrades() ? '🔓 补齐授权' : '🔓 重新授权')
                         .fontSize(14)
                         .fontWeight(FontWeight.Medium)
                         .fontColor($r('app.color.oc_brand_text'))

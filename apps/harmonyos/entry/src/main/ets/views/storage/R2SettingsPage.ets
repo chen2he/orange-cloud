@@ -10,7 +10,7 @@ import {
   R2CustomDomain,
   R2ManagedDomain,
 } from '../../models/StorageModels';
-import { IdNameParam } from '../../models/Routes';
+import { R2BucketParam } from '../../models/Routes';
 import { StorageService } from '../../services/StorageService';
 import { ApiError } from '../../core/network/CFApiClient';
 import { ZoneService } from '../../services/ZoneService';
@@ -78,6 +78,8 @@ class SettingsVM {
   private sqlService: R2SQLService = new R2SQLService();
   private service: StorageService = new StorageService();
   private zoneService: ZoneService = new ZoneService();
+  /// 桶的数据区域（区域限制桶的 domains / cors 请求都要带 cf-r2-jurisdiction 头）
+  jurisdiction: string = '';
 
   /// 拉命名空间下的表清单，供控制台点按插入表引用（失败静默，不挡手输 SQL）
   async loadSqlTables(bucket: string): Promise<void> {
@@ -147,7 +149,7 @@ class SettingsVM {
     this.isLoading = true;
     const accountId = accountStore.selectedId;
     try {
-      this.managed = await this.service.getManagedDomain(accountId, bucket);
+      this.managed = await this.service.getManagedDomain(accountId, bucket, this.jurisdiction);
     } catch (e) {
       this.managed = null;
     }
@@ -168,12 +170,12 @@ class SettingsVM {
     }
     this.catalogLoaded = true;
     try {
-      this.customDomains = await this.service.listCustomDomains(accountId, bucket);
+      this.customDomains = await this.service.listCustomDomains(accountId, bucket, this.jurisdiction);
     } catch (e) {
       this.customDomains = [];
     }
     try {
-      const policy = await this.service.getCorsPolicy(accountId, bucket);
+      const policy = await this.service.getCorsPolicy(accountId, bucket, this.jurisdiction);
       this.corsRules = policy.rules ?? [];
     } catch (e) {
       this.corsRules = [];
@@ -193,9 +195,9 @@ class SettingsVM {
     }
     this.isSaving = true;
     try {
-      await this.service.setManagedDomainEnabled(accountStore.selectedId, bucket, enabled);
+      await this.service.setManagedDomainEnabled(accountStore.selectedId, bucket, enabled, this.jurisdiction);
       try {
-        this.managed = await this.service.getManagedDomain(accountStore.selectedId, bucket);
+        this.managed = await this.service.getManagedDomain(accountStore.selectedId, bucket, this.jurisdiction);
       } catch (e) {
       }
       return '';
@@ -212,7 +214,8 @@ class SettingsVM {
     }
     this.isSaving = true;
     try {
-      const created = await this.service.addCustomDomain(accountStore.selectedId, bucket, domain, zoneId);
+      const created = await this.service.addCustomDomain(accountStore.selectedId, bucket, domain, zoneId,
+        this.jurisdiction);
       this.customDomains = this.customDomains.concat([created]);
       return '';
     } catch (e) {
@@ -224,7 +227,7 @@ class SettingsVM {
 
   async removeDomain(bucket: string, domain: string): Promise<string> {
     try {
-      await this.service.removeCustomDomain(accountStore.selectedId, bucket, domain);
+      await this.service.removeCustomDomain(accountStore.selectedId, bucket, domain, this.jurisdiction);
       this.customDomains = this.customDomains.filter((d: R2CustomDomain) => d.domain !== domain);
       return '';
     } catch (e) {
@@ -241,7 +244,7 @@ class SettingsVM {
     try {
       const next = this.corsRules.concat([rule]);
       const policy: R2CorsPolicy = { rules: next };
-      await this.service.putCorsPolicy(accountStore.selectedId, bucket, policy);
+      await this.service.putCorsPolicy(accountStore.selectedId, bucket, policy, this.jurisdiction);
       this.corsRules = next;
       return '';
     } catch (e) {
@@ -259,10 +262,10 @@ class SettingsVM {
     const next = this.corsRules.filter((rule: R2CorsRule, i: number) => i !== index);
     try {
       if (next.length === 0) {
-        await this.service.deleteCorsPolicy(accountStore.selectedId, bucket);
+        await this.service.deleteCorsPolicy(accountStore.selectedId, bucket, this.jurisdiction);
       } else {
         const policy: R2CorsPolicy = { rules: next };
-        await this.service.putCorsPolicy(accountStore.selectedId, bucket, policy);
+        await this.service.putCorsPolicy(accountStore.selectedId, bucket, policy, this.jurisdiction);
       }
       this.corsRules = next;
       return '';
@@ -273,7 +276,7 @@ class SettingsVM {
 
   async clearCors(bucket: string): Promise<string> {
     try {
-      await this.service.deleteCorsPolicy(accountStore.selectedId, bucket);
+      await this.service.deleteCorsPolicy(accountStore.selectedId, bucket, this.jurisdiction);
       this.corsRules = [];
       return '';
     } catch (e) {
@@ -1044,8 +1047,9 @@ export struct R2SettingsPage {
       this.showAddCors = false;
     }))
     .onReady((context: NavDestinationContext) => {
-      const param = context.pathInfo.param as IdNameParam;
+      const param = context.pathInfo.param as R2BucketParam;
       this.bucket = param.name;
+      this.vm.jurisdiction = param.jurisdiction ?? '';
       this.vm.load(param.name).catch(() => {
       });
     })

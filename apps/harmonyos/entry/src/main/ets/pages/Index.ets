@@ -36,6 +36,8 @@ import { WorkerDetailPage } from '../views/workers/WorkerDetailPage';
 import { WorkerCreatePage } from '../views/workers/WorkerCreatePage';
 import { WorkerTailPage } from '../views/workers/WorkerTailPage';
 import { WorkerLogsPage } from '../views/workers/WorkerLogsPage';
+import { WorkerIssuesPage, WorkerIssueDetailPage } from '../views/workers/WorkerIssuesPage';
+import { SecurityInsightsPage } from '../views/zones/SecurityInsightsPage';
 import { WorkerBindingsPage } from '../views/workers/WorkerBindingsPage';
 import { WorkerTriggersPage } from '../views/workers/WorkerTriggersPage';
 import { WorkerDeploymentsPage } from '../views/workers/WorkerDeploymentsPage';
@@ -179,6 +181,12 @@ struct Index {
       WorkerTailPage()
     } else if (name === Routes.WORKER_LOGS) {
       WorkerLogsPage()
+    } else if (name === Routes.WORKER_ISSUES) {
+      WorkerIssuesPage()
+    } else if (name === Routes.WORKER_ISSUE_DETAIL) {
+      WorkerIssueDetailPage()
+    } else if (name === Routes.SECURITY_INSIGHTS) {
+      SecurityInsightsPage()
     } else if (name === Routes.WORKER_SECRETS) {
       WorkerBindingsPage()
     } else if (name === Routes.WORKER_TRIGGERS) {

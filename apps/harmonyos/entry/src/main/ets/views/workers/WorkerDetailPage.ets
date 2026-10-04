@@ -20,8 +20,9 @@ import {
   workerStatusColor,
   workerStatusLabel,
 } from '../../models/AnalyticsModels';
-import { NameParam, Routes } from '../../models/Routes';
+import { NameParam, Routes, WorkerIssuesParam } from '../../models/Routes';
 import { WorkerService } from '../../services/WorkerService';
+import { WorkerIssueSummary, WorkerIssuesService, issueNumber } from '../../services/WorkerIssuesService';
 import { AnalyticsService } from '../../services/AnalyticsService';
 import { AccountAnalyticsUnauthorizedError } from '../../services/UsageService';
 import { accountStore } from '../../core/store/AccountStore';
@@ -105,15 +106,26 @@ class WorkerDetailVM {
   @Trace content: WorkerScriptContent | null = null;
   @Trace contentLoading: boolean = false;
   @Trace isDeployingCode: boolean = false;
+  /// 该 Worker 的活跃问题数（-1 = 未取到：非 Pro / 无权限 / 接口失败）
+  @Trace activeIssues: number = -1;
 
   private service: WorkerService = new WorkerService();
   private analytics: AnalyticsService = new AnalyticsService();
+  private issuesService: WorkerIssuesService = new WorkerIssuesService();
 
   async load(accountId: string, scriptName: string): Promise<void> {
     this.isLoading = true;
     try {
       this.loadMetrics(accountId, scriptName).catch(() => {
       });
+      // 问题汇总按 service=脚本名过滤；Pro 能力，非 Pro 不发请求
+      if (entitlement.isPro && authManager.hasScope(Scopes.WORKERS_OBSERVABILITY_READ)) {
+        this.issuesService.summary(accountId, scriptName).then((summary: WorkerIssueSummary) => {
+          this.activeIssues = issueNumber(summary.activeIssues, -1);
+        }).catch(() => {
+          this.activeIssues = -1;
+        });
+      }
       try {
         this.script = await this.service.findScript(accountId, scriptName);
       } catch (e) {
@@ -668,7 +680,7 @@ export struct WorkerDetailPage {
     .width('100%')
   }
 
-  /// 调试分组：实时日志（tail）+ 历史日志（Observability）
+  /// 调试分组：实时日志（tail）+ 历史日志（Observability）+ 问题（Observability Issues）
   @Builder
   debugSection() {
     Column({ space: 8 }) {
@@ -706,6 +718,29 @@ export struct WorkerDetailPage {
             }
             const param: NameParam = { name: this.scriptName };
             this.pathStack?.pushPathByName(Routes.WORKER_LOGS, param);
+          },
+        })
+        Divider()
+          .color($r('sys.color.comp_divider'))
+          .margin({ left: 56 })
+        // 问题：Cloudflare 自动归类的异常 / 5xx / 错误日志，进入后只看本 Worker
+        NavRow({
+          symbol: $r('sys.symbol.exclamationmark_triangle'),
+          title: '问题',
+          subtitle: this.vm.activeIssues >= 0
+            ? `活跃问题 ${formatCount(this.vm.activeIssues)}`
+            : '未捕获异常、5xx 与错误日志（公开测试）',
+          locked: !this.entitlements.isPro,
+          onNav: () => {
+            if (!requirePro(this.pathStack, 'Workers 问题')) {
+              return;
+            }
+            if (!authManager.hasScope(Scopes.WORKERS_OBSERVABILITY_READ)) {
+              this.toast('当前授权未包含 Workers 可观测性读取权限（workers-observability.read），可在「设置 → 身份」中升级授权');
+              return;
+            }
+            const param: WorkerIssuesParam = { service: this.scriptName };
+            this.pathStack?.pushPathByName(Routes.WORKER_ISSUES, param);
           },
         })
       }

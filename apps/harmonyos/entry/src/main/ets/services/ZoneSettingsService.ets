@@ -1,4 +1,4 @@
-// Zone 设置读写（/zones/{id}/settings/{setting}，PATCH 改值）+ 按 URL 清缓存。
+// Zone 设置读写（/zones/{id}/settings/{setting}，PATCH 改值）+ 按目标清缓存 / 标记过期。
 // 对齐 Android ZoneSettingsRepository。
 import { CFApiClient, apiClient } from '../core/network/CFApiClient';
 
@@ -29,6 +29,13 @@ export interface BotManagementConfig {
   content_bots_protection?: string; // block / disabled
   cf_robots_variant?: string;       // off / policy_only
   is_robots_txt_managed?: boolean;
+  // 2026-09-15 起 ai_bots_protection 拆成三类（全套餐）。老响应里没有这些键，一律可选；
+  // 值按字符串收，未知取值不崩（界面上不高亮任何选项）
+  ai_search?: string;               // disabled / block / only_on_ad_pages —— AI 搜索爬虫
+  ai_user?: string;                 // disabled / block / only_on_ad_pages —— AI 助手与 Agent
+  ai_training?: string;             // disabled / disallow / block / only_on_ad_pages —— AI 训练
+  /// Bot Preference Sync：按三项偏好由 Cloudflare 生成 robots.txt（取代托管 robots.txt）
+  bot_preference_sync_enabled?: boolean;
 }
 
 interface PurgeFilesBody {
@@ -81,27 +88,33 @@ export class ZoneSettingsService {
     return this.client.putObject<BotManagementConfig>(`/zones/${zoneId}/bot_management`, body);
   }
 
-  /// 按 URL 清缓存（单次最多 30 个）
-  async purgeFiles(zoneId: string, urls: string[]): Promise<void> {
+  /// 缓存操作端点：invalidate=false 走 purge_cache（删除），true 走 invalidate_cache（标记过期）。
+  /// 两者请求体、权限（cache.purge）与限流完全相同（invalidate 2026-09-28 GA）。
+  private cachePath(zoneId: string, invalidate: boolean): string {
+    return invalidate ? `/zones/${zoneId}/invalidate_cache` : `/zones/${zoneId}/purge_cache`;
+  }
+
+  /// 按 URL 清缓存 / 标记过期（单次最多 30 个）
+  async purgeFiles(zoneId: string, urls: string[], invalidate: boolean = false): Promise<void> {
     const body: PurgeFilesBody = { files: urls };
-    await this.client.postObject<object>(`/zones/${zoneId}/purge_cache`, body);
+    await this.client.postObject<object>(this.cachePath(zoneId, invalidate), body);
   }
 
-  /// 按路径前缀清缓存（企业版，单次最多 30 个）
-  async purgePrefixes(zoneId: string, prefixes: string[]): Promise<void> {
+  /// 按路径前缀清缓存 / 标记过期（企业版，单次最多 30 个）
+  async purgePrefixes(zoneId: string, prefixes: string[], invalidate: boolean = false): Promise<void> {
     const body: PurgePrefixesBody = { prefixes: prefixes };
-    await this.client.postObject<object>(`/zones/${zoneId}/purge_cache`, body);
+    await this.client.postObject<object>(this.cachePath(zoneId, invalidate), body);
   }
 
-  /// 按主机名清缓存（企业版，单次最多 30 个）
-  async purgeHosts(zoneId: string, hosts: string[]): Promise<void> {
+  /// 按主机名清缓存 / 标记过期（企业版，单次最多 30 个）
+  async purgeHosts(zoneId: string, hosts: string[], invalidate: boolean = false): Promise<void> {
     const body: PurgeHostsBody = { hosts: hosts };
-    await this.client.postObject<object>(`/zones/${zoneId}/purge_cache`, body);
+    await this.client.postObject<object>(this.cachePath(zoneId, invalidate), body);
   }
 
-  /// 按 Cache-Tag 清缓存（企业版，单次最多 30 个）
-  async purgeTags(zoneId: string, tags: string[]): Promise<void> {
+  /// 按 Cache-Tag 清缓存 / 标记过期（企业版，单次最多 30 个）
+  async purgeTags(zoneId: string, tags: string[], invalidate: boolean = false): Promise<void> {
     const body: PurgeTagsBody = { tags: tags };
-    await this.client.postObject<object>(`/zones/${zoneId}/purge_cache`, body);
+    await this.client.postObject<object>(this.cachePath(zoneId, invalidate), body);
   }
 }

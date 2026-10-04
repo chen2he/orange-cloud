@@ -1,5 +1,7 @@
 import { OC_PRESS_EFFECT } from './Effects';
 import { HdsListItemCard, IconSize, PrefixIcon, SuffixArrow, SuffixSwitch, SuffixText, SuffixTextAndArrow } from '@kit.UIDesignKit';
+import { apiErrorDocUrl } from '../../core/network/CFApiClient';
+import { GlobalContext } from '../../core/system/GlobalContext';
 // 公共 UI 组件：加载 / 错误 / 空态 / 分区头 / 信息行 / 开关行 / 导航行 / 标签。
 // 品牌橙 #F48120 只给点缀（对齐晨昏设计语言：数字回归主文本色）。
 
@@ -30,11 +32,30 @@ export struct OCLoading {
   }
 }
 
+/// 打开 API 错误附带的文档链接（403 的 documentation_url）
+export function openDocUrl(url: string): void {
+  if (!url.startsWith('https://') && !url.startsWith('http://')) {
+    return;
+  }
+  try {
+    GlobalContext.get().openLink(url).catch(() => {
+    });
+  } catch (e) {
+    // context 未就绪：静默
+  }
+}
+
 @ComponentV2
 export struct OCError {
   @Param message: string = '加载失败';
+  /// 所需权限说明页；空串时按 message 回查 API 错误附带的 documentation_url
+  @Param docUrl: string = '';
   @Param onRetry: () => void = () => {
   };
+
+  private resolvedDocUrl(): string {
+    return this.docUrl !== '' ? this.docUrl : apiErrorDocUrl(this.message);
+  }
 
   build() {
     Column({ space: 14 }) {
@@ -54,6 +75,16 @@ export struct OCError {
         .onClick(() => {
           this.onRetry();
         })
+      // 403 带了权限说明页时，给一个直达入口
+      if (this.resolvedDocUrl() !== '') {
+        Text('查看所需权限')
+          .fontSize(13)
+          .fontColor($r('app.color.oc_brand_text'))
+          .padding(6)
+          .onClick(() => {
+            openDocUrl(this.resolvedDocUrl());
+          })
+      }
     }
     .width('100%')
     .layoutWeight(1)
@@ -211,6 +242,8 @@ export struct ResourceCard {
   @Param title: string = '';
   @Param subtitle: string = '';
   @Param trailing: string = '';
+  /// 标题后的小徽标（如 R2 区域限制桶的「欧盟」），空串不显示
+  @Param badge: string = '';
   @Param onTap: () => void = () => {
   };
   @Param onLongPress: () => void = () => {
@@ -238,12 +271,25 @@ export struct ResourceCard {
           .borderRadius(11)
       }
       Column({ space: 3 }) {
-        Text(this.title)
-          .fontSize(15)
-          .fontWeight(FontWeight.Medium)
-          .fontColor($r('sys.color.font_primary'))
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
+        Row({ space: 6 }) {
+          Text(this.title)
+            .fontSize(15)
+            .fontWeight(FontWeight.Medium)
+            .fontColor($r('sys.color.font_primary'))
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .flexShrink(1)
+          if (this.badge !== '') {
+            Text(this.badge)
+              .fontSize(10)
+              .fontWeight(FontWeight.Medium)
+              .fontColor($r('app.color.oc_brand_text'))
+              .padding({ left: 6, right: 6, top: 1, bottom: 1 })
+              .backgroundColor($r('app.color.oc_brand_bg'))
+              .borderRadius(6)
+              .flexShrink(0)
+          }
+        }
         if (this.subtitle !== '') {
           Text(this.subtitle)
             .fontSize(12)

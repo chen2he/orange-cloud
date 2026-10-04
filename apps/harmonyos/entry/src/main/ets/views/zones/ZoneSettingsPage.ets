@@ -3,6 +3,7 @@ import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Zone 设置：开发模式 / Under Attack 模式 / 暂停 Cloudflare + 按目标清缓存（URL / 前缀 / 主机 /
 // 缓存标签四模式，对照 iOS PurgeCacheSheet；POST /zones/{id}/purge_cache 的 files/prefixes/hosts/tags）。
+// 同一组目标也可「标记过期」（POST /zones/{id}/invalidate_cache，请求体与权限同 purge）。
 // 注意暂停与另两个开关不同源：开发模式 / Under Attack 走 zone settings（zone-settings.*），
 // 暂停读写域名本身（zone.read / zone.write），权限链路各自独立。
 import { ZoneRouteParam } from '../../models/Routes';
@@ -34,6 +35,25 @@ const AI_BOTS_OPTIONS: AiBotsOption[] = [
   { value: 'only_on_ad_pages', label: '仅广告页' },
   { value: 'block', label: '全站拦截' },
 ];
+
+/// 2026-09-15 起 AI 爬虫拆成三类：AI 搜索 / AI 助手与 Agent 的取值
+const AI_POLICY_OPTIONS: AiBotsOption[] = [
+  { value: 'disabled', label: '允许' },
+  { value: 'block', label: '全部拦截' },
+  { value: 'only_on_ad_pages', label: '仅拦截含广告的页面' },
+];
+
+/// AI 训练多一档：只在 robots.txt 里声明禁止，不做拦截
+const AI_TRAINING_OPTIONS: AiBotsOption[] = [
+  { value: 'disabled', label: '允许' },
+  { value: 'disallow', label: '在 robots.txt 中声明禁止' },
+  { value: 'block', label: '全部拦截' },
+  { value: 'only_on_ad_pages', label: '仅拦截含广告的页面' },
+];
+
+/// 标记过期的说明（清除 / 标记过期分段切到后者时展示）
+const INVALIDATE_NOTE: string =
+  '保留缓存但标记为过期，下次请求时向源站校验；内容没变（304）就继续用缓存。需要源站返回 ETag 或 Last-Modified。';
 
 const PURGE_MODES: PurgeModeSpec[] = [
   {
@@ -83,6 +103,14 @@ class ZoneSettingsVM {
   @Trace contentBotsProtection: boolean = false;
   @Trace robotsLicense: boolean = false;
   @Trace managedRobotsTxt: boolean = false;
+  // 拆分后的三类 AI 爬虫策略；响应里出现任一项即改用三选择器，否则保留老的「AI 爬虫」
+  @Trace aiSearch: string = '';
+  @Trace aiUser: string = '';
+  @Trace aiTraining: string = '';
+  @Trace splitAiControls: boolean = false;
+  // Bot Preference Sync：响应带这个键就用它替代「托管 robots.txt」
+  @Trace preferenceSync: boolean = false;
+  @Trace hasPreferenceSync: boolean = false;
   @Trace botConfigLoaded: boolean = false;
   @Trace isLoading: boolean = false;
   @Trace isSaving: boolean = false;
@@ -169,6 +197,21 @@ class ZoneSettingsVM {
     this.contentBotsProtection = cfg.content_bots_protection === 'block';
     this.robotsLicense = cfg.cf_robots_variant === 'policy_only';
     this.managedRobotsTxt = cfg.is_robots_txt_managed === true;
+    const search = cfg.ai_search ?? '';
+    const user = cfg.ai_user ?? '';
+    const training = cfg.ai_training ?? '';
+    // 一旦认出新字段就保持新界面（PUT 回包若偶发缺键，不来回切换布局）
+    if (search !== '' || user !== '' || training !== '') {
+      this.splitAiControls = true;
+    }
+    this.aiSearch = search;
+    this.aiUser = user;
+    this.aiTraining = training;
+    const sync = cfg.bot_preference_sync_enabled;
+    if (sync !== undefined && sync !== null) {
+      this.hasPreferenceSync = true;
+    }
+    this.preferenceSync = sync === true;
     this.botConfigLoaded = true;
   }
 
@@ -226,8 +269,8 @@ class ZoneSettingsVM {
     }
   }
 
-  /// 按目标清缓存：mode 为 files 或 prefixes 或 hosts 或 tags
-  async purgeTargets(zoneId: string, mode: string, text: string): Promise<string> {
+  /// 按目标清缓存：mode 为 files 或 prefixes 或 hosts 或 tags；invalidate 为 true 时改为标记过期
+  async purgeTargets(zoneId: string, mode: string, text: string, invalidate: boolean): Promise<string> {
     const items = text.split('\n').map((u: string) => u.trim()).filter((u: string) => u !== '');
     if (items.length === 0) {
       return '请输入至少一条内容';
@@ -237,17 +280,17 @@ class ZoneSettingsVM {
     }
     try {
       if (mode === 'prefixes') {
-        await this.service.purgePrefixes(zoneId, items);
+        await this.service.purgePrefixes(zoneId, items, invalidate);
       } else if (mode === 'hosts') {
-        await this.service.purgeHosts(zoneId, items);
+        await this.service.purgeHosts(zoneId, items, invalidate);
       } else if (mode === 'tags') {
-        await this.service.purgeTags(zoneId, items);
+        await this.service.purgeTags(zoneId, items, invalidate);
       } else {
-        await this.service.purgeFiles(zoneId, items);
+        await this.service.purgeFiles(zoneId, items, invalidate);
       }
       return '';
     } catch (e) {
-      return (e as Error).message ?? '清除失败';
+      return (e as Error).message ?? (invalidate ? '标记失败' : '清除失败');
     }
   }
 }
@@ -259,6 +302,8 @@ export struct ZoneSettingsPage {
   @Local zoneName: string = '';
   @Local purgeUrls: string = '';
   @Local purgeModeIndex: number = 0;
+  /// 缓存动作：false = 清除（purge），true = 标记过期（invalidate）
+  @Local invalidateMode: boolean = false;
 
   private toast(message: string): void {
     if (message !== '') {
@@ -319,22 +364,25 @@ export struct ZoneSettingsPage {
       return;
     }
     const mode = this.purgeMode();
+    const invalidate = this.invalidateMode;
     this.getUIContext().showAlertDialog({
-      title: `按${mode.label}清除缓存`,
-      message: `共 ${this.purgeCount()} 条。${mode.confirmText}`,
+      title: invalidate ? `按${mode.label}标记过期` : `按${mode.label}清除缓存`,
+      message: invalidate
+        ? `共 ${this.purgeCount()} 条。${INVALIDATE_NOTE}`
+        : `共 ${this.purgeCount()} 条。${mode.confirmText}`,
       primaryButton: {
         value: '取消',
         action: () => {
         },
       },
       secondaryButton: {
-        value: '清除',
-        fontColor: '#DC2626',
+        value: invalidate ? '标记过期' : '清除',
+        fontColor: invalidate ? BRAND_ORANGE : '#DC2626',
         action: () => {
-          this.vm.purgeTargets(this.zoneId, mode.key, this.purgeUrls).then((err: string) => {
+          this.vm.purgeTargets(this.zoneId, mode.key, this.purgeUrls, invalidate).then((err: string) => {
             if (err === '') {
               this.purgeUrls = '';
-              this.toast('已提交缓存清除');
+              this.toast(invalidate ? '已标记为过期' : '已提交缓存清除');
             } else {
               this.toast(err);
             }
@@ -342,6 +390,71 @@ export struct ZoneSettingsPage {
         },
       },
     });
+  }
+
+  /// 当前 AI 策略取值（三选择器共用一个 Builder，按字段名取值）
+  private aiPolicyValue(field: string): string {
+    if (field === 'ai_search') {
+      return this.vm.aiSearch;
+    }
+    if (field === 'ai_user') {
+      return this.vm.aiUser;
+    }
+    return this.vm.aiTraining;
+  }
+
+  /// 写单个 AI 策略字段（PUT 合并语义，只带这一个键）
+  private setAiPolicy(field: string, value: string): void {
+    if (this.vm.isSaving || this.aiPolicyValue(field) === value) {
+      return;
+    }
+    const body: BotManagementConfig = {};
+    if (field === 'ai_search') {
+      body.ai_search = value;
+    } else if (field === 'ai_user') {
+      body.ai_user = value;
+    } else {
+      body.ai_training = value;
+    }
+    this.vm.setBotField(this.zoneId, body).then((err: string) => {
+      this.toast(err);
+    });
+  }
+
+  /// AI 爬虫策略选择器：标题 + 说明 + 可换行的选项胶囊
+  @Builder
+  aiPolicyPicker(field: string, title: string, subtitle: string, options: AiBotsOption[]) {
+    Column({ space: 6 }) {
+      Text(title)
+        .fontSize(15)
+        .fontWeight(FontWeight.Medium)
+        .fontColor($r('sys.color.font_primary'))
+        .width('100%')
+      Text(subtitle)
+        .fontSize(12)
+        .fontColor($r('sys.color.font_secondary'))
+        .width('100%')
+      Flex({ wrap: FlexWrap.Wrap }) {
+        ForEach(options, (opt: AiBotsOption) => {
+          Text(opt.label)
+            .fontSize(13)
+            .fontWeight(this.aiPolicyValue(field) === opt.value ? FontWeight.Medium : FontWeight.Normal)
+            .fontColor(this.aiPolicyValue(field) === opt.value
+              ? Color.White : $r('sys.color.font_secondary'))
+            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+            .backgroundColor(this.aiPolicyValue(field) === opt.value
+              ? BRAND_ORANGE : $r('sys.color.background_secondary'))
+            .borderRadius(14)
+            .margin({ right: 8, bottom: 8 })
+            .onClick(() => {
+              this.setAiPolicy(field, opt.value);
+            })
+        }, (opt: AiBotsOption) => `${field}-${opt.value}`)
+      }
+      .width('100%')
+      .margin({ top: 4 })
+    }
+    .padding({ left: 14, right: 14, top: 12, bottom: 4 })
   }
 
   build() {
@@ -434,42 +547,49 @@ export struct ZoneSettingsPage {
                 Column() {
                   SectionHeader({ title: 'AI 与机器人' })
                   Column({ space: 10 }) {
-                    Column({ space: 6 }) {
-                      Text('AI 爬虫')
-                        .fontSize(15)
-                        .fontWeight(FontWeight.Medium)
-                        .fontColor($r('sys.color.font_primary'))
+                    // 新版（2026-09-15）三类策略取代单一的「AI 爬虫」；老响应没有新字段时保留旧选择器
+                    if (this.vm.splitAiControls) {
+                      this.aiPolicyPicker('ai_search', 'AI 搜索', '为回答问题而索引内容的爬虫', AI_POLICY_OPTIONS)
+                      this.aiPolicyPicker('ai_user', 'AI 助手与 Agent', '代表用户实时抓取页面的机器人', AI_POLICY_OPTIONS)
+                      this.aiPolicyPicker('ai_training', 'AI 训练', '抓取内容用于训练或微调模型的爬虫', AI_TRAINING_OPTIONS)
+                    } else {
+                      Column({ space: 6 }) {
+                        Text('AI 爬虫')
+                          .fontSize(15)
+                          .fontWeight(FontWeight.Medium)
+                          .fontColor($r('sys.color.font_primary'))
+                          .width('100%')
+                        Text('抓取内容用于训练或问答的机器人')
+                          .fontSize(12)
+                          .fontColor($r('sys.color.font_secondary'))
+                          .width('100%')
+                        Row({ space: 8 }) {
+                          ForEach(AI_BOTS_OPTIONS, (opt: AiBotsOption) => {
+                            Text(opt.label)
+                              .fontSize(13)
+                              .fontWeight(this.vm.aiBotsProtection === opt.value ? FontWeight.Medium : FontWeight.Normal)
+                              .fontColor(this.vm.aiBotsProtection === opt.value
+                                ? Color.White : $r('sys.color.font_secondary'))
+                              .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                              .backgroundColor(this.vm.aiBotsProtection === opt.value
+                                ? BRAND_ORANGE : $r('sys.color.background_secondary'))
+                              .borderRadius(14)
+                              .onClick(() => {
+                                if (this.vm.isSaving) {
+                                  return;
+                                }
+                                const body: BotManagementConfig = { ai_bots_protection: opt.value };
+                                this.vm.setBotField(this.zoneId, body).then((err: string) => {
+                                  this.toast(err);
+                                });
+                              })
+                          }, (opt: AiBotsOption) => opt.value)
+                        }
                         .width('100%')
-                      Text('抓取内容用于训练或问答的机器人')
-                        .fontSize(12)
-                        .fontColor($r('sys.color.font_secondary'))
-                        .width('100%')
-                      Row({ space: 8 }) {
-                        ForEach(AI_BOTS_OPTIONS, (opt: AiBotsOption) => {
-                          Text(opt.label)
-                            .fontSize(13)
-                            .fontWeight(this.vm.aiBotsProtection === opt.value ? FontWeight.Medium : FontWeight.Normal)
-                            .fontColor(this.vm.aiBotsProtection === opt.value
-                              ? Color.White : $r('sys.color.font_secondary'))
-                            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                            .backgroundColor(this.vm.aiBotsProtection === opt.value
-                              ? BRAND_ORANGE : $r('sys.color.background_secondary'))
-                            .borderRadius(14)
-                            .onClick(() => {
-                              if (this.vm.isSaving) {
-                                return;
-                              }
-                              const body: BotManagementConfig = { ai_bots_protection: opt.value };
-                              this.vm.setBotField(this.zoneId, body).then((err: string) => {
-                                this.toast(err);
-                              });
-                            })
-                        }, (opt: AiBotsOption) => opt.value)
+                        .margin({ top: 4 })
                       }
-                      .width('100%')
-                      .margin({ top: 4 })
+                      .padding({ left: 14, right: 14, top: 12, bottom: 12 })
                     }
-                    .padding({ left: 14, right: 14, top: 12, bottom: 12 })
 
                     ToggleRow({
                       title: '链接迷宫',
@@ -495,18 +615,34 @@ export struct ZoneSettingsPage {
                         });
                       },
                     })
-                    ToggleRow({
-                      title: '托管 robots.txt',
-                      subtitle: '由 Cloudflare 维护，置于现有内容之前',
-                      isOn: this.vm.managedRobotsTxt,
-                      isEnabled: !this.vm.isSaving,
-                      onToggle: (on: boolean) => {
-                        const body: BotManagementConfig = { is_robots_txt_managed: on };
-                        this.vm.setBotField(this.zoneId, body).then((err: string) => {
-                          this.toast(err);
-                        });
-                      },
-                    })
+                    // 托管 robots.txt 已并入 Bot Preference Sync：响应带新键就只显示新开关
+                    if (this.vm.hasPreferenceSync) {
+                      ToggleRow({
+                        title: '按偏好生成 robots.txt',
+                        subtitle: '根据以上三项，由 Cloudflare 生成 robots.txt 规则',
+                        isOn: this.vm.preferenceSync,
+                        isEnabled: !this.vm.isSaving,
+                        onToggle: (on: boolean) => {
+                          const body: BotManagementConfig = { bot_preference_sync_enabled: on };
+                          this.vm.setBotField(this.zoneId, body).then((err: string) => {
+                            this.toast(err);
+                          });
+                        },
+                      })
+                    } else {
+                      ToggleRow({
+                        title: '托管 robots.txt',
+                        subtitle: '由 Cloudflare 维护，置于现有内容之前',
+                        isOn: this.vm.managedRobotsTxt,
+                        isEnabled: !this.vm.isSaving,
+                        onToggle: (on: boolean) => {
+                          const body: BotManagementConfig = { is_robots_txt_managed: on };
+                          this.vm.setBotField(this.zoneId, body).then((err: string) => {
+                            this.toast(err);
+                          });
+                        },
+                      })
+                    }
                     ToggleRow({
                       title: '内容使用声明',
                       subtitle: '在 robots.txt 中声明内容的使用许可',
@@ -531,6 +667,32 @@ export struct ZoneSettingsPage {
               Column() {
                 SectionHeader({ title: '按目标清除缓存' })
                 Column({ space: 10 }) {
+                  // 清除 / 标记过期：同一组目标、同一权限，只是端点不同
+                  Row({ space: 6 }) {
+                    ForEach([false, true], (inv: boolean) => {
+                      Text(inv ? '标记过期' : '清除')
+                        .fontSize(13)
+                        .fontWeight(this.invalidateMode === inv ? FontWeight.Medium : FontWeight.Normal)
+                        .fontColor(this.invalidateMode === inv ? Color.White : $r('sys.color.font_secondary'))
+                        .textAlign(TextAlign.Center)
+                        .layoutWeight(1)
+                        .height(32)
+                        .borderRadius(16)
+                        .backgroundColor(this.invalidateMode === inv ? BRAND_ORANGE : $r('sys.color.background_secondary'))
+                        .onClick(() => {
+                          this.invalidateMode = inv;
+                        })
+                    }, (inv: boolean) => inv ? 'invalidate' : 'purge')
+                  }
+                  .width('100%')
+
+                  if (this.invalidateMode) {
+                    Text(INVALIDATE_NOTE)
+                      .fontSize(11)
+                      .fontColor($r('sys.color.font_secondary'))
+                      .width('100%')
+                  }
+
                   Row({ space: 8 }) {
                     ForEach(PURGE_MODES, (spec: PurgeModeSpec, index: number) => {
                       Text(spec.label)
@@ -560,7 +722,7 @@ export struct ZoneSettingsPage {
                     .onChange((value: string) => {
                       this.purgeUrls = value;
                     })
-                  Button(`按${this.purgeMode().label}清除`)
+                  Button(this.invalidateMode ? `按${this.purgeMode().label}标记过期` : `按${this.purgeMode().label}清除`)
                     .width('100%')
                     .height(42)
                     .fontSize(14)

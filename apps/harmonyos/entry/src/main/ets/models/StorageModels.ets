@@ -4,6 +4,33 @@ export interface R2Bucket {
   name: string;
   creation_date?: string;
   location?: string;
+  /// 数据区域：default / eu / us / fedramp / fedramp-high。非 default 的桶，所有桶级请求都要带
+  /// cf-r2-jurisdiction 头，否则 404（列表端点漏报时由 StorageService.listBuckets 补齐）
+  jurisdiction?: string;
+}
+
+/// 区域限制桶的请求头值；default / 缺省返回空串（不带头）
+export function r2JurisdictionHeader(jurisdiction: string | undefined): string {
+  const j = (jurisdiction ?? '').toLowerCase();
+  return j === '' || j === 'default' ? '' : j;
+}
+
+/// 区域徽标：欧盟 / 美国 / FedRAMP；default 不显示
+export function r2JurisdictionLabel(jurisdiction: string | undefined): string {
+  const j = r2JurisdictionHeader(jurisdiction);
+  if (j === '') {
+    return '';
+  }
+  if (j === 'eu') {
+    return '欧盟';
+  }
+  if (j === 'us') {
+    return '美国';
+  }
+  if (j.startsWith('fedramp')) {
+    return 'FedRAMP';
+  }
+  return j.toUpperCase();
 }
 
 /// R2 buckets 端点 result 是 { buckets: [...] } 包裹对象（不是数组），单独解包。

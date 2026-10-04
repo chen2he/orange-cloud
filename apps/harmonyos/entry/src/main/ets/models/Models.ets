@@ -4,6 +4,8 @@
 export interface CFError {
   code: number;
   message: string;
+  /// 2026-08-21 起 403 的错误对象可能带上所需权限的说明页链接
+  documentation_url?: string;
 }
 
 export interface ResultInfo {

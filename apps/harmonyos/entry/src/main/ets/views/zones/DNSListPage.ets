@@ -212,6 +212,8 @@ export struct DNSListPage {
         .value(this.fType)
         .font({ size: 15 })
         .width('100%')
+        // 2026-06-30 起 CF API 不允许修改已有记录的类型：编辑时锁定，仅新建可选（对齐 iOS DNSRecordFormView）
+        .enabled(this.editingId === '')
         .onSelect((index: number) => {
           this.fType = RECORD_TYPES[index];
         })

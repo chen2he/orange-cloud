@@ -43,6 +43,17 @@ export class ZoneService {
     await this.client.postObject<object>(`/zones/${zoneId}/purge_cache`, body);
   }
 
+  /// 全部缓存标记过期（POST /zones/{id}/invalidate_cache，2026-09-28 GA）。
+  /// 请求体、权限（cache.purge）、限流都与 purge_cache 相同；区别是保留缓存，
+  /// 下次请求向源站校验，内容没变（304）就继续用缓存。
+  async invalidateAllCache(zoneId: string): Promise<void> {
+    interface InvalidateBody {
+      purge_everything: boolean;
+    }
+    const body: InvalidateBody = { purge_everything: true };
+    await this.client.postObject<object>(`/zones/${zoneId}/invalidate_cache`, body);
+  }
+
   /// 暂停 / 恢复 Cloudflare 代理（Dashboard 的「Pause Cloudflare on Site」）。
   /// 暂停后 DNS 仍由 Cloudflare 解析，但流量不再经过 Cloudflare——WAF、缓存、
   /// 源站 IP 隐藏一并失效；生效约需 5 分钟。需要 zone.write。

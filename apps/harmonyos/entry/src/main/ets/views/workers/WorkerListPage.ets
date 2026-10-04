@@ -3,10 +3,18 @@ import { promptAction } from '@kit.ArkUI';
 import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // Workers 脚本列表：点入详情，右下角新建（对齐 Android WorkerListScreen）。
+// 列表顶部挂「问题」入口（Workers Observability Issues，账号级），Pro 闸门同历史日志。
 import { WorkerScript } from '../../models/WorkerModels';
-import { Routes, NameParam } from '../../models/Routes';
+import { Routes, NameParam, WorkerIssuesParam } from '../../models/Routes';
 import { WorkerService } from '../../services/WorkerService';
+import { WorkerIssueSummary, WorkerIssuesService } from '../../services/WorkerIssuesService';
+import { issueSummaryLine } from './WorkerIssuesPage';
 import { accountStore } from '../../core/store/AccountStore';
+import { authManager } from '../../core/auth/AuthManager';
+import { Scopes } from '../../core/auth/Scopes';
+import { entitlement, EntitlementStore } from '../../core/purchase/EntitlementStore';
+import { requirePro } from '../paywall/ProGate';
+import { ocSnack } from '../common/Snack';
 import { formatTimeAgo } from '../../core/util/Format';
 import { BRAND_ORANGE, OCEmpty, OCError, OCLoading, ResourceCard } from '../common/Components';
 import { OCSkyBackground } from '../common/OCSky';
@@ -17,8 +25,11 @@ class WorkerListVM {
   @Trace scripts: WorkerScript[] = [];
   @Trace isLoading: boolean = false;
   @Trace error: string = '';
+  /// 「问题」入口副标题里的账号级汇总（仅 Pro 且有可观测性读权限时拉取）
+  @Trace issuesSummary: string = '';
 
   private service: WorkerService = new WorkerService();
+  private issuesService: WorkerIssuesService = new WorkerIssuesService();
 
   async load(): Promise<void> {
     this.isLoading = true;
@@ -28,6 +39,13 @@ class WorkerListVM {
       // 之前 eager 传 accountStore.selectedId 会捕获到空串 → /accounts//workers/scripts 报错。
       await accountStore.loadIfNeeded();
       this.scripts = await this.service.listScripts(accountStore.selectedId);
+      if (entitlement.isPro && authManager.hasScope(Scopes.WORKERS_OBSERVABILITY_READ)) {
+        this.issuesService.summary(accountStore.selectedId, '').then((summary: WorkerIssueSummary) => {
+          this.issuesSummary = issueSummaryLine(summary);
+        }).catch(() => {
+          // 公开测试接口，失败只是不显示汇总
+        });
+      }
     } catch (e) {
       this.error = (e as Error).message ?? '加载失败';
     } finally {
@@ -42,7 +60,23 @@ export struct WorkerListPage {
   @Local refreshing: boolean = false;
   /// 列表排序（默认名称 / 创建日期 / 最近更新，选择持久化）
   @Local sortKey: string = 'name';
+  /// 观察权益：购买后「问题」入口的 Pro 徽标即时消失
+  @Local entitlements: EntitlementStore = entitlement;
   private pathStack: NavPathStack | null = null;
+
+  /// 进账号级「问题」列表：先 Pro 闸门（同历史日志），再看可观测性读权限
+  private openIssues(): void {
+    if (!requirePro(this.pathStack, 'Workers 问题')) {
+      return;
+    }
+    if (!authManager.hasScope(Scopes.WORKERS_OBSERVABILITY_READ)) {
+      ocSnack(this.getUIContext(),
+        '当前授权未包含 Workers 可观测性读取权限（workers-observability.read），可在「设置 → 身份」中升级授权');
+      return;
+    }
+    const param: WorkerIssuesParam = { service: '' };
+    this.pathStack?.pushPathByName(Routes.WORKER_ISSUES, param);
+  }
 
   /// 按当前排序给出展示顺序（名称序 = 接口原顺序）
   private sortedScripts(): WorkerScript[] {
@@ -105,6 +139,18 @@ export struct WorkerListPage {
           Column() {
           Refresh({ refreshing: this.refreshing }) {
             List() {
+              ListItem() {
+                ResourceCard({
+                  symbol: $r('sys.symbol.exclamationmark_triangle'),
+                  title: '问题',
+                  subtitle: this.vm.issuesSummary !== '' ? this.vm.issuesSummary : '未捕获异常、5xx 与错误日志（公开测试）',
+                  badge: this.entitlements.isPro ? '' : 'Pro',
+                  onTap: () => {
+                    this.openIssues();
+                  },
+                })
+              }
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
               ForEach(this.sortedScripts(), (script: WorkerScript) => {
                 ListItem() {
                   ResourceCard({

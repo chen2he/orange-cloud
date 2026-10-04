@@ -10,11 +10,38 @@ const BASE_URL = 'https://api.cloudflare.com/client/v4';
 
 export class ApiError extends Error {
   code: number;
+  /// errors[].documentation_url（2026-08-21 起 403 可能带上），空串 = 无
+  documentationUrl: string;
 
-  constructor(message: string, code?: number) {
+  constructor(message: string, code?: number, documentationUrl?: string) {
     super(message);
     this.code = code ?? 0;
+    this.documentationUrl = documentationUrl ?? '';
   }
+}
+
+/// 错误消息 → 文档链接。各页 VM 只把 error.message 存成字符串交给 OCError，
+/// 这里按消息记下最近一次的 documentation_url，OCError 凭消息即可取回链接，
+/// 不必逐个 VM 改造。条数封顶，避免长期运行无限增长。
+const docUrlByMessage: Map<string, string> = new Map<string, string>();
+const DOC_URL_CACHE_LIMIT = 32;
+
+function rememberDocUrl(message: string, url: string): void {
+  if (message === '' || url === '') {
+    return;
+  }
+  if (docUrlByMessage.size >= DOC_URL_CACHE_LIMIT && !docUrlByMessage.has(message)) {
+    const oldest = docUrlByMessage.keys().next();
+    if (!oldest.done) {
+      docUrlByMessage.delete(oldest.value);
+    }
+  }
+  docUrlByMessage.set(message, url);
+}
+
+/// 取某条 API 错误消息附带的「所需权限」文档链接；没有返回空串
+export function apiErrorDocUrl(message: string): string {
+  return docUrlByMessage.get(message) ?? '';
 }
 
 function firstErrorMessage(errors?: CFError[]): string {
@@ -26,7 +53,18 @@ function firstErrorMessage(errors?: CFError[]): string {
 
 function envelopeError(errors?: CFError[]): ApiError {
   const code = (errors && errors.length > 0) ? errors[0].code : 0;
-  return new ApiError(firstErrorMessage(errors), code);
+  const message = firstErrorMessage(errors);
+  // 优先首条错误的链接，没有再找其它错误项里的
+  let docUrl = '';
+  for (const err of errors ?? []) {
+    const url = err.documentation_url ?? '';
+    if (url !== '') {
+      docUrl = url;
+      break;
+    }
+  }
+  rememberDocUrl(message, docUrl);
+  return new ApiError(message, code, docUrl);
 }
 
 /// multipart 文本 part（KV 写值、Snippet 上传）
@@ -97,6 +135,33 @@ interface ExternalErrorBody {
 }
 
 export class CFApiClient {
+  /// 每个请求都附带的额外请求头（R2 区域限制桶的 cf-r2-jurisdiction 等），默认无
+  private extraHeaders: Record<string, string>;
+
+  constructor(extraHeaders?: Record<string, string>) {
+    this.extraHeaders = extraHeaders ?? {};
+  }
+
+  /// 派生一个附带额外请求头的客户端（不改动共享实例）
+  withHeaders(headers: Record<string, string>): CFApiClient {
+    const merged: Record<string, string> = {};
+    for (const key of Object.keys(this.extraHeaders)) {
+      merged[key] = this.extraHeaders[key];
+    }
+    for (const key of Object.keys(headers)) {
+      merged[key] = headers[key];
+    }
+    return new CFApiClient(merged);
+  }
+
+  /// 基础请求头 + extraHeaders（http 与 rcp 两条发送路径共用）
+  private headersWith(base: Record<string, string>): Record<string, string> {
+    for (const key of Object.keys(this.extraHeaders)) {
+      base[key] = this.extraHeaders[key];
+    }
+    return base;
+  }
+
   /// GET 列表型端点，返回信封内 result 数组
   async getList<T>(path: string, query?: Record<string, string>): Promise<T[]> {
     const envelope = await this.getListEnvelope<T>(path, query);
@@ -188,14 +253,35 @@ export class CFApiClient {
     const token = await authManager.ensureAccessToken();
     const session = rcp.createSession();
     try {
-      const headers: rcp.RequestHeaders = {
+      const headers: rcp.RequestHeaders = this.headersWith({
         'authorization': `Bearer ${token}`,
         'content-type': 'application/json',
-      };
+      } as Record<string, string>);
       const request = new rcp.Request(`${BASE_URL}${path}`, 'PATCH', headers, JSON.stringify(body));
       const response = await session.fetch(request);
       const text = response.toString() ?? '';
       return this.parseObject<T>(this.unwrap({ code: response.statusCode, body: text }));
+    } finally {
+      session.close();
+    }
+  }
+
+  /// PATCH 局部更新、只校验信封 success（回包 result 形态不确定或可能为空的端点，如 Workers 问题改状态）
+  async patchVoid(path: string, body: object): Promise<void> {
+    const token = await authManager.ensureAccessToken();
+    const session = rcp.createSession();
+    try {
+      const headers: rcp.RequestHeaders = this.headersWith({
+        'authorization': `Bearer ${token}`,
+        'content-type': 'application/json',
+      } as Record<string, string>);
+      const request = new rcp.Request(`${BASE_URL}${path}`, 'PATCH', headers, JSON.stringify(body));
+      const response = await session.fetch(request);
+      const text = this.unwrap({ code: response.statusCode, body: response.toString() ?? '' });
+      const envelope = JSON.parse(text) as CFObjectEnvelope<object>;
+      if (!envelope.success) {
+        throw envelopeError(envelope.errors);
+      }
     } finally {
       session.close();
     }
@@ -237,10 +323,10 @@ export class CFApiClient {
     try {
       const response = await session.request(`${BASE_URL}${path}`, {
         method: http.RequestMethod.PUT,
-        header: {
+        header: this.headersWith({
           'Authorization': `Bearer ${token}`,
           'Content-Type': contentType,
-        } as Record<string, string>,
+        } as Record<string, string>),
         extraData: buffer,
         expectDataType: http.HttpDataType.STRING,
         connectTimeout: 15000,
@@ -337,10 +423,10 @@ export class CFApiClient {
     try {
       const response = await session.request(`${BASE_URL}${path}`, {
         method: http.RequestMethod.POST,
-        header: {
+        header: this.headersWith({
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-        } as Record<string, string>,
+        } as Record<string, string>),
         extraData: JSON.stringify(body),
         expectDataType: http.HttpDataType.ARRAY_BUFFER,
         connectTimeout: 15000,
@@ -364,10 +450,10 @@ export class CFApiClient {
     const body = buildMultipartBody(boundary, parts);
     const session = rcp.createSession();
     try {
-      const headers: rcp.RequestHeaders = {
+      const headers: rcp.RequestHeaders = this.headersWith({
         'authorization': `Bearer ${token}`,
         'content-type': `multipart/form-data; boundary=${boundary}`,
-      };
+      } as Record<string, string>);
       const request = new rcp.Request(`${BASE_URL}${path}`, 'PATCH', headers, body);
       const response = await session.fetch(request);
       const text = this.unwrap({ code: response.statusCode, body: response.toString() ?? '' });
@@ -427,10 +513,10 @@ export class CFApiClient {
     try {
       const response = await session.request(requestURL, {
         method: method,
-        header: {
+        header: this.headersWith({
           'Authorization': `Bearer ${token}`,
           'Content-Type': contentType,
-        } as Record<string, string>,
+        } as Record<string, string>),
         extraData: bodyText,
         expectDataType: http.HttpDataType.STRING,
         connectTimeout: 15000,
@@ -453,10 +539,10 @@ export class CFApiClient {
     try {
       const response = await session.request(`${BASE_URL}${path}`, {
         method: method,
-        header: {
+        header: this.headersWith({
           'Authorization': `Bearer ${token}`,
           'Content-Type': `multipart/form-data; boundary=${boundary}`,
-        } as Record<string, string>,
+        } as Record<string, string>),
         extraData: body,
         expectDataType: http.HttpDataType.STRING,
         connectTimeout: 15000,
