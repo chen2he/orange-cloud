@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import jiamin.chen.orangecloud.R
 import jiamin.chen.orangecloud.core.design.SkyEmptyState
 import jiamin.chen.orangecloud.core.design.theme.OcOrange
+import jiamin.chen.orangecloud.data.model.R2Bandwidth
 
 /** 存储各只读列表的通用渲染（权限拦截 / 加载 / 空 / 错误 / 列表）。 */
 @Composable
@@ -224,12 +225,48 @@ fun StorageBadge(text: String) {
     }
 }
 
-/** R2 区域限制徽标文案：欧盟 / 美国 / FedRAMP；默认区域返回 null（不显示）。 */
+/** 数据驻留徽标文案（R2 桶 / KV 命名空间共用）：欧盟 / 美国 / FedRAMP；默认区域返回 null（不显示）。 */
 @Composable
-fun r2JurisdictionLabel(jurisdiction: String?): String? = when (jurisdiction?.trim()?.lowercase()) {
+fun jurisdictionLabel(jurisdiction: String?): String? = when (jurisdiction?.trim()?.lowercase()) {
     null, "", "default" -> null
     "eu" -> stringResource(R.string.r2_jurisdiction_eu)
     "us" -> stringResource(R.string.r2_jurisdiction_us)
     "fedramp", "fedramp-high" -> "FedRAMP"
     else -> jurisdiction.uppercase()
+}
+
+/** 近 30 天 R2 带宽卡：上传 / 下载合计 + 统计口径脚注（不含 < 100 KiB 的传输）。 */
+@Composable
+fun R2BandwidthCard(bandwidth: R2Bandwidth, modifier: Modifier = Modifier) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                stringResource(R.string.r2_bandwidth),
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                BandwidthValue(stringResource(R.string.r2_bandwidth_upload), formatBytes(bandwidth.uploadBytes), Modifier.weight(1f))
+                BandwidthValue(stringResource(R.string.r2_bandwidth_download), formatBytes(bandwidth.downloadBytes), Modifier.weight(1f))
+            }
+            Text(
+                stringResource(R.string.r2_bandwidth_note),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun BandwidthValue(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Text(value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
 }

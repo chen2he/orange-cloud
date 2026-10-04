@@ -140,6 +140,20 @@ class CfApiClient @Inject constructor(
         checkSuccess(executeRaw("PUT", path, emptyList(), payload, JSON_MEDIA_TYPE, headers))
     }
 
+    /**
+     * 任意方法 + JSON body + query，只校验 success。Rulesets 写端点的 ?dry_run=true 校验用：
+     * 校验通过时 result 为 null，不能走 decodeResult。
+     */
+    suspend inline fun <reified B> sendChecked(
+        method: String,
+        path: String,
+        body: B,
+        query: List<Pair<String, String>> = emptyList(),
+    ) {
+        val payload = json.encodeToString(serializer<B>(), body).encodeToByteArray()
+        checkSuccess(executeRaw(method, path, query, payload, JSON_MEDIA_TYPE))
+    }
+
     /** JSON PATCH，只校验 success（secrets-bulk 等写端点 result 可能为 null）。 */
     suspend inline fun <reified B> patchChecked(path: String, body: B) {
         val payload = json.encodeToString(serializer<B>(), body).encodeToByteArray()

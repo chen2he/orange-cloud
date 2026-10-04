@@ -40,6 +40,7 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -58,6 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -70,6 +72,9 @@ import jiamin.chen.orangecloud.R
 import jiamin.chen.orangecloud.core.design.SkyBackground
 import jiamin.chen.orangecloud.core.design.SkyEmptyState
 import jiamin.chen.orangecloud.core.design.SkyHeader
+import jiamin.chen.orangecloud.core.design.RuleValidation
+import jiamin.chen.orangecloud.core.design.RuleValidationResult
+import jiamin.chen.orangecloud.core.design.showApiError
 import jiamin.chen.orangecloud.core.design.onSky
 import jiamin.chen.orangecloud.core.design.rememberSkyPhase
 import jiamin.chen.orangecloud.core.design.theme.OcOrange
@@ -77,6 +82,10 @@ import jiamin.chen.orangecloud.data.model.CacheActionParameters
 import jiamin.chen.orangecloud.data.model.CacheBrowserTTL
 import jiamin.chen.orangecloud.data.model.CacheEdgeTTL
 import jiamin.chen.orangecloud.data.model.CacheRule
+import jiamin.chen.orangecloud.data.model.CacheResponseRule
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 /** TTL 模式（对齐 iOS CacheTTLMode）。 */
 private enum class TtlMode(val raw: String, val labelRes: Int) {
@@ -101,16 +110,23 @@ fun ZoneCacheRulesScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var editing by remember { mutableStateOf<CacheEditTarget?>(null) }
     var ruleToDelete by remember { mutableStateOf<CacheRule?>(null) }
+    var responseRuleToDelete by remember { mutableStateOf<CacheResponseRule?>(null) }
 
     val savedMsg = stringResource(R.string.cache_saved)
     val deletedMsg = stringResource(R.string.cache_deleted)
+    val genericErr = stringResource(R.string.error_generic)
+    val context = LocalContext.current
+
+    // 打开 / 关闭编辑器都清掉上一次的校验结果，避免把旧结论套到新规则上
+    LaunchedEffect(editing) { viewModel.clearValidation() }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 CacheEvent.Saved -> { editing = null; snackbarHostState.showSnackbar(savedMsg) }
                 CacheEvent.Deleted -> snackbarHostState.showSnackbar(deletedMsg)
-                is CacheEvent.Error -> snackbarHostState.showSnackbar(event.message ?: "")
+                is CacheEvent.Error ->
+                    snackbarHostState.showApiError(context, event.message ?: genericErr, event.documentationUrl)
             }
         }
     }
@@ -143,13 +159,23 @@ fun ZoneCacheRulesScreen(
                     state.rules.isEmpty() && state.isLoading ->
                         Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator(color = onSky) }
 
-                    state.rules.isEmpty() ->
+                    state.rules.isEmpty() && state.responseRules.isEmpty() ->
                         SkyEmptyState(Icons.Outlined.Bolt, stringResource(R.string.cache_empty), onSky, stringResource(R.string.common_refresh)) { viewModel.load() }
 
                     else -> LazyColumn(
                         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = if (state.canWrite) 96.dp else 8.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
+                        if (state.rules.isEmpty()) {
+                            item(key = "req-empty") {
+                                Text(
+                                    stringResource(R.string.cache_empty),
+                                    fontSize = 13.sp,
+                                    color = onSky.copy(alpha = 0.7f),
+                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                )
+                            }
+                        }
                         items(state.rules, key = { it.id }) { rule ->
                             CacheRuleRow(
                                 rule = rule,
@@ -160,6 +186,37 @@ fun ZoneCacheRulesScreen(
                                 } else null,
                                 onDelete = { ruleToDelete = rule },
                             )
+                        }
+                        // 缓存响应规则（响应阶段）：只做查看 / 启停 / 删除，编辑请到控制台
+                        if (state.responseAvailable) {
+                            item(key = "resp-header") {
+                                Text(
+                                    stringResource(R.string.cache_response_title),
+                                    color = onSky,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                    modifier = Modifier.padding(start = 4.dp, top = 10.dp),
+                                )
+                            }
+                            if (state.responseRules.isEmpty()) {
+                                item(key = "resp-empty") {
+                                    Text(
+                                        stringResource(R.string.cache_response_empty),
+                                        fontSize = 13.sp,
+                                        color = onSky.copy(alpha = 0.7f),
+                                        modifier = Modifier.padding(horizontal = 4.dp),
+                                    )
+                                }
+                            }
+                            items(state.responseRules, key = { "resp:" + it.id }) { rule ->
+                                CacheResponseRuleRow(
+                                    rule = rule,
+                                    canWrite = state.canWrite,
+                                    toggling = state.togglingResponseRuleId == rule.id,
+                                    onToggle = { viewModel.toggleResponse(rule, it) },
+                                    onDelete = { responseRuleToDelete = rule },
+                                )
+                            }
                         }
                     }
                 }
@@ -187,9 +244,27 @@ fun ZoneCacheRulesScreen(
             CacheRuleForm(
                 target = target,
                 isSaving = state.isSaving,
+                validation = state.validation,
                 onSave = { expr, desc, enabled, params -> viewModel.save(target.rule?.id, expr, desc, enabled, params) },
+                onValidate = { expr, desc, enabled, params -> viewModel.validate(target.rule?.id, expr, desc, enabled, params) },
             )
         }
+    }
+
+    responseRuleToDelete?.let { rule ->
+        AlertDialog(
+            onDismissRequest = { responseRuleToDelete = null },
+            title = { Text(stringResource(R.string.cache_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.cache_delete_confirm_msg)) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.deleteResponse(rule); responseRuleToDelete = null }) {
+                    Text(stringResource(R.string.dns_delete), color = Color(0xFFE5484D))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { responseRuleToDelete = null }) { Text(stringResource(R.string.common_cancel)) }
+            },
+        )
     }
 
     ruleToDelete?.let { rule ->
@@ -269,6 +344,75 @@ private fun CacheRuleRow(
     }
 }
 
+/** 缓存响应规则行：动作参数尽力摘要（认不出的只显示表达式）+ 启停 + 删除。 */
+@Composable
+private fun CacheResponseRuleRow(
+    rule: CacheResponseRule,
+    canWrite: Boolean,
+    toggling: Boolean,
+    onToggle: (Boolean) -> Unit,
+    onDelete: () -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(Modifier.padding(start = 14.dp, top = 14.dp, bottom = 14.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                val summary = responseRuleSummary(rule)
+                if (summary != null || !rule.description.isNullOrBlank()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        summary?.let {
+                            Box(
+                                Modifier
+                                    .background(OcOrange.copy(alpha = 0.16f), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 8.dp, vertical = 3.dp),
+                            ) {
+                                Text(it, color = OcOrange, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                            Spacer(Modifier.width(8.dp))
+                        }
+                        rule.description?.takeIf { it.isNotBlank() }?.let {
+                            Text(it, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+                rule.expression?.let {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        it,
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Switch(checked = rule.enabled ?: false, onCheckedChange = onToggle, enabled = canWrite && !toggling)
+            if (canWrite) {
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.dns_delete), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * action_parameters 尽力摘要：顶层键里取前 3 个，简单值写成 key=value、嵌套对象只写 key。
+ * 形态认不出（非对象 / 空）返回 null，行里只显示表达式。
+ */
+private fun responseRuleSummary(rule: CacheResponseRule): String? {
+    val params = rule.actionParameters as? JsonObject ?: return null
+    if (params.isEmpty()) return null
+    return params.entries.take(3).joinToString(" · ") { (key, value) ->
+        val prim = value as? JsonPrimitive
+        if (prim != null && prim !is JsonNull) "$key=${prim.content}" else key
+    }
+}
+
 @Composable
 private fun cacheSummary(rule: CacheRule): String {
     val p = rule.actionParameters ?: return stringResource(R.string.cache_summary_default)
@@ -281,7 +425,9 @@ private fun cacheSummary(rule: CacheRule): String {
 private fun CacheRuleForm(
     target: CacheEditTarget,
     isSaving: Boolean,
+    validation: RuleValidation?,
     onSave: (expression: String, description: String, enabled: Boolean, params: CacheActionParameters) -> Unit,
+    onValidate: (expression: String, description: String, enabled: Boolean, params: CacheActionParameters) -> Unit,
 ) {
     val rule = target.rule
     var description by rememberSaveable { mutableStateOf(rule?.description.orEmpty()) }
@@ -377,25 +523,34 @@ private fun CacheRuleForm(
             Switch(checked = enabled, onCheckedChange = { enabled = it })
         }
 
+        // 保存与校验发送完全相同的规则体
+        fun buildParams(): CacheActionParameters = if (!eligible) {
+            CacheActionParameters(cache = false)
+        } else {
+            CacheActionParameters(
+                cache = true,
+                edgeTtl = CacheEdgeTTL(
+                    mode = edgeMode.raw,
+                    defaultTtl = edgeTtl.toIntOrNull().takeIf { edgeMode == TtlMode.OVERRIDE_ORIGIN },
+                ),
+                browserTtl = CacheBrowserTTL(
+                    mode = browserMode.raw,
+                    defaultTtl = browserTtl.toIntOrNull().takeIf { browserMode == TtlMode.OVERRIDE_ORIGIN },
+                ),
+            )
+        }
+
+        RuleValidationResult(validation)
+        OutlinedButton(
+            onClick = { onValidate(expression, description, enabled, buildParams()) },
+            enabled = expression.isNotBlank() && !isSaving && validation != RuleValidation.Running,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.rule_validate))
+        }
+
         Button(
-            onClick = {
-                val params = if (!eligible) {
-                    CacheActionParameters(cache = false)
-                } else {
-                    CacheActionParameters(
-                        cache = true,
-                        edgeTtl = CacheEdgeTTL(
-                            mode = edgeMode.raw,
-                            defaultTtl = edgeTtl.toIntOrNull().takeIf { edgeMode == TtlMode.OVERRIDE_ORIGIN },
-                        ),
-                        browserTtl = CacheBrowserTTL(
-                            mode = browserMode.raw,
-                            defaultTtl = browserTtl.toIntOrNull().takeIf { browserMode == TtlMode.OVERRIDE_ORIGIN },
-                        ),
-                    )
-                }
-                onSave(expression, description, enabled, params)
-            },
+            onClick = { onSave(expression, description, enabled, buildParams()) },
             enabled = canSave,
             colors = ButtonDefaults.buttonColors(containerColor = OcOrange, contentColor = Color.White),
             modifier = Modifier.fillMaxWidth(),

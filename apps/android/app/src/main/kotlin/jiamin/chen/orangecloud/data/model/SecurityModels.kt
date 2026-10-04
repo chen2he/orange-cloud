@@ -124,6 +124,21 @@ data class BotManagementUpdate(
     @SerialName("bot_preference_sync_enabled") val botPreferenceSyncEnabled: Boolean? = null,
 )
 
+/**
+ * Precursor 会话级机器人检测（GET/PUT /zones/{id}/precursor）。
+ * 官方 schema 已把这些字段标为 deprecated 且没给替代，故只做模式选择；
+ * enforcement_rules 不建模，原样留着不碰。default_mode：off / min-friction / max-security。
+ */
+@Serializable
+data class PrecursorConfig(
+    @SerialName("default_mode") val defaultMode: String? = null,
+    @SerialName("enforcement_rules") val enforcementRules: JsonElement? = null,
+)
+
+/** PUT 是局部更新：只发 default_mode，不动 enforcement_rules。 */
+@Serializable
+data class PrecursorUpdate(@SerialName("default_mode") val defaultMode: String)
+
 @Serializable
 data class TunnelConnection(
     val id: String? = null,

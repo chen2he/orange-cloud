@@ -107,6 +107,9 @@ fun R2BucketSettingsScreen(
                             }
                         }
 
+                        // 近 30 天带宽（按桶；区域桶按「区域_桶名」查询，best-effort）
+                        state.bandwidth?.let { R2BandwidthCard(it) }
+
                         // 公开访问 r2.dev
                         Card {
                             Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {

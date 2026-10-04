@@ -28,6 +28,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.FilterChip
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
+import jiamin.chen.orangecloud.data.model.FirewallEvent
+import jiamin.chen.orangecloud.data.model.SecurityEvents
+import jiamin.chen.orangecloud.data.model.TopItem
+import jiamin.chen.orangecloud.data.model.TrafficDetails
+import jiamin.chen.orangecloud.data.model.TrafficDimension
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -104,6 +122,9 @@ fun ZoneAnalyticsScreen(
                         ChartCard(stringResource(R.string.analytics_requests), ui.points) { it.requests.toFloat() }
                         ChartCard(stringResource(R.string.analytics_bandwidth), ui.points) { it.bytes.toFloat() }
                         if (ui.countries.isNotEmpty()) CountryBreakdownCard(ui.countries)
+                        // adaptive 明细（同一时间范围、同一 Pro 门槛），与上面的图表互不影响
+                        TrafficDetailsCard(ui.details)
+                        SecurityEventsCard(ui.security)
                     }
                 }
             }
@@ -245,6 +266,187 @@ private fun CountryBreakdownCard(countries: List<jiamin.chen.orangecloud.data.mo
             }
         }
     }
+}
+
+/** 「访问明细」：四个维度切换，各显示前 10。 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TrafficDetailsCard(section: AdaptiveSection<TrafficDetails>) {
+    var dimension by rememberSaveable { mutableStateOf(TrafficDimension.COUNTRY) }
+    AdaptiveCard(stringResource(R.string.an_details), section) { data, clamped ->
+        if (clamped) AdaptiveNote(stringResource(R.string.an_clamped))
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            TrafficDimension.entries.forEach { d ->
+                FilterChip(
+                    selected = dimension == d,
+                    onClick = { dimension = d },
+                    label = { Text(stringResource(dimensionLabel(d)), fontSize = 12.sp) },
+                )
+            }
+        }
+        val items = data.top[dimension].orEmpty()
+        if (items.isEmpty()) {
+            AdaptiveNote(stringResource(R.string.an_no_data))
+        } else {
+            TopList(items) { label ->
+                if (dimension == TrafficDimension.COUNTRY) "${flagEmoji(label)}  $label" else label
+            }
+        }
+    }
+}
+
+/** 「安全事件」：按处置方式 / 按来源计数 + 最近 20 条事件。 */
+@Composable
+private fun SecurityEventsCard(section: AdaptiveSection<SecurityEvents>) {
+    AdaptiveCard(stringResource(R.string.an_security), section) { data, clamped ->
+        if (clamped) AdaptiveNote(stringResource(R.string.an_clamped))
+        if (data.isEmpty) {
+            AdaptiveNote(stringResource(R.string.an_no_data))
+        } else {
+            if (data.byAction.isNotEmpty()) {
+                AdaptiveSubheading(stringResource(R.string.an_by_action))
+                TopList(data.byAction) { actionText(it) }
+            }
+            if (data.bySource.isNotEmpty()) {
+                AdaptiveSubheading(stringResource(R.string.an_by_source))
+                TopList(data.bySource) { it }
+            }
+            if (data.recent.isNotEmpty()) {
+                AdaptiveSubheading(stringResource(R.string.an_recent_events))
+                data.recent.forEach { FirewallEventRow(it) }
+            }
+        }
+    }
+}
+
+/** 明细段外壳：标题 + 加载中 / 不可用说明 / 内容。 */
+@Composable
+private fun <T> AdaptiveCard(
+    title: String,
+    section: AdaptiveSection<T>,
+    content: @Composable (data: T, clamped: Boolean) -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(title, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            when (section) {
+                AdaptiveSection.Loading -> Box(Modifier.fillMaxWidth().padding(vertical = 8.dp), Alignment.Center) {
+                    CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp, color = OcOrange)
+                }
+                AdaptiveSection.Unavailable -> AdaptiveNote(stringResource(R.string.an_unavailable))
+                is AdaptiveSection.Ready -> content(section.data, section.clamped)
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdaptiveNote(text: String) {
+    Text(text, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+@Composable
+private fun AdaptiveSubheading(text: String) {
+    Text(text, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+}
+
+/** 排行列表：取值 + 次数 + 占比条（相对第一名）。 */
+@Composable
+private fun TopList(items: List<TopItem>, labelOf: @Composable (String) -> String) {
+    val max = (items.maxOfOrNull { it.count } ?: 1L).coerceAtLeast(1L)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        items.forEach { item ->
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        labelOf(item.label),
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(formatCount(item.count), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Box(Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(2.dp))) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth(fraction = (item.count.toFloat() / max).coerceIn(0.02f, 1f))
+                            .height(4.dp)
+                            .background(OcOrange, RoundedCornerShape(2.dp)),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 一条安全事件：处置 + 主机/路径，下一行 IP · 国家 · 时间 · Ray ID。 */
+@Composable
+private fun FirewallEventRow(event: FirewallEvent) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            event.action?.let {
+                Box(
+                    Modifier
+                        .background(OcOrange.copy(alpha = 0.16f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 1.dp),
+                ) { Text(actionText(it), color = OcOrange, fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
+                Spacer(Modifier.width(6.dp))
+            }
+            Text(
+                listOfNotNull(event.clientRequestHTTPHost, event.clientRequestPath).joinToString(""),
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        val meta = listOfNotNull(
+            event.clientIP,
+            event.clientCountryName?.takeIf { it.isNotBlank() },
+            event.source,
+            formatEventTime(event.datetime),
+            event.rayName,
+        ).joinToString(" · ")
+        if (meta.isNotEmpty()) {
+            Text(meta, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+private fun dimensionLabel(d: TrafficDimension): Int = when (d) {
+    TrafficDimension.COUNTRY -> R.string.an_dim_country
+    TrafficDimension.STATUS -> R.string.an_dim_status
+    TrafficDimension.PATH -> R.string.an_dim_path
+    TrafficDimension.HOST -> R.string.an_dim_host
+}
+
+/** 防火墙处置方式 → 复用 WAF 动作文案；其余（bypass / connection_close 等）原样显示。 */
+@Composable
+private fun actionText(action: String): String = when (action) {
+    "block" -> stringResource(R.string.waf_action_block)
+    "challenge" -> stringResource(R.string.waf_action_challenge)
+    "managed_challenge" -> stringResource(R.string.waf_action_managed_challenge)
+    "jschallenge", "js_challenge" -> stringResource(R.string.waf_action_js_challenge)
+    "log" -> stringResource(R.string.waf_action_log)
+    "allow", "skip" -> stringResource(R.string.waf_action_allow)
+    else -> action
+}
+
+private val eventTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+
+private fun formatEventTime(iso: String?): String? = iso?.let {
+    runCatching { Instant.parse(it).atZone(ZoneId.systemDefault()).format(eventTimeFormatter) }.getOrNull()
 }
 
 /** 两位国家码 → 国旗 emoji（区域指示符）。非两位字母回退地球。 */

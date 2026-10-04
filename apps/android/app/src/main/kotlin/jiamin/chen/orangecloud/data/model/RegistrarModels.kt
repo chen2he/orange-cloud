@@ -39,3 +39,43 @@ data class RegistrarWorkflowStatus(
     val completed: Boolean? = null,
     val state: String? = null,
 )
+
+// MARK: - 搜索新域名（domain-search 有缓存可能滞后；domain-check 实时向注册局确认）
+// 只做查询，不在 App 内购买：可注册时引导到 Cloudflare 控制台完成注册。
+
+/** domain-search / domain-check 的 result：{ domains: [...] }。 */
+@Serializable
+data class DomainAvailabilityResult(val domains: List<DomainAvailability>? = null)
+
+@Serializable
+data class DomainAvailability(
+    val name: String,
+    val registrable: Boolean? = null,
+    /** standard / premium */
+    val tier: String? = null,
+    /** 不可注册的原因：extension_not_supported_via_api / extension_not_supported / … */
+    val reason: String? = null,
+    val pricing: DomainPricing? = null,
+) {
+    val isPremium: Boolean get() = tier.equals("premium", ignoreCase = true)
+}
+
+/** 价格字段文档里是字符串；按 JsonElement 宽松接住，数字形态也能显示。 */
+@Serializable
+data class DomainPricing(
+    val currency: String? = null,
+    @SerialName("registration_cost") val registrationCost: kotlinx.serialization.json.JsonElement? = null,
+    @SerialName("renewal_cost") val renewalCost: kotlinx.serialization.json.JsonElement? = null,
+) {
+    val registration: String? get() = registrationCost.priceText()
+    val renewal: String? get() = renewalCost.priceText()
+}
+
+private fun kotlinx.serialization.json.JsonElement?.priceText(): String? =
+    (this as? kotlinx.serialization.json.JsonPrimitive)
+        ?.takeIf { it !is kotlinx.serialization.json.JsonNull }
+        ?.content?.takeIf { it.isNotBlank() }
+
+/** POST domain-check 请求体（单次最多 20 个）。 */
+@Serializable
+data class DomainCheckRequest(val domains: List<String>)

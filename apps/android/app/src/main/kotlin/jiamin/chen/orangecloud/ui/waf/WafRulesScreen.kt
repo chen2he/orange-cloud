@@ -65,6 +65,11 @@ import jiamin.chen.orangecloud.R
 import jiamin.chen.orangecloud.core.design.SkyBackground
 import jiamin.chen.orangecloud.core.design.SkyEmptyState
 import jiamin.chen.orangecloud.core.design.SkyHeader
+import jiamin.chen.orangecloud.core.design.RuleValidation
+import jiamin.chen.orangecloud.core.design.RuleValidationResult
+import jiamin.chen.orangecloud.core.design.showApiError
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.platform.LocalContext
 import jiamin.chen.orangecloud.core.design.onSky
 import jiamin.chen.orangecloud.core.design.rememberSkyPhase
 import jiamin.chen.orangecloud.core.design.theme.OcOrange
@@ -97,13 +102,21 @@ fun WafRulesScreen(
     val savedMsg = stringResource(R.string.waf_saved)
     val deletedMsg = stringResource(R.string.waf_deleted)
     val genericErrorMsg = stringResource(R.string.error_generic)
+    val context = LocalContext.current
+
+    // 打开 / 关闭编辑器都清掉上一次的校验结果
+    LaunchedEffect(showForm, editingRule) { viewModel.clearValidation() }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 WafEvent.Saved -> { showForm = false; editingRule = null; snackbarHostState.showSnackbar(savedMsg) }
                 WafEvent.Deleted -> snackbarHostState.showSnackbar(deletedMsg)
-                is WafEvent.Error -> snackbarHostState.showSnackbar(event.message?.takeIf { it.isNotBlank() } ?: genericErrorMsg)
+                is WafEvent.Error -> snackbarHostState.showApiError(
+                    context,
+                    event.message?.takeIf { it.isNotBlank() } ?: genericErrorMsg,
+                    event.documentationUrl,
+                )
             }
         }
     }
@@ -188,7 +201,9 @@ fun WafRulesScreen(
         ) {
             WafRuleForm(
                 isSaving = state.isSaving,
+                validation = state.validation,
                 onSave = { action, expression, name, enabled -> viewModel.addRule(action, expression, name, enabled) },
+                onValidate = { action, expression, name, enabled -> viewModel.validate(null, action, expression, name, enabled) },
             )
         }
     }
@@ -201,8 +216,12 @@ fun WafRulesScreen(
             WafRuleForm(
                 isSaving = state.isSaving,
                 initial = rule,
+                validation = state.validation,
                 onSave = { action, expression, name, enabled ->
                     viewModel.updateRule(rule.id, action, expression, name, enabled)
+                },
+                onValidate = { action, expression, name, enabled ->
+                    viewModel.validate(rule.id, action, expression, name, enabled)
                 },
             )
         }
@@ -294,7 +313,9 @@ private fun WafRuleRow(
 private fun WafRuleForm(
     isSaving: Boolean,
     initial: WafRule? = null,
+    validation: RuleValidation? = null,
     onSave: (action: String, expression: String, name: String, enabled: Boolean) -> Unit,
+    onValidate: (action: String, expression: String, name: String, enabled: Boolean) -> Unit = { _, _, _, _ -> },
 ) {
     var name by rememberSaveable { mutableStateOf(initial?.description.orEmpty()) }
     var expression by rememberSaveable { mutableStateOf(initial?.expression.orEmpty()) }
@@ -371,6 +392,16 @@ private fun WafRuleForm(
             Text(stringResource(R.string.waf_field_enabled), fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.weight(1f))
             Switch(checked = enabled, onCheckedChange = { enabled = it })
+        }
+
+        // 「校验」：dry_run 发与保存相同的请求，结果就地显示（表单会挡住页面的 snackbar）
+        RuleValidationResult(validation)
+        OutlinedButton(
+            onClick = { onValidate(action.value, expression, name, enabled) },
+            enabled = expression.isNotBlank() && !isSaving && validation != RuleValidation.Running,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.rule_validate))
         }
 
         Button(

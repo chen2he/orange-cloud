@@ -17,6 +17,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -132,16 +135,18 @@ fun R2DeleteDialog(
 
 // MARK: - KV 命名空间
 
-/** 创建 KV 命名空间底部表单：仅标题。 */
+/** 创建 KV 命名空间底部表单：标题 + 数据驻留（不限 / 欧盟 / 美国）。 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KVCreateSheet(
     isCreating: Boolean,
     sheetState: SheetState,
-    onCreate: (title: String) -> Unit,
+    /** jurisdiction 为 null = 不限区域（请求体省略该字段）。 */
+    onCreate: (title: String, jurisdiction: String?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var title by remember { mutableStateOf("") }
+    var jurisdiction by remember { mutableStateOf<String?>(null) }
     val canCreate = title.trim().isNotEmpty() && !isCreating
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
@@ -163,8 +168,24 @@ fun KVCreateSheet(
                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                 modifier = Modifier.fillMaxWidth(),
             )
+            // 数据驻留：创建后不可更改；fedramp 不在移动端提供
+            Text(stringResource(R.string.kv_jurisdiction), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            val options = listOf(
+                null to stringResource(R.string.kv_jurisdiction_any),
+                "eu" to stringResource(R.string.r2_jurisdiction_eu),
+                "us" to stringResource(R.string.r2_jurisdiction_us),
+            )
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                options.forEachIndexed { index, (value, label) ->
+                    SegmentedButton(
+                        selected = jurisdiction == value,
+                        onClick = { jurisdiction = value },
+                        shape = SegmentedButtonDefaults.itemShape(index, options.size),
+                    ) { Text(label, fontSize = 13.sp, maxLines = 1) }
+                }
+            }
             Button(
-                onClick = { onCreate(title.trim()) },
+                onClick = { onCreate(title.trim(), jurisdiction) },
                 enabled = canCreate,
                 colors = ButtonDefaults.buttonColors(containerColor = OcOrange, contentColor = Color.White),
                 modifier = Modifier.fillMaxWidth(),

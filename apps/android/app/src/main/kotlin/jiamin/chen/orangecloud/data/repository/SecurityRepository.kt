@@ -50,6 +50,26 @@ class SecurityRepository @Inject constructor(
     suspend fun createRuleset(zoneId: String, rule: WafRuleCreate): WafRuleset =
         api.put("zones/$zoneId/rulesets/phases/http_request_firewall_custom/entrypoint", WafEntrypointUpdate(listOf(rule)))
 
+    /**
+     * 校验（?dry_run=true）：与保存完全相同的请求，只校验不落盘，通过时 result 为 null。
+     * ruleId 非空 → PATCH；rulesetId 非空 → POST 追加；都为空 → PUT entrypoint 建集。
+     */
+    suspend fun validateRule(zoneId: String, rulesetId: String?, ruleId: String?, rule: WafRuleCreate) {
+        val dryRun = listOf("dry_run" to "true")
+        when {
+            ruleId != null && rulesetId != null ->
+                api.sendChecked("PATCH", "zones/$zoneId/rulesets/$rulesetId/rules/$ruleId", rule, dryRun)
+            rulesetId != null ->
+                api.sendChecked("POST", "zones/$zoneId/rulesets/$rulesetId/rules", rule, dryRun)
+            else -> api.sendChecked(
+                "PUT",
+                "zones/$zoneId/rulesets/phases/http_request_firewall_custom/entrypoint",
+                WafEntrypointUpdate(listOf(rule)),
+                dryRun,
+            )
+        }
+    }
+
     /** 删除规则。 */
     suspend fun deleteRule(zoneId: String, rulesetId: String, ruleId: String) =
         api.delete("zones/$zoneId/rulesets/$rulesetId/rules/$ruleId")

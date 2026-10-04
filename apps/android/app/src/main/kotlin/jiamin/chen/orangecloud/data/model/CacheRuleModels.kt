@@ -98,3 +98,25 @@ data class CacheRuleToggle(val enabled: Boolean)
 
 @Serializable
 data class CacheEntrypointUpdate(val rules: List<CacheRuleCreate>)
+
+// MARK: - 缓存响应规则（phase http_response_cache_settings，2026 秋季新增）
+// 与请求阶段的 Cache Rules 同属 cache-settings.*。动作参数形态多样且仍在演进，
+// 这里不做强类型建模：action_parameters 原样保留为 JsonElement，界面尽力摘要，认不出的只显示表达式。
+
+@Serializable
+data class CacheResponseRuleset(
+    val id: String,
+    val name: String? = null,
+    val phase: String? = null,
+    val rules: List<CacheResponseRule>? = null,
+)
+
+@Serializable
+data class CacheResponseRule(
+    val id: String,
+    val expression: String? = null,
+    val description: String? = null,
+    val enabled: Boolean? = null,
+    val action: String? = null,
+    @SerialName("action_parameters") val actionParameters: kotlinx.serialization.json.JsonElement? = null,
+)

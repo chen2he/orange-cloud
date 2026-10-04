@@ -16,6 +16,7 @@ import jiamin.chen.orangecloud.data.model.WorkerRouteInput
 import jiamin.chen.orangecloud.data.model.WorkerSchedule
 import jiamin.chen.orangecloud.data.model.WorkerSchedulesResult
 import jiamin.chen.orangecloud.data.model.WorkerScheduleInput
+import jiamin.chen.orangecloud.data.model.WorkerPreview
 import jiamin.chen.orangecloud.data.model.WorkerScript
 import jiamin.chen.orangecloud.data.model.WorkerSecret
 import jiamin.chen.orangecloud.data.model.WorkerSecretInput
@@ -107,6 +108,13 @@ class WorkerRepository @Inject constructor(
     // MARK: - 部署历史
 
     /** 部署列表（result.deployments，首项为活跃部署）。 */
+    /** 预览（beta，只读）：按部署时间倒序取最近 20 个。 */
+    suspend fun previews(accountId: String, workerName: String): List<WorkerPreview> =
+        api.getList<WorkerPreview>(
+            "accounts/$accountId/workers/workers/$workerName/previews",
+            listOf("per_page" to "20", "order_by" to "deployed_on", "order" to "desc"),
+        ).items
+
     suspend fun listDeployments(accountId: String, scriptName: String): List<WorkerDeployment> =
         api.get<WorkerDeploymentsResult>("accounts/$accountId/workers/scripts/$scriptName/deployments").deployments
 

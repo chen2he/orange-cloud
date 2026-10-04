@@ -29,7 +29,8 @@ object PermissionCatalog {
         PermissionFeature("kv", R.string.perm_kv, R.string.perm_kv_desc, listOf(Scopes.KV_READ), listOf(Scopes.KV_WRITE)),
         PermissionFeature("tunnels", R.string.perm_tunnels, R.string.perm_tunnels_desc, listOf(Scopes.TUNNEL_READ), listOf(Scopes.TUNNEL_WRITE)),
         PermissionFeature("waf", R.string.perm_waf, R.string.perm_waf_desc, listOf(Scopes.WAF_READ), listOf(Scopes.WAF_WRITE)),
-        PermissionFeature("bot_management", R.string.perm_bots, R.string.perm_bots_desc, listOf(Scopes.BOT_MANAGEMENT_READ), listOf(Scopes.BOT_MANAGEMENT_WRITE)),
+        // Precursor 会话级机器人检测与机器人管控同属「AI 与机器人」，随它一起申请（read / write 成对）
+        PermissionFeature("bot_management", R.string.perm_bots, R.string.perm_bots_desc, listOf(Scopes.BOT_MANAGEMENT_READ, Scopes.PRECURSOR_READ), listOf(Scopes.BOT_MANAGEMENT_WRITE, Scopes.PRECURSOR_WRITE)),
         PermissionFeature("health_checks", R.string.perm_healthcheck, R.string.perm_healthcheck_desc, listOf(Scopes.HEALTHCHECK_READ), listOf(Scopes.HEALTHCHECK_WRITE)),
         PermissionFeature("dns_settings", R.string.perm_dns_settings, R.string.perm_dns_settings_desc, listOf(Scopes.ZONE_DNS_SETTINGS_READ), listOf(Scopes.ZONE_DNS_SETTINGS_WRITE)),
         PermissionFeature("registrar", R.string.perm_registrar, R.string.perm_registrar_desc, listOf(Scopes.REGISTRAR_READ), listOf(Scopes.REGISTRAR_ADMIN)),

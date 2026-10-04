@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jiamin.chen.orangecloud.core.auth.AuthRepository
 import jiamin.chen.orangecloud.core.auth.Scopes
+import jiamin.chen.orangecloud.core.design.RuleValidation
+import jiamin.chen.orangecloud.core.network.cfDocumentationUrl
 import jiamin.chen.orangecloud.data.model.WafRule
 import jiamin.chen.orangecloud.data.model.WafRuleCreate
 import jiamin.chen.orangecloud.data.repository.SecurityRepository
@@ -22,7 +24,7 @@ import javax.inject.Inject
 sealed interface WafEvent {
     data object Saved : WafEvent
     data object Deleted : WafEvent
-    data class Error(val message: String?) : WafEvent
+    data class Error(val message: String?, val documentationUrl: String? = null) : WafEvent
 }
 
 data class WafUiState(
@@ -36,6 +38,8 @@ data class WafUiState(
     val canWrite: Boolean = false,
     /** 启停请求在途的规则 id，期间禁用其开关防连点。 */
     val togglingIds: Set<String> = emptySet(),
+    /** 编辑器里「校验」（dry_run）的结果；打开 / 关闭编辑器时清空。 */
+    val validation: RuleValidation? = null,
 )
 
 @HiltViewModel
@@ -99,7 +103,7 @@ class WafRulesViewModel @Inject constructor(
                 _uiState.update { s ->
                     s.copy(rules = s.rules.map { if (it.id == rule.id) it.copy(enabled = rule.enabled) else it })
                 }
-                eventChannel.send(WafEvent.Error(e.message))
+                eventChannel.send(WafEvent.Error(e.message, e.cfDocumentationUrl))
             } finally {
                 _uiState.update { it.copy(togglingIds = it.togglingIds - rule.id) }
             }
@@ -122,7 +126,7 @@ class WafRulesViewModel @Inject constructor(
                 _uiState.update { it.copy(rules = updated.rules.orEmpty(), rulesetId = updated.id) }
                 eventChannel.send(WafEvent.Saved)
             } catch (e: Exception) {
-                eventChannel.send(WafEvent.Error(e.message))
+                eventChannel.send(WafEvent.Error(e.message, e.cfDocumentationUrl))
             } finally {
                 _uiState.update { it.copy(isSaving = false) }
             }
@@ -141,9 +145,34 @@ class WafRulesViewModel @Inject constructor(
                 _uiState.update { it.copy(rules = updated.rules.orEmpty(), rulesetId = updated.id) }
                 eventChannel.send(WafEvent.Saved)
             } catch (e: Exception) {
-                eventChannel.send(WafEvent.Error(e.message))
+                eventChannel.send(WafEvent.Error(e.message, e.cfDocumentationUrl))
             } finally {
                 _uiState.update { it.copy(isSaving = false) }
+            }
+        }
+    }
+
+    fun clearValidation() = _uiState.update { it.copy(validation = null) }
+
+    /**
+     * 校验（dry_run）：ruleId 为空按新建（无规则集时走建集请求），否则按整条 PATCH，
+     * 与保存发完全相同的请求体，只是不落盘。保存流程不受影响。
+     */
+    fun validate(ruleId: String?, action: String, expression: String, description: String, enabled: Boolean) {
+        if (!canWrite || _uiState.value.validation == RuleValidation.Running) return
+        _uiState.update { it.copy(validation = RuleValidation.Running) }
+        viewModelScope.launch {
+            val rule = WafRuleCreate(action, expression.trim(), description.trim().ifBlank { null }, enabled)
+            val result = runCatching {
+                securityRepository.validateRule(zoneId, _uiState.value.rulesetId, ruleId, rule)
+            }
+            _uiState.update {
+                it.copy(
+                    validation = result.fold(
+                        onSuccess = { RuleValidation.Passed },
+                        onFailure = { e -> RuleValidation.Failed(e.message) },
+                    ),
+                )
             }
         }
     }
@@ -157,7 +186,7 @@ class WafRulesViewModel @Inject constructor(
                 _uiState.update { it.copy(rules = it.rules.filterNot { r -> r.id == rule.id }) }
                 eventChannel.send(WafEvent.Deleted)
             } catch (e: Exception) {
-                eventChannel.send(WafEvent.Error(e.message))
+                eventChannel.send(WafEvent.Error(e.message, e.cfDocumentationUrl))
                 load()
             }
         }

@@ -9,6 +9,7 @@ import jiamin.chen.orangecloud.core.auth.Scopes
 import jiamin.chen.orangecloud.core.network.ApiError
 import jiamin.chen.orangecloud.data.model.CreateDnsRecord
 import jiamin.chen.orangecloud.data.model.DnsRecord
+import jiamin.chen.orangecloud.data.model.DnsShadowInfo
 import jiamin.chen.orangecloud.data.repository.DnsRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +25,8 @@ import javax.inject.Inject
 data class DnsListUiState(
     val zoneName: String = "",
     val records: List<DnsRecord> = emptyList(),
+    /** 记录 id → 遮蔽信息（只含被遮蔽 / 遮蔽了别人的记录）。 */
+    val shadow: Map<String, DnsShadowInfo> = emptyMap(),
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     /** 是否授予 dns.write：决定是否展示新建 / 编辑 / 删除入口。 */
@@ -62,10 +65,17 @@ class DnsListViewModel @Inject constructor(
     val events: Flow<DnsEvent> = eventChannel.receiveAsFlow()
 
     val uiState: StateFlow<DnsListUiState> =
-        combine(dnsRepository.observeRecords(zoneId), loading, saving, loadFailed) { records, isLoading, isSaving, failed ->
+        combine(
+            dnsRepository.observeRecords(zoneId),
+            dnsRepository.observeShadow(zoneId),
+            loading,
+            saving,
+            loadFailed,
+        ) { records, shadow, isLoading, isSaving, failed ->
             DnsListUiState(
                 zoneName = zoneName,
                 records = records,
+                shadow = shadow,
                 isLoading = isLoading,
                 isSaving = isSaving,
                 canEdit = canEdit,

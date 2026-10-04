@@ -37,6 +37,7 @@ import jiamin.chen.orangecloud.core.util.launchCustomTab
 import jiamin.chen.orangecloud.ui.dnssettings.DnsSettingsScreen
 import jiamin.chen.orangecloud.ui.managedheaders.ManagedHeadersScreen
 import jiamin.chen.orangecloud.ui.registrar.RegistrarScreen
+import jiamin.chen.orangecloud.ui.registrar.RegistrarSearchScreen
 import jiamin.chen.orangecloud.ui.builds.WorkerBuildsScreen
 import jiamin.chen.orangecloud.ui.tracer.RequestTracerScreen
 import jiamin.chen.orangecloud.ui.urlscanner.URLScannerScreen
@@ -198,6 +199,7 @@ private object Dest {
     const val TUNNELS = "tunnels"
     const val TURNSTILE = "turnstile"
     const val REGISTRAR = "registrar"
+    const val REGISTRAR_SEARCH = "registrar/search"
     const val TRACER = "tracer"
     const val URL_SCANNER = "urlscanner"
     const val TUNNEL_DETAIL_ROUTE = "tunnel/{tunnelId}?tunnelName={tunnelName}"
@@ -502,7 +504,14 @@ private fun MainScaffold(onOpenToolbox: () -> Unit) {
                 RequestTracerScreen(onBack = { navController.popBackStack() })
             }
             composable(Dest.REGISTRAR) {
-                RegistrarScreen(onBack = { navController.popBackStack() })
+                RegistrarScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenSearch = { navController.navigate(Dest.REGISTRAR_SEARCH) },
+                )
+            }
+            // 搜索新域名：与注册商页同门槛（免费），只查询不购买
+            composable(Dest.REGISTRAR_SEARCH) {
+                RegistrarSearchScreen(onBack = { navController.popBackStack() })
             }
             composable(Dest.TUNNELS) {
                 ProGate {

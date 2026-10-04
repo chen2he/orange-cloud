@@ -95,6 +95,7 @@ fun R2BucketListScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val opState by viewModel.opState.collectAsStateWithLifecycle()
+    val bandwidth by viewModel.bandwidth.collectAsStateWithLifecycle()
     val phase = rememberSkyPhase()
     val onSky = phase.onSky
     val snackbarHostState = remember { SnackbarHostState() }
@@ -128,6 +129,10 @@ fun R2BucketListScreen(
                     backDescription = stringResource(R.string.common_back),
                     refreshDescription = stringResource(R.string.common_refresh),
                 )
+                // 账户级近 30 天带宽（best-effort，拿不到就不显示）
+                if (!state.missingScope) {
+                    bandwidth?.let { R2BandwidthCard(it, Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
+                }
                 StorageListBody(state, onSky, Icons.Outlined.Cloud, stringResource(R.string.r2_empty), { viewModel.load() }) { bucket ->
                     StorageRow(
                         Icons.Outlined.Cloud,
@@ -135,7 +140,7 @@ fun R2BucketListScreen(
                         bucket.location,
                         onClick = { onOpenBucket(bucket.name, bucket.jurisdictionOrNull) },
                         onLongClick = if (viewModel.canWrite) ({ toDelete = bucket }) else null,
-                        badge = r2JurisdictionLabel(bucket.jurisdiction),
+                        badge = jurisdictionLabel(bucket.jurisdiction),
                     )
                 }
             }

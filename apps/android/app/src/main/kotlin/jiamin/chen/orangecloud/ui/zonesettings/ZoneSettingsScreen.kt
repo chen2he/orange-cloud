@@ -218,6 +218,29 @@ fun ZoneSettingsScreen(
                             onChange = viewModel::setRobotsLicense,
                         )
                     }
+                    // Precursor 会话级机器人检测：独立的 precursor.* 权限链路（2026 秋季新增 scope）。
+                    // 老授权没有该 scope → 给「需重新登录授权」提示；GET 失败 → 整行隐藏。
+                    if (state.precursorMissingScope) {
+                        NoticeCard(
+                            title = stringResource(R.string.zs_precursor),
+                            message = stringResource(R.string.scope_missing),
+                        )
+                    } else {
+                        state.precursorMode?.let { mode ->
+                            PickerCard(
+                                title = stringResource(R.string.zs_precursor),
+                                subtitle = stringResource(R.string.zs_precursor_desc),
+                                selected = mode,
+                                options = listOf(
+                                    "off" to stringResource(R.string.zs_precursor_off),
+                                    "min-friction" to stringResource(R.string.zs_precursor_min_friction),
+                                    "max-security" to stringResource(R.string.zs_precursor_max_security),
+                                ),
+                                enabled = state.canWritePrecursor,
+                                onChange = viewModel::setPrecursorMode,
+                            )
+                        }
+                    }
                     if (state.missingScope) {
                         Box(Modifier.fillMaxWidth().padding(vertical = 48.dp)) {
                             SkyEmptyState(
@@ -518,6 +541,21 @@ private fun PickerCard(
                     }
                 }
             }
+        }
+    }
+}
+
+/** 只读提示卡：标题 + 说明（如缺新 scope 时的重新授权提示）。 */
+@Composable
+private fun NoticeCard(title: String, message: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+            Text(message, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

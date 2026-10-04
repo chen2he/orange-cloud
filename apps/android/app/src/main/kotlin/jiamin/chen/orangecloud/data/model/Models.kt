@@ -66,9 +66,30 @@ data class DnsRecord(
     val priority: Int? = null,     // MX / SRV 需要
     val comment: String? = null,
     @SerialName("created_on") val createdOn: String? = null,
+    /** 仅在列表请求带 include_shadow_metadata=true 时有遮蔽信息；不入 Room 缓存。 */
+    val meta: DnsRecordMeta? = null,
 ) {
     val isProxied: Boolean get() = proxied ?: false
 }
+
+/**
+ * DNS 记录的 meta 里与「被遮蔽」相关的两项（include_shadow_metadata=true）。
+ * shadowed_by：把该名称委派出去的 NS 记录 id（非空 = Cloudflare 不会响应这条记录）；
+ * shadowed_records_count：NS 委派记录上，被它遮蔽的记录数。其余 meta 字段不建模。
+ */
+@Serializable
+data class DnsRecordMeta(
+    @SerialName("shadowed_by") val shadowedBy: List<kotlinx.serialization.json.JsonElement>? = null,
+    @SerialName("shadowed_records_count") val shadowedRecordsCount: Int? = null,
+)
+
+/** 归一化后的遮蔽信息（按记录 id 存在内存里，随列表刷新更新）。 */
+data class DnsShadowInfo(
+    /** 本记录被 NS 委派遮蔽。 */
+    val shadowed: Boolean,
+    /** 本条（NS）记录遮蔽了多少条记录。 */
+    val shadowsCount: Int,
+)
 
 /**
  * 新建 / 更新 DNS 记录的请求体（与 iOS CreateDNSRecord 对应）。

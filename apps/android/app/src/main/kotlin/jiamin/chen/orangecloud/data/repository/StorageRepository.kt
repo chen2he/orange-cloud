@@ -10,6 +10,9 @@ import jiamin.chen.orangecloud.data.model.D1QueryResult
 import jiamin.chen.orangecloud.data.model.KVCreateRequest
 import jiamin.chen.orangecloud.data.model.KVKey
 import jiamin.chen.orangecloud.data.model.KVNamespace
+import jiamin.chen.orangecloud.data.model.R2Bandwidth
+import jiamin.chen.orangecloud.data.model.R2BandwidthData
+import jiamin.chen.orangecloud.data.model.R2BandwidthVariables
 import jiamin.chen.orangecloud.data.model.R2Bucket
 import jiamin.chen.orangecloud.data.model.R2BucketList
 import jiamin.chen.orangecloud.data.model.R2CreateRequest
@@ -235,6 +238,25 @@ class StorageRepository @Inject constructor(
         return map
     }
 
+    /**
+     * 近 30 天带宽（上传 / 下载字节），r2BandwidthUsageAdaptiveGroups（单次最多 31 天，不含 < 100 KiB 的传输）。
+     * bucketAnalyticsName 为空 = 账户级合计；按桶时须用 [R2Jurisdiction.analyticsBucketName] 的形式（区域桶带前缀）。
+     * account-analytics 常被 authz 挡，调用方 best-effort 接住。
+     */
+    suspend fun r2Bandwidth(accountId: String, bucketAnalyticsName: String? = null): R2Bandwidth {
+        val now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS)
+        val since = now.minus(30, java.time.temporal.ChronoUnit.DAYS)
+        val data = api.graphQL<R2BandwidthData, R2BandwidthVariables>(
+            if (bucketAnalyticsName == null) R2_BANDWIDTH_QUERY else R2_BANDWIDTH_BUCKET_QUERY,
+            R2BandwidthVariables(accountId, since.toString(), now.toString(), bucketAnalyticsName),
+        )
+        val groups = data.viewer?.accounts?.firstOrNull()?.r2BandwidthUsageAdaptiveGroups.orEmpty()
+        return R2Bandwidth(
+            uploadBytes = groups.sumOf { it.sum?.bytesUpload ?: 0L },
+            downloadBytes = groups.sumOf { it.sum?.bytesDownload ?: 0L },
+        )
+    }
+
     /** R2 Class B（读类）操作；其余计入 Class A。 */
     private fun isClassB(actionType: String?): Boolean = actionType in CLASS_B_ACTIONS
 
@@ -243,6 +265,38 @@ class StorageRepository @Inject constructor(
             "GetObject", "HeadObject", "HeadBucket", "UsageSummary",
             "GetBucketEncryption", "GetBucketLocation", "GetBucketCors", "GetBucketLifecycleConfiguration",
         )
+
+        private val R2_BANDWIDTH_QUERY = """
+            query (${'$'}accountTag: string!, ${'$'}since: Time!, ${'$'}until: Time!) {
+              viewer {
+                accounts(filter: { accountTag: ${'$'}accountTag }) {
+                  r2BandwidthUsageAdaptiveGroups(
+                    limit: 100,
+                    filter: { datetime_geq: ${'$'}since, datetime_lt: ${'$'}until }
+                  ) {
+                    sum { bytesUpload bytesDownload }
+                    dimensions { date }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+
+        private val R2_BANDWIDTH_BUCKET_QUERY = """
+            query (${'$'}accountTag: string!, ${'$'}since: Time!, ${'$'}until: Time!, ${'$'}bucketName: string!) {
+              viewer {
+                accounts(filter: { accountTag: ${'$'}accountTag }) {
+                  r2BandwidthUsageAdaptiveGroups(
+                    limit: 100,
+                    filter: { datetime_geq: ${'$'}since, datetime_lt: ${'$'}until, bucketName: ${'$'}bucketName }
+                  ) {
+                    sum { bytesUpload bytesDownload }
+                    dimensions { date }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
 
         private val R2_USAGE_QUERY = """
             query (${'$'}accountTag: string!, ${'$'}monthStart: Time!, ${'$'}todayStart: Time!, ${'$'}now: Time!) {
@@ -322,8 +376,8 @@ class StorageRepository @Inject constructor(
     }
 
     /** 创建 KV 命名空间（workers-kv-storage.write）。POST 返回新建的命名空间。 */
-    suspend fun createNamespace(accountId: String, title: String): KVNamespace =
-        api.post("accounts/$accountId/storage/kv/namespaces", KVCreateRequest(title))
+    suspend fun createNamespace(accountId: String, title: String, jurisdiction: String? = null): KVNamespace =
+        api.post("accounts/$accountId/storage/kv/namespaces", KVCreateRequest(title, jurisdiction?.takeIf { it.isNotBlank() }))
 
     /** 删除 KV 命名空间（workers-kv-storage.write）。连同全部键值，不可恢复。 */
     suspend fun deleteNamespace(accountId: String, namespaceId: String) =

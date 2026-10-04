@@ -3,6 +3,8 @@ package jiamin.chen.orangecloud.data.repository
 import jiamin.chen.orangecloud.core.network.CfApiClient
 import jiamin.chen.orangecloud.data.model.BotManagementConfig
 import jiamin.chen.orangecloud.data.model.BotManagementUpdate
+import jiamin.chen.orangecloud.data.model.PrecursorConfig
+import jiamin.chen.orangecloud.data.model.PrecursorUpdate
 import jiamin.chen.orangecloud.data.model.PurgeFilesRequest
 import jiamin.chen.orangecloud.data.model.PurgeRequest
 import jiamin.chen.orangecloud.data.model.PurgeResult
@@ -39,6 +41,16 @@ class ZoneSettingsRepository @Inject constructor(
      */
     suspend fun setBotManagement(zoneId: String, update: BotManagementUpdate): BotManagementConfig =
         api.put("zones/$zoneId/bot_management", update)
+
+    // MARK: - Precursor 会话级机器人检测（precursor.read/.write）
+
+    suspend fun getPrecursor(zoneId: String): PrecursorConfig =
+        api.get("zones/$zoneId/precursor")
+
+    /** 只改 default_mode（局部更新）。回包形态未写死，只校验 success。 */
+    suspend fun setPrecursorMode(zoneId: String, mode: String) {
+        api.putChecked("zones/$zoneId/precursor", PrecursorUpdate(mode))
+    }
 
     suspend fun purgeAllCache(zoneId: String) {
         api.post<PurgeResult, PurgeRequest>("zones/$zoneId/purge_cache", PurgeRequest(purgeEverything = true))

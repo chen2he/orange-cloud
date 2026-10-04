@@ -103,6 +103,7 @@ fun KVNamespaceListScreen(
                         ns.id,
                         onClick = { onOpenNamespace(ns.id, ns.title) },
                         onLongClick = if (viewModel.canWrite) ({ toDelete = ns }) else null,
+                        badge = jurisdictionLabel(ns.jurisdiction),
                     )
                 }
             }
@@ -124,7 +125,7 @@ fun KVNamespaceListScreen(
         KVCreateSheet(
             isCreating = opState.isCreating,
             sheetState = createSheetState,
-            onCreate = { title -> viewModel.create(title) },
+            onCreate = { title, jurisdiction -> viewModel.create(title, jurisdiction) },
             onDismiss = { showCreate = false },
         )
     }

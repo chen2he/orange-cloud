@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
@@ -50,6 +51,8 @@ import jiamin.chen.orangecloud.data.model.DomainRegistration
 @Composable
 fun RegistrarScreen(
     onBack: () -> Unit,
+    /** 搜索新域名（只查询，注册引导到控制台）。 */
+    onOpenSearch: () -> Unit = {},
     viewModel: RegistrarViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -78,6 +81,17 @@ fun RegistrarScreen(
                     titleSize = 22,
                     backDescription = stringResource(R.string.common_back),
                     refreshDescription = stringResource(R.string.common_refresh),
+                    actions = {
+                        if (!state.missingScope) {
+                            androidx.compose.material3.IconButton(onClick = onOpenSearch) {
+                                androidx.compose.material3.Icon(
+                                    androidx.compose.material.icons.Icons.Outlined.Search,
+                                    contentDescription = stringResource(R.string.reg_search),
+                                    tint = onSky,
+                                )
+                            }
+                        }
+                    },
                 )
                 when {
                     state.missingScope || (state.loaded && state.registrations.isEmpty()) ->

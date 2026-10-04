@@ -5,6 +5,16 @@ import jiamin.chen.orangecloud.data.model.AccountUsage
 import jiamin.chen.orangecloud.data.model.AccountUsageData
 import jiamin.chen.orangecloud.data.model.AccountUsageQueries
 import jiamin.chen.orangecloud.data.model.AccountUsageVariables
+import jiamin.chen.orangecloud.data.model.AdaptiveAnalyticsQueries
+import jiamin.chen.orangecloud.data.model.AdaptiveSettingsData
+import jiamin.chen.orangecloud.data.model.AdaptiveZoneSettings
+import jiamin.chen.orangecloud.data.model.SecurityEvents
+import jiamin.chen.orangecloud.data.model.SecurityEventsData
+import jiamin.chen.orangecloud.data.model.TrafficDetails
+import jiamin.chen.orangecloud.data.model.TrafficDetailsData
+import jiamin.chen.orangecloud.data.model.TrafficDimension
+import jiamin.chen.orangecloud.data.model.ZoneTagVariables
+import jiamin.chen.orangecloud.data.model.toTopItems
 import jiamin.chen.orangecloud.data.model.AnalyticsGroup
 import jiamin.chen.orangecloud.data.model.AnalyticsQueries
 import jiamin.chen.orangecloud.data.model.AnalyticsTimeRange
@@ -116,6 +126,44 @@ class AnalyticsRepository @Inject constructor(
         )
         val zone = data.viewer.zones.firstOrNull() ?: return emptyList()
         return zone.groups.mapNotNull { it.toDataPoint() }
+    }
+
+    // MARK: - adaptive 明细（访问明细 / 安全事件），现有 1h/1d 图表不受影响
+
+    /** zone 上 adaptive 数据集的可用性与时间限制；读不到时调用方按「不收窄」处理。 */
+    suspend fun adaptiveSettings(zoneId: String): AdaptiveZoneSettings? =
+        api.graphQL<AdaptiveSettingsData, ZoneTagVariables>(AdaptiveAnalyticsQueries.SETTINGS, ZoneTagVariables(zoneId))
+            .viewer?.zones?.firstOrNull()?.settings
+
+    /** 访问明细：国家/地区、状态码、路径、主机名各取请求数前 10（httpRequestsAdaptiveGroups）。 */
+    suspend fun trafficDetails(zoneId: String, since: Instant, until: Instant): TrafficDetails {
+        val data = api.graphQL<TrafficDetailsData, ZoneAnalyticsVariables>(
+            AdaptiveAnalyticsQueries.TRAFFIC_DETAILS,
+            ZoneAnalyticsVariables(zoneId, since.toString(), until.toString()),
+        )
+        val zone = data.viewer?.zones?.firstOrNull()
+        return TrafficDetails(
+            mapOf(
+                TrafficDimension.COUNTRY to zone?.byCountry.toTopItems(),
+                TrafficDimension.STATUS to zone?.byStatus.toTopItems(),
+                TrafficDimension.PATH to zone?.byPath.toTopItems(),
+                TrafficDimension.HOST to zone?.byHost.toTopItems(),
+            ),
+        )
+    }
+
+    /** 安全事件：按处置方式 / 来源计数 + 最近 20 条（firewallEventsAdaptive*）。 */
+    suspend fun securityEvents(zoneId: String, since: Instant, until: Instant): SecurityEvents {
+        val data = api.graphQL<SecurityEventsData, ZoneAnalyticsVariables>(
+            AdaptiveAnalyticsQueries.SECURITY_EVENTS,
+            ZoneAnalyticsVariables(zoneId, since.toString(), until.toString()),
+        )
+        val zone = data.viewer?.zones?.firstOrNull()
+        return SecurityEvents(
+            byAction = zone?.byAction.toTopItems(),
+            bySource = zone?.bySource.toTopItems(),
+            recent = zone?.recent.orEmpty(),
+        )
     }
 
     // MARK: - 账号用量（Dashboard 用量模块，对应 iOS AnalyticsService account usage 系列）

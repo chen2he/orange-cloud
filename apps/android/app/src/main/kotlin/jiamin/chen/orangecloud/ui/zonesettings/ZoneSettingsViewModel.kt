@@ -61,6 +61,11 @@ data class ZoneSettingsUiState(
     val botPreferenceSync: Boolean = false,
     val hasBotPreferenceSync: Boolean = false,
     val botConfigLoaded: Boolean = false,
+    /** Precursor 会话级机器人检测的模式；null = 未授权 / 读取失败 → 不显示选择器。 */
+    val precursorMode: String? = null,
+    /** 缺 precursor.read（新 scope，老授权没有）：显示「需重新授权」提示而不是选择器。 */
+    val precursorMissingScope: Boolean = false,
+    val canWritePrecursor: Boolean = false,
     val canWriteBots: Boolean = false,
     val isLoading: Boolean = false,
     val isPurging: Boolean = false,
@@ -109,6 +114,10 @@ class ZoneSettingsViewModel @Inject constructor(
     private val canReadBots = authRepository.hasScope(Scopes.BOT_MANAGEMENT_READ)
     private val canWriteBots = authRepository.hasScope(Scopes.BOT_MANAGEMENT_WRITE)
 
+    // Precursor 是 2026 秋季新增 scope：老用户重新登录授权后才有
+    private val canReadPrecursor = authRepository.hasScope(Scopes.PRECURSOR_READ)
+    private val canWritePrecursor = authRepository.hasScope(Scopes.PRECURSOR_WRITE)
+
     // 暂停走域名本身（zone.read/.write），与 zone-settings.* 那条链路的权限无关：
     // 没有 zone-settings.read 时本页只剩这一个开关，也要照常可用
     private val canPause = authRepository.hasScope(Scopes.ZONE_WRITE)
@@ -122,6 +131,8 @@ class ZoneSettingsViewModel @Inject constructor(
             canPurge = canPurge,
             canPause = canPause,
             canWriteBots = canWriteBots,
+            precursorMissingScope = !canReadPrecursor,
+            canWritePrecursor = canWritePrecursor,
         ),
     )
     val uiState: StateFlow<ZoneSettingsUiState> = _uiState.asStateFlow()
@@ -132,6 +143,7 @@ class ZoneSettingsViewModel @Inject constructor(
     init {
         if (hasRead) load()
         if (canReadBots) loadBotConfig()
+        if (canReadPrecursor) loadPrecursor()
         // 暂停态读缓存（Room 单一可信源），再拉一次网络校准
         viewModelScope.launch {
             zoneRepository.observeZone(zoneId).filterNotNull().collect { zone ->
@@ -270,6 +282,25 @@ class ZoneSettingsViewModel @Inject constructor(
             { copy(managedRobotsTxt = on) },
             BotManagementUpdate(isRobotsTxtManaged = on),
         )
+
+    /** 读 Precursor 模式。GET 失败（套餐 / 区域未开放等）就整行隐藏，不报错。 */
+    fun loadPrecursor() {
+        if (!canReadPrecursor) return
+        viewModelScope.launch {
+            val mode = runCatching { repository.getPrecursor(zoneId).defaultMode }.getOrNull()
+            _uiState.update { it.copy(precursorMode = mode) }
+        }
+    }
+
+    /** 改 Precursor 模式：乐观更新，失败回读纠正。 */
+    fun setPrecursorMode(mode: String) {
+        if (!canWritePrecursor || _uiState.value.precursorMode == null) return
+        _uiState.update { it.copy(precursorMode = mode) }
+        viewModelScope.launch {
+            runCatching { repository.setPrecursorMode(zoneId, mode) }
+                .onFailure { eventChannel.send(ZoneSettingsEvent.Error(it.message, it.cfDocumentationUrl)); loadPrecursor() }
+        }
+    }
 
     fun setAiSearch(mode: String) =
         updateBotConfig({ copy(aiSearch = mode) }, BotManagementUpdate(aiSearch = mode))

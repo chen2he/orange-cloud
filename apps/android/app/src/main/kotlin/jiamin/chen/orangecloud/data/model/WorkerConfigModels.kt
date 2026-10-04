@@ -226,3 +226,20 @@ data class WorkerSchedulesResult(
 /** PUT .../schedules 的单条（整组替换，请求体是裸数组 [{cron}]）。 */
 @Serializable
 data class WorkerScheduleInput(val cron: String)
+
+// MARK: - Worker 预览（Previews，beta，只读）
+
+/**
+ * GET /accounts/{id}/workers/workers/{worker}/previews 的列表项（worker_id 接受 Worker 名）。
+ * 时间为 ISO 8601 字符串；urls 为该预览可访问的地址。
+ */
+@Serializable
+data class WorkerPreview(
+    val id: String,
+    val name: String? = null,
+    val slug: String? = null,
+    val urls: List<String>? = null,
+    @SerialName("created_on") val createdOn: String? = null,
+    @SerialName("updated_on") val updatedOn: String? = null,
+    @SerialName("deployed_on") val deployedOn: String? = null,
+)

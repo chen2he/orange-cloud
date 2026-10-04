@@ -69,7 +69,9 @@ import jiamin.chen.orangecloud.core.design.rememberSkyPhase
 import jiamin.chen.orangecloud.core.design.StatusDot
 import jiamin.chen.orangecloud.core.design.theme.OcOrange
 import jiamin.chen.orangecloud.data.model.AnalyticsTimeRange
+import jiamin.chen.orangecloud.data.model.WorkerPreview
 import jiamin.chen.orangecloud.data.model.WorkerSeriesPoint
+import jiamin.chen.orangecloud.core.util.launchCustomTab
 import jiamin.chen.orangecloud.data.model.WorkerStatusCount
 import java.time.Instant
 import java.time.ZoneId
@@ -97,6 +99,8 @@ fun WorkerDetailScreen(
     val worker by viewModel.worker.collectAsStateWithLifecycle()
     val isDeleting by viewModel.isDeleting.collectAsStateWithLifecycle()
     val activeIssues by viewModel.activeIssues.collectAsStateWithLifecycle()
+    val previews by viewModel.previews.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
     val phase = rememberSkyPhase()
     val onSky = phase.onSky
     val snackbar = remember { androidx.compose.material3.SnackbarHostState() }
@@ -251,6 +255,13 @@ fun WorkerDetailScreen(
                     }
                 }
 
+                // 预览（beta，只读）：列表为空或请求失败时整段不显示
+                if (previews.isNotEmpty()) {
+                    PreviewsCard(previews) { url ->
+                        runCatching { context.launchCustomTab(android.net.Uri.parse(url)) }
+                    }
+                }
+
                 if (viewModel.canWrite) {
                     androidx.compose.material3.OutlinedButton(
                         onClick = { if (isPro) showDelete = true else onShowPaywall() },
@@ -345,6 +356,57 @@ private fun ManageRow(
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** 预览列表：名称、首个 URL（点开）、部署时间。 */
+@Composable
+private fun PreviewsCard(previews: List<WorkerPreview>, onOpenUrl: (String) -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(vertical = 12.dp)) {
+            Text(
+                stringResource(R.string.worker_previews),
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            previews.forEach { preview ->
+                val url = preview.urls?.firstOrNull { it.isNotBlank() }
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .let { if (url != null) it.clickable { onOpenUrl(url) } else it }
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        preview.name?.takeIf { it.isNotBlank() } ?: preview.slug ?: preview.id,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    url?.let {
+                        Text(
+                            it,
+                            fontSize = 12.sp,
+                            color = OcOrange,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        )
+                    }
+                    formatIso(preview.deployedOn)?.let {
+                        Text(
+                            stringResource(R.string.worker_preview_deployed, it),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

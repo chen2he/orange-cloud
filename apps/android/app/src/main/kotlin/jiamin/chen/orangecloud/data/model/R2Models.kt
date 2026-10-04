@@ -93,6 +93,38 @@ data class R2BucketUsage(
     val totalRequests: Int get() = classARequests + classBRequests
 }
 
+// MARK: - R2 带宽（r2BandwidthUsageAdaptiveGroups，近 30 天；不含 < 100 KiB 的传输）
+
+/** 带宽合计（字节）。 */
+data class R2Bandwidth(val uploadBytes: Long, val downloadBytes: Long)
+
+/** bucketName 为 null 时不编码（explicitNulls=false），即账户级合计。 */
+@Serializable
+data class R2BandwidthVariables(
+    val accountTag: String,
+    val since: String,
+    val until: String,
+    val bucketName: String? = null,
+)
+
+@Serializable
+data class R2BandwidthData(val viewer: R2BandwidthViewer? = null)
+
+@Serializable
+data class R2BandwidthViewer(val accounts: List<R2BandwidthAccount> = emptyList())
+
+@Serializable
+data class R2BandwidthAccount(val r2BandwidthUsageAdaptiveGroups: List<R2BandwidthGroup>? = null)
+
+@Serializable
+data class R2BandwidthGroup(val sum: R2BandwidthSum? = null, val dimensions: R2BandwidthDim? = null)
+
+@Serializable
+data class R2BandwidthSum(val bytesUpload: Long = 0, val bytesDownload: Long = 0)
+
+@Serializable
+data class R2BandwidthDim(val date: String? = null)
+
 // MARK: - 每桶用量 GraphQL（account-analytics，免费账号常被 authz 挡，best-effort）
 
 @Serializable

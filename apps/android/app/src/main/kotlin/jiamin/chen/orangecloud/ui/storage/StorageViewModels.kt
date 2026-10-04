@@ -10,6 +10,7 @@ import jiamin.chen.orangecloud.data.model.D1Database
 import jiamin.chen.orangecloud.data.model.D1QueryResult
 import jiamin.chen.orangecloud.data.model.KVKey
 import jiamin.chen.orangecloud.data.model.KVNamespace
+import jiamin.chen.orangecloud.data.model.R2Bandwidth
 import jiamin.chen.orangecloud.data.model.R2Bucket
 import jiamin.chen.orangecloud.data.model.R2Folder
 import jiamin.chen.orangecloud.data.model.R2Jurisdiction
@@ -69,8 +70,20 @@ class R2BucketListViewModel @Inject constructor(
     private val eventChannel = Channel<StorageOpEvent>(Channel.BUFFERED)
     val events: Flow<StorageOpEvent> = eventChannel.receiveAsFlow()
 
+    /** 账户级近 30 天带宽（best-effort：account-analytics 被 authz 挡时为 null，不显示）。 */
+    private val _bandwidth = MutableStateFlow<R2Bandwidth?>(null)
+    val bandwidth: StateFlow<R2Bandwidth?> = _bandwidth.asStateFlow()
+
     override suspend fun fetch(accountId: String) = storageRepository.listBuckets(accountId)
-    init { load() }
+    init {
+        load()
+        viewModelScope.launch {
+            accountStore.ensureLoaded()
+            val accountId = accountStore.selectedAccountId.value ?: return@launch
+            _bandwidth.value = runCatching { storageRepository.r2Bandwidth(accountId) }
+                .getOrElse { if (it is CancellationException) throw it; null }
+        }
+    }
 
     /** 创建桶：成功后插到列表顶端。 */
     fun create(name: String) {
@@ -209,14 +222,16 @@ class KVNamespaceListViewModel @Inject constructor(
     override suspend fun fetch(accountId: String) = storageRepository.listNamespaces(accountId)
     init { load() }
 
-    /** 创建命名空间：成功后插到列表顶端。 */
-    fun create(title: String) {
+    /** 创建命名空间：成功后插到列表顶端。jurisdiction 为 null = 不限区域。 */
+    fun create(title: String, jurisdiction: String? = null) {
         if (!canWrite || _opState.value.isCreating) return
         viewModelScope.launch {
             _opState.update { it.copy(isCreating = true) }
             try {
                 val accountId = accountStore.selectedAccountId.value ?: error("no account")
-                val created = storageRepository.createNamespace(accountId, title)
+                val created = storageRepository.createNamespace(accountId, title, jurisdiction)
+                    // 回包若没带 jurisdiction，用所选值补上，列表徽标立即可见
+                    .let { if (it.jurisdiction == null && jurisdiction != null) it.copy(jurisdiction = jurisdiction) else it }
                 state.update { it.copy(items = listOf(created) + it.items) }
                 eventChannel.send(StorageOpEvent.Created)
             } catch (e: Exception) {

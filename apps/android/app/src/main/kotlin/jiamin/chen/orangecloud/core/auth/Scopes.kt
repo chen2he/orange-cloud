@@ -33,6 +33,13 @@ object Scopes {
     const val BOT_MANAGEMENT_READ = "bot-management.read"
     const val BOT_MANAGEMENT_WRITE = "bot-management.write"
 
+    /**
+     * Precursor 会话级机器人检测（GET/PUT /zones/{id}/precursor），2026 秋季新增。
+     * 归入「AI 与机器人」功能一起申请；老用户需重新登录授权后才有。
+     */
+    const val PRECURSOR_READ = "precursor.read"
+    const val PRECURSOR_WRITE = "precursor.write"
+
     /** 独立健康检查（/zones/{id}/healthchecks）。免费版不可用。 */
     const val HEALTHCHECK_READ = "healthcheck.read"
     const val HEALTHCHECK_WRITE = "healthcheck.write"
@@ -140,6 +147,7 @@ object Scopes {
         TUNNEL_READ, TUNNEL_WRITE,
         WAF_READ, WAF_WRITE,
         BOT_MANAGEMENT_READ, BOT_MANAGEMENT_WRITE,
+        PRECURSOR_READ, PRECURSOR_WRITE,
         HEALTHCHECK_READ, HEALTHCHECK_WRITE,
         ZONE_DNS_SETTINGS_READ, ZONE_DNS_SETTINGS_WRITE,
         REGISTRAR_READ, REGISTRAR_ADMIN,

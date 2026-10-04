@@ -9,6 +9,7 @@ import jiamin.chen.orangecloud.core.auth.Scopes
 import jiamin.chen.orangecloud.data.model.R2Catalog
 import jiamin.chen.orangecloud.data.model.R2CatalogNamespace
 import jiamin.chen.orangecloud.data.repository.R2CatalogRepository
+import jiamin.chen.orangecloud.data.model.R2Bandwidth
 import jiamin.chen.orangecloud.data.model.R2BucketUsage
 import jiamin.chen.orangecloud.data.model.R2CorsRule
 import jiamin.chen.orangecloud.data.model.R2CustomDomain
@@ -41,6 +42,8 @@ data class R2BucketSettingsUiState(
     val corsLoaded: Boolean = false,
     /** 本桶用量（best-effort GraphQL，免费账号常被 authz 挡 → null 不显示）。 */
     val usage: R2BucketUsage? = null,
+    /** 本桶近 30 天带宽（best-effort，同上）。 */
+    val bandwidth: R2Bandwidth? = null,
     val isLoading: Boolean = false,
     val isTogglingPublic: Boolean = false,
     val missingScope: Boolean = false,
@@ -117,9 +120,14 @@ class R2BucketSettingsViewModel @Inject constructor(
             runCatching { storageRepository.corsPolicy(accountId, bucket, jurisdiction) }.getOrNull()?.let { cors ->
                 _uiState.update { it.copy(corsRules = cors.rules.orEmpty(), corsLoaded = true) }
             }
-            // 用量是附加信息：account-analytics 常被 authz 挡，失败即不显示。
-            runCatching { storageRepository.r2UsageByBucket(accountId)[bucket] }.getOrNull()?.let { u ->
+            // 用量 / 带宽是附加信息：account-analytics 常被 authz 挡，失败即不显示。
+            // GraphQL 里区域桶的 bucketName 带「区域_」前缀（eu_xxx），按桶匹配 / 过滤都用这个形式。
+            val analyticsName = R2Jurisdiction.analyticsBucketName(bucket, jurisdiction)
+            runCatching { storageRepository.r2UsageByBucket(accountId)[analyticsName] }.getOrNull()?.let { u ->
                 _uiState.update { it.copy(usage = u) }
+            }
+            runCatching { storageRepository.r2Bandwidth(accountId, analyticsName) }.getOrNull()?.let { bw ->
+                _uiState.update { it.copy(bandwidth = bw) }
             }
             _uiState.update { it.copy(isLoading = false) }
         }

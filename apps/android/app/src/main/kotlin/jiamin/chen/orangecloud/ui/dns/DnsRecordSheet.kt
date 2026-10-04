@@ -52,13 +52,15 @@ import jiamin.chen.orangecloud.data.model.DnsRecord
 fun DnsRecordSheet(
     record: DnsRecord?,
     isSaving: Boolean,
+    /** 该记录被 NS 委派遮蔽（include_shadow_metadata），表单顶部给出提示。 */
+    shadowed: Boolean = false,
     sheetState: SheetState,
     onSave: (CreateDnsRecord) -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
-        DnsRecordForm(record, isSaving, onSave, onDelete)
+        DnsRecordForm(record, shadowed, isSaving, onSave, onDelete)
     }
 }
 
@@ -66,6 +68,7 @@ fun DnsRecordSheet(
 @Composable
 private fun DnsRecordForm(
     record: DnsRecord?,
+    shadowed: Boolean,
     isSaving: Boolean,
     onSave: (CreateDnsRecord) -> Unit,
     onDelete: () -> Unit,
@@ -99,6 +102,15 @@ private fun DnsRecordForm(
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
         )
+
+        // 被 NS 委派遮蔽的记录：改了也不会生效，先说清楚
+        if (shadowed) {
+            Text(
+                stringResource(R.string.dns_shadowed) + " · " + stringResource(R.string.dns_shadowed_detail),
+                fontSize = 13.sp,
+                color = androidx.compose.ui.graphics.Color(0xFFE08600),
+            )
+        }
 
         // 2026-06-30 起 CF API 不再允许修改已有记录的类型：编辑时锁定，仅新建可选（对齐 iOS .disabled(isEditing)）
         FieldDropdown(

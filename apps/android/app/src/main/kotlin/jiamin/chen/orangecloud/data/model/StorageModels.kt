@@ -39,6 +39,14 @@ object R2Jurisdiction {
     /** 桶级请求要带的头；默认区域返回空表。 */
     fun headers(jurisdiction: String?): Map<String, String> =
         normalize(jurisdiction)?.let { mapOf(HEADER to it) } ?: emptyMap()
+
+    /**
+     * R2 GraphQL 数据集（用量 / 带宽）里的 bucketName：区域桶带「区域_」前缀（如 eu_my-bucket、
+     * us_my-bucket，见 developers.cloudflare.com/r2/platform/metrics-analytics），默认区域为裸桶名。
+     * 过滤与按桶匹配都用这个形式。
+     */
+    fun analyticsBucketName(name: String, jurisdiction: String?): String =
+        normalize(jurisdiction)?.let { "${it}_$name" } ?: name
 }
 
 @Serializable
@@ -120,11 +128,16 @@ data class R2CreateRequest(
 data class KVNamespace(
     val id: String,
     val title: String,
+    /** 数据驻留区域（eu / us）；未限定区域时缺省。 */
+    val jurisdiction: String? = null,
 )
 
-/** 创建 KV 命名空间请求体。 */
+/**
+ * 创建 KV 命名空间请求体。jurisdiction 为 null 时不编码（explicitNulls=false）= 不限区域；
+ * 界面只提供 eu / us（fedramp 不在移动端提供）。
+ */
 @Serializable
-data class KVCreateRequest(val title: String)
+data class KVCreateRequest(val title: String, val jurisdiction: String? = null)
 
 @Serializable
 data class KVKey(

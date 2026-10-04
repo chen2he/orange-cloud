@@ -1,6 +1,9 @@
 package jiamin.chen.orangecloud.data.repository
 
 import jiamin.chen.orangecloud.core.network.CfApiClient
+import jiamin.chen.orangecloud.data.model.DomainAvailability
+import jiamin.chen.orangecloud.data.model.DomainAvailabilityResult
+import jiamin.chen.orangecloud.data.model.DomainCheckRequest
 import jiamin.chen.orangecloud.data.model.DomainRegistration
 import jiamin.chen.orangecloud.data.model.RegistrarWorkflowStatus
 import jiamin.chen.orangecloud.data.model.RegistrationUpdate
@@ -34,6 +37,20 @@ class RegistrarRepository @Inject constructor(
         }
         return all
     }
+
+    /** 搜索可注册的新域名（结果可能有延迟，点开后用 [check] 实时确认）。 */
+    suspend fun searchDomains(accountId: String, query: String): List<DomainAvailability> =
+        api.get<DomainAvailabilityResult>(
+            "accounts/$accountId/registrar/domain-search",
+            listOf("q" to query, "limit" to "20"),
+        ).domains.orEmpty()
+
+    /** 实时向注册局确认可注册性与价格（单次最多 20 个）。 */
+    suspend fun checkDomains(accountId: String, names: List<String>): List<DomainAvailability> =
+        api.post<DomainAvailabilityResult, DomainCheckRequest>(
+            "accounts/$accountId/registrar/domain-check",
+            DomainCheckRequest(names.take(20)),
+        ).domains.orEmpty()
 
     /** 设置自动续费。返回异步 workflow 状态，调用方成功后应回读列表。 */
     suspend fun setAutoRenew(accountId: String, domainName: String, enabled: Boolean): RegistrarWorkflowStatus =

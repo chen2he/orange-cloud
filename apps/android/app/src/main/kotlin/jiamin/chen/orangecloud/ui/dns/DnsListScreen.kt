@@ -59,6 +59,7 @@ import jiamin.chen.orangecloud.core.design.SkyBackground
 import jiamin.chen.orangecloud.core.design.SkyPhase
 import jiamin.chen.orangecloud.core.design.theme.OcOrange
 import jiamin.chen.orangecloud.data.model.DnsRecord
+import jiamin.chen.orangecloud.data.model.DnsShadowInfo
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
@@ -76,6 +77,8 @@ fun DnsListScreen(
     var showSheet by remember { mutableStateOf(false) }
     var sheetRecord by remember { mutableStateOf<DnsRecord?>(null) }
     var pendingDelete by remember { mutableStateOf<DnsRecord?>(null) }
+    // 点「已被遮蔽」徽标弹出的说明（只读用户也能看）
+    var shadowInfoFor by remember { mutableStateOf<DnsRecord?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -162,7 +165,12 @@ fun DnsListScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         items(uiState.records, key = { it.id }) { record ->
-                            DnsRow(record, enabled = uiState.canEdit) {
+                            DnsRow(
+                                record,
+                                enabled = uiState.canEdit,
+                                shadow = uiState.shadow[record.id],
+                                onShadowInfo = { shadowInfoFor = record },
+                            ) {
                                 sheetRecord = record
                                 showSheet = true
                             }
@@ -192,11 +200,23 @@ fun DnsListScreen(
     if (showSheet) {
         DnsRecordSheet(
             record = sheetRecord,
+            shadowed = sheetRecord?.let { uiState.shadow[it.id]?.shadowed } == true,
             isSaving = uiState.isSaving,
             sheetState = sheetState,
             onSave = { viewModel.save(sheetRecord?.id, it) },
             onDelete = { sheetRecord?.let { pendingDelete = it } },
             onDismiss = { showSheet = false },
+        )
+    }
+
+    if (shadowInfoFor != null) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { shadowInfoFor = null },
+            title = { Text(stringResource(R.string.dns_shadowed)) },
+            text = { Text(stringResource(R.string.dns_shadowed_detail)) },
+            confirmButton = {
+                TextButton(onClick = { shadowInfoFor = null }) { Text(stringResource(R.string.common_done)) }
+            },
         )
     }
 
@@ -210,7 +230,13 @@ fun DnsListScreen(
 }
 
 @Composable
-private fun DnsRow(record: DnsRecord, enabled: Boolean, onClick: () -> Unit) {
+private fun DnsRow(
+    record: DnsRecord,
+    enabled: Boolean,
+    shadow: DnsShadowInfo?,
+    onShadowInfo: () -> Unit,
+    onClick: () -> Unit,
+) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(16.dp),
@@ -240,6 +266,31 @@ private fun DnsRow(record: DnsRecord, enabled: Boolean, onClick: () -> Unit) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                // 被 NS 委派遮蔽：Cloudflare 不会响应这条记录；点徽标看说明
+                if (shadow?.shadowed == true) {
+                    Spacer(Modifier.height(4.dp))
+                    Box(
+                        Modifier
+                            .background(Color(0xFFE08600).copy(alpha = 0.16f), RoundedCornerShape(6.dp))
+                            .clickable(onClick = onShadowInfo)
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                    ) {
+                        Text(
+                            stringResource(R.string.dns_shadowed),
+                            color = Color(0xFFE08600),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
+                // NS 委派记录：遮蔽了多少条记录
+                if (record.type == "NS" && (shadow?.shadowsCount ?: 0) > 0) {
+                    Text(
+                        stringResource(R.string.dns_shadows_count, shadow?.shadowsCount ?: 0),
+                        fontSize = 12.sp,
+                        color = Color(0xFFE08600),
+                    )
+                }
             }
             ProxyIndicator(record)
         }
