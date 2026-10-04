@@ -2,12 +2,13 @@ import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 在 Cloudflare 注册的域名：到期日、自动续费、转移锁（只读）。
-// 域名注册是花钱操作，移动端不做。
+// 域名注册是花钱操作，移动端不做；「搜索新域名」只查可用性与价格，注册跳控制台。
 import { DomainRegistration, RegistrarService } from '../../services/RegistrarService';
 import { accountStore } from '../../core/store/AccountStore';
 import { Scopes } from '../../core/auth/Scopes';
 import { authManager } from '../../core/auth/AuthManager';
-import { OCLoading, SectionHeader, ToggleRow } from '../common/Components';
+import { OCLoading, ResourceCard, SectionHeader, ToggleRow } from '../common/Components';
+import { Routes } from '../../models/Routes';
 import { OCSkyBackground } from '../common/OCSky';
 import { promptAction } from '@kit.ArkUI';
 
@@ -88,6 +89,25 @@ class RegistrarVM {
 export struct RegistrarPage {
   @Local vm: RegistrarVM = new RegistrarVM();
   private canAdmin: boolean = authManager.hasScope(Scopes.REGISTRAR_ADMIN);
+  private pathStack: NavPathStack | null = null;
+
+  private openSearch(): void {
+    this.pathStack?.pushPathByName(Routes.DOMAIN_SEARCH, null);
+  }
+
+  /// 「搜索新域名」入口卡（有无已注册域名都显示）
+  @Builder
+  searchEntry() {
+    ResourceCard({
+      symbol: $r('sys.symbol.magnifyingglass'),
+      title: '搜索新域名',
+      subtitle: '查看能否注册与价格，注册在控制台完成',
+      onTap: () => {
+        this.openSearch();
+      },
+    })
+      .margin({ left: 16, right: 16, top: 8 })
+  }
 
   private toast(msg: string): void {
     if (msg !== '') {
@@ -107,16 +127,19 @@ export struct RegistrarPage {
           .height('100%')
         } else if (this.vm.items.length === 0) {
           Column() {
+            this.searchEntry()
             Text('此账号下没有在 Cloudflare 注册的域名。')
               .fontSize(14)
               .fontColor($r('sys.color.font_secondary'))
               .textAlign(TextAlign.Center)
+              .width('100%')
+              .padding(32)
           }
           .width('100%')
-          .padding(32)
         } else {
           Scroll() {
             Column() {
+              this.searchEntry()
               SectionHeader({ title: '已注册域名' })
               Column({ space: 10 }) {
                 ForEach(this.vm.items, (item: DomainRegistration) => {
@@ -186,9 +209,26 @@ export struct RegistrarPage {
       // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
       .padding({ top: OC_TITLE_BAR_INSET })
     }
-    .titleBar({ style: { systemMaterialEffect: systemMaterial() }, content: { title: { mainTitle: '域名注册' } } })
+    .titleBar({
+      style: { systemMaterialEffect: systemMaterial() },
+      content: {
+        title: { mainTitle: '域名注册' },
+        menu: {
+          value: [{
+            content: {
+              icon: $r('sys.symbol.magnifyingglass'),
+              label: '搜索新域名',
+              action: () => {
+                this.openSearch();
+              },
+            },
+          }],
+        },
+      },
+    })
     .backgroundColor($r('sys.color.background_secondary'))
-    .onReady(() => {
+    .onReady((context: NavDestinationContext) => {
+      this.pathStack = context.pathStack;
       this.vm.load().catch(() => {
       });
     })

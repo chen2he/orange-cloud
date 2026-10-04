@@ -22,6 +22,7 @@ export class Routes {
   static readonly HEALTH_CHECK = 'healthCheck';
   static readonly DNS_SETTINGS = 'dnsSettings';
   static readonly REGISTRAR = 'registrar';
+  static readonly DOMAIN_SEARCH = 'domainSearch';
   static readonly REQUEST_TRACER = 'requestTracer';
   static readonly WORKER_BUILDS = 'workerBuilds';
   static readonly MANAGED_HEADERS = 'managedHeaders';

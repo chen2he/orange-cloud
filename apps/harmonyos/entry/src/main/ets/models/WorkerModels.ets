@@ -50,6 +50,17 @@ export interface WorkerDeploymentsResult {
   deployments?: WorkerDeployment[];
 }
 
+/// Worker 预览（beta，GET /workers/workers/{name}/previews 元素）。只读展示
+export interface WorkerPreview {
+  id: string;
+  name?: string;
+  slug?: string;
+  urls?: string[];
+  created_on?: string;
+  updated_on?: string;
+  deployed_on?: string;
+}
+
 /// settings 端点里的一条绑定（更新代码时按名转 inherit 回传，密钥值读不到也能保住）
 export interface WorkerBindingInfo {
   name?: string;

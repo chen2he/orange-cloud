@@ -6,6 +6,8 @@ import { HdsNavDestination } from '@kit.UIDesignKit';
 // 列表 / 启停 / 删除 / 新建 / 编辑，编辑器按 phase 给出对应 action 参数表单。
 // 支持 phase：单条重定向（redirect）/ 源站规则（route）/ 配置规则（set_config）/
 // 压缩规则（compress_response）/ 自定义错误（serve_error）。
+// 缓存响应规则（http_response_cache_settings）只读：点行看详情（action_parameters 尽力摘要），
+// 只支持启停与删除，不提供新建 / 编辑。
 // 编辑既有规则时以原 action_parameters 对象为底叠加改动，未建模字段原样保留。
 import {
   CompressionAlgorithm,
@@ -17,6 +19,8 @@ import {
   RulesetPhases,
   RulesetRule,
   RulesetRuleCreate,
+  actionParamsSummary,
+  phaseEditable,
   phaseMeta,
 } from '../../models/RulesetModels';
 import { PhaseRulesParam } from '../../models/Routes';
@@ -139,6 +143,9 @@ export struct PhaseRulesPage {
   @Local editingAssetName: string = '';
   /// 编辑底座：既有规则的 action_parameters 原对象，未建模字段随之保留
   private editBase: RuleActionParameters | null = null;
+  /// 只读 phase 的规则详情
+  @Local viewerVisible: boolean = false;
+  @Local viewRule: RulesetRule | null = null;
 
   private meta(): PhaseMeta {
     return phaseMeta(this.phase);
@@ -390,6 +397,58 @@ export struct PhaseRulesPage {
         },
       },
     });
+  }
+
+  /// 只读 phase 点行：看详情（描述 / 动作 / 表达式 / 参数摘要）
+  @Builder
+  viewerSheet() {
+    Scroll() {
+      Column({ space: 10 }) {
+        Text(this.viewRule?.description ?? '（无描述）')
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor($r('sys.color.font_primary'))
+          .width('100%')
+          .margin({ top: 8 })
+        Text(`${this.viewRule?.enabled === true ? '已启用' : '已停用'} · ${this.viewRule?.action ?? ''}`)
+          .fontSize(12)
+          .fontColor($r('sys.color.font_secondary'))
+          .width('100%')
+        Text('表达式')
+          .fontSize(12)
+          .fontColor($r('sys.color.font_secondary'))
+          .width('100%')
+        Text(this.viewRule?.expression ?? '')
+          .fontSize(12)
+          .fontFamily('monospace')
+          .fontColor($r('sys.color.font_primary'))
+          .textSelectable(TextSelectableMode.SELECTABLE_UNFOCUSABLE)
+          .width('100%')
+        if (actionParamsSummary(this.viewRule?.action_parameters).length > 0) {
+          Text('参数')
+            .fontSize(12)
+            .fontColor($r('sys.color.font_secondary'))
+            .width('100%')
+          ForEach(actionParamsSummary(this.viewRule?.action_parameters), (line: string) => {
+            Text(line)
+              .fontSize(12)
+              .fontFamily('monospace')
+              .fontColor($r('sys.color.font_primary'))
+              .width('100%')
+          }, (line: string) => line)
+        }
+        Text('该类规则请在 Cloudflare 控制台新建与编辑。')
+          .fontSize(11)
+          .fontColor($r('sys.color.font_tertiary'))
+          .width('100%')
+          .margin({ top: 4 })
+      }
+      .padding({ left: 20, right: 20, bottom: 24 })
+      .width('100%')
+    }
+    .scrollBar(BarState.Off)
+    .align(Alignment.Top)
+    .width('100%')
   }
 
   // —— 编辑器分段 Builder ——
@@ -783,6 +842,13 @@ export struct PhaseRulesPage {
     HdsNavDestination() {
       Stack({ alignContent: Alignment.BottomEnd }) {
         OCSkyBackground()
+        // 只读详情挂独立 0 尺寸宿主：同一节点上链多个 bindSheet 只有最后一个生效
+        Stack() {}
+        .width(0)
+        .height(0)
+        .bindSheet(this.viewerVisible, this.viewerSheet(), ocSheet(() => {
+          this.viewerVisible = false;
+        }))
         if (this.vm.isLoading) {
           Column() {
             OCLoading({ text: `正在加载${this.pageTitle}…` })
@@ -806,7 +872,7 @@ export struct PhaseRulesPage {
             OCEmpty({
               symbol: phaseSymbol(this.phase),
               title: `暂无${this.pageTitle}`,
-              subtitle: '点右下角 + 创建第一条规则',
+              subtitle: phaseEditable(this.phase) ? '点右下角 + 创建第一条规则' : '可在 Cloudflare 控制台创建',
             })
           }
           .width('100%')
@@ -819,6 +885,11 @@ export struct PhaseRulesPage {
                   rule: rule,
                   busy: this.vm.isSaving,
                   onEdit: () => {
+                    if (!phaseEditable(this.phase)) {
+                      this.viewRule = rule;
+                      this.viewerVisible = true;
+                      return;
+                    }
                     this.openEditor(rule);
                   },
                   onToggle: (enabled: boolean) => {
@@ -846,16 +917,18 @@ export struct PhaseRulesPage {
           .scrollBar(BarState.Off)
         }
 
-        // 主操作：贴底核心操作栏（替代右下角 FAB，拇指可达）
-        OCAddActionBar({
-          label: '新建规则',
-          onTap: () => {
-            if (!this.guardWrite()) {
-              return;
-            }
-            this.openEditor(null);
-          },
-        })
+        // 主操作：贴底核心操作栏（替代右下角 FAB，拇指可达）；只读 phase 不提供新建
+        if (phaseEditable(this.phase)) {
+          OCAddActionBar({
+            label: '新建规则',
+            onTap: () => {
+              if (!this.guardWrite()) {
+                return;
+              }
+              this.openEditor(null);
+            },
+          })
+        }
       }
       // HDS 标题栏浮在内容上层（供滑动动态模糊），内容要让出标题栏高度
       .padding({ top: OC_TITLE_BAR_INSET })

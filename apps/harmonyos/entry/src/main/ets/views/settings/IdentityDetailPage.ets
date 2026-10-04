@@ -34,17 +34,36 @@ export struct IdentityDetailPage {
     });
   }
 
-  /// 已授读写、但缺上线后新增写权限的模块（如 Workers 读写新增 workers-observability.write）
-  private staleModules(): ScopeModule[] {
-    const granted = this.grantedScopes();
-    return Scopes.modules.filter((module: ScopeModule) => {
-      const hasWrite = module.writeScopes.some((s: string) => granted.includes(s));
-      return hasWrite && module.writeScopes.some((s: string) =>
-        Scopes.addedWriteScopes.includes(s) && !granted.includes(s));
-    });
+  /// 模块里缺的上线后新增权限：已授读 → 新增读；已授写 → 新增写（不擅自把只读升成读写）。
+  /// 例：Workers 读写新增 workers-observability.write；AI 与机器人新增 precursor.read / .write
+  private staleScopesOf(module: ScopeModule, granted: string[]): string[] {
+    const hasRead = module.readScopes.some((s: string) => granted.includes(s));
+    const hasWrite = module.writeScopes.some((s: string) => granted.includes(s));
+    const out: string[] = [];
+    if (hasRead || hasWrite) {
+      for (const s of module.readScopes) {
+        if (Scopes.addedReadScopes.includes(s) && !granted.includes(s)) {
+          out.push(s);
+        }
+      }
+    }
+    if (hasWrite) {
+      for (const s of module.writeScopes) {
+        if (Scopes.addedWriteScopes.includes(s) && !granted.includes(s)) {
+          out.push(s);
+        }
+      }
+    }
+    return out;
   }
 
-  /// 补齐 missingModules 需要并入的 scope 全集（读 + 写），外加 staleModules 缺的新增写权限
+  /// 已授该模块、但缺上线后新增权限的模块
+  private staleModules(): ScopeModule[] {
+    const granted = this.grantedScopes();
+    return Scopes.modules.filter((module: ScopeModule) => this.staleScopesOf(module, granted).length > 0);
+  }
+
+  /// 补齐 missingModules 需要并入的 scope 全集（读 + 写），外加 staleModules 缺的新增权限
   private upgradeScopes(): string[] {
     const scopes: string[] = [];
     for (const module of this.missingModules()) {
@@ -56,8 +75,8 @@ export struct IdentityDetailPage {
     }
     const granted = this.grantedScopes();
     for (const module of this.staleModules()) {
-      for (const s of module.writeScopes) {
-        if (Scopes.addedWriteScopes.includes(s) && !granted.includes(s) && !scopes.includes(s)) {
+      for (const s of this.staleScopesOf(module, granted)) {
+        if (!scopes.includes(s)) {
           scopes.push(s);
         }
       }

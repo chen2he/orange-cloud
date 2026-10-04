@@ -1,10 +1,19 @@
 // Zone 流量分析：GraphQL Analytics API → 归一化数据点（对齐 Android AnalyticsRepository）。
 // 24h 走 httpRequests1hGroups（Time 标量），7d/30d 走 httpRequests1dGroups（Date 标量）。
 import {
+  AccessDetails,
+  AdaptiveGroup,
+  AdaptiveResponse,
+  AdaptiveWindow,
+  AdaptiveZoneNode,
   AnalyticsRange,
   CountryTraffic,
+  DatasetSetting,
   GQLGroup,
   GQLResponse,
+  SecurityEvents,
+  TopItem,
+  ZoneDatasetSettings,
   TrafficDataPoint,
   WorkerMetrics,
   WorkerSeriesPoint,
@@ -89,6 +98,82 @@ const COUNTRY_DAILY_QUERY = `query ($zoneTag: string!, $since: Date!, $until: Da
     httpRequests1dGroups(limit: 1000, filter: { date_geq: $since, date_leq: $until }) {
       sum { countryMap { clientCountryName requests threats bytes } }
     } } } }`;
+
+// ---- 访问明细 / 安全事件（adaptive 数据集，Time 标量，datetime_geq / datetime_lt）----
+
+const ADAPTIVE_SETTINGS_QUERY = `query ($zoneTag: string!) {
+  viewer { zones(filter: { zoneTag: $zoneTag }) {
+    settings {
+      httpRequestsAdaptiveGroups { enabled maxDuration notOlderThan }
+      firewallEventsAdaptive { enabled maxDuration notOlderThan }
+    } } } }`;
+
+const ACCESS_DETAILS_QUERY = `query ($zoneTag: string!, $since: Time!, $until: Time!) {
+  viewer { zones(filter: { zoneTag: $zoneTag }) {
+    byCountry: httpRequestsAdaptiveGroups(limit: 10, filter: { datetime_geq: $since, datetime_lt: $until }, orderBy: [count_DESC]) {
+      count dimensions { clientCountryName } }
+    byStatus: httpRequestsAdaptiveGroups(limit: 10, filter: { datetime_geq: $since, datetime_lt: $until }, orderBy: [count_DESC]) {
+      count dimensions { edgeResponseStatus } }
+    byPath: httpRequestsAdaptiveGroups(limit: 10, filter: { datetime_geq: $since, datetime_lt: $until }, orderBy: [count_DESC]) {
+      count dimensions { clientRequestPath } }
+    byHost: httpRequestsAdaptiveGroups(limit: 10, filter: { datetime_geq: $since, datetime_lt: $until }, orderBy: [count_DESC]) {
+      count dimensions { clientRequestHTTPHost } }
+  } } }`;
+
+const SECURITY_EVENTS_QUERY = `query ($zoneTag: string!, $since: Time!, $until: Time!) {
+  viewer { zones(filter: { zoneTag: $zoneTag }) {
+    byAction: firewallEventsAdaptiveGroups(limit: 20, filter: { datetime_geq: $since, datetime_lt: $until }, orderBy: [count_DESC]) {
+      count dimensions { action } }
+    bySource: firewallEventsAdaptiveGroups(limit: 20, filter: { datetime_geq: $since, datetime_lt: $until }, orderBy: [count_DESC]) {
+      count dimensions { source } }
+    recent: firewallEventsAdaptive(limit: 20, filter: { datetime_geq: $since, datetime_lt: $until }, orderBy: [datetime_DESC]) {
+      datetime action source clientIP clientCountryName clientRequestPath clientRequestHTTPHost rayName }
+  } } }`;
+
+interface ZoneTagVariables {
+  zoneTag: string;
+}
+
+/// 时间窗对应秒数（24h / 7d / 30d）
+function rangeSeconds(range: AnalyticsRange): number {
+  if (range === '24h') {
+    return 24 * 3600;
+  }
+  return (range === '7d' ? 7 : 30) * 24 * 3600;
+}
+
+/// 按数据集上限裁剪窗口：超过 maxDuration / notOlderThan 就缩短到上限（取最近这一段）
+export function adaptiveWindow(range: AnalyticsRange, setting: DatasetSetting | undefined): AdaptiveWindow {
+  const now = new Date();
+  let seconds = rangeSeconds(range);
+  let clamped = 0;
+  const maxDuration = setting?.maxDuration ?? 0;
+  if (maxDuration > 0 && seconds > maxDuration) {
+    seconds = maxDuration;
+    clamped = seconds;
+  }
+  const notOlderThan = setting?.notOlderThan ?? 0;
+  if (notOlderThan > 0 && seconds > notOlderThan) {
+    seconds = notOlderThan;
+    clamped = seconds;
+  }
+  const since = new Date(now.getTime() - seconds * 1000);
+  return {
+    since: isoSeconds(since),
+    until: isoSeconds(now),
+    unavailable: setting?.enabled === false,
+    clampedSeconds: clamped,
+  };
+}
+
+function topItems(groups: AdaptiveGroup[] | undefined, pick: (g: AdaptiveGroup) => string): TopItem[] {
+  const out: TopItem[] = [];
+  for (const g of groups ?? []) {
+    const label = pick(g);
+    out.push({ label: label !== '' ? label : '（空）', count: g.count ?? 0 });
+  }
+  return out;
+}
 
 function hourLabel(datetime: string): string {
   // "2026-07-06T13:00:00Z" → 本地 "HH:00"
@@ -192,6 +277,55 @@ export class AnalyticsService {
     });
     result.sort((a: CountryTraffic, b: CountryTraffic) => b.requests - a.requests);
     return result;
+  }
+
+  /// adaptive 查询：有错误且对应别名一个都没回数据才算失败（部分 authz 时照用已有字段）
+  private async runAdaptive(query: string, variables: object, aliases: string[]): Promise<AdaptiveZoneNode> {
+    const text = await this.client.graphql(query, variables);
+    const response = JSON.parse(text) as AdaptiveResponse;
+    const zones = response.data?.viewer?.zones ?? [];
+    const node: AdaptiveZoneNode = zones.length > 0 ? zones[0] : {};
+    if (response.errors && response.errors.length > 0) {
+      const record = JSON.parse(JSON.stringify(node)) as Record<string, Object>;
+      const hasAny = aliases.some((alias: string) => record[alias] !== undefined && record[alias] !== null);
+      if (!hasAny) {
+        throw new ApiError(response.errors[0].message);
+      }
+    }
+    return node;
+  }
+
+  /// 数据集可用性与查询上限；字段不可用时返回 null，由调用方直接按原窗口查询
+  async adaptiveSettings(zoneId: string): Promise<ZoneDatasetSettings | null> {
+    const variables: ZoneTagVariables = { zoneTag: zoneId };
+    const node = await this.runAdaptive(ADAPTIVE_SETTINGS_QUERY, variables, ['settings']);
+    return node.settings ?? null;
+  }
+
+  /// 访问明细：国家/地区、状态码、路径、主机名各 Top 10（按请求数）
+  async accessDetails(zoneId: string, win: AdaptiveWindow): Promise<AccessDetails> {
+    const variables: GQLVariables = { zoneTag: zoneId, since: win.since, until: win.until };
+    const node = await this.runAdaptive(ACCESS_DETAILS_QUERY, variables, ['byCountry', 'byStatus', 'byPath', 'byHost']);
+    return {
+      country: topItems(node.byCountry, (g: AdaptiveGroup) => g.dimensions?.clientCountryName ?? ''),
+      status: topItems(node.byStatus, (g: AdaptiveGroup) => {
+        const code = g.dimensions?.edgeResponseStatus;
+        return code !== undefined && code !== null ? String(code) : '';
+      }),
+      path: topItems(node.byPath, (g: AdaptiveGroup) => g.dimensions?.clientRequestPath ?? ''),
+      host: topItems(node.byHost, (g: AdaptiveGroup) => g.dimensions?.clientRequestHTTPHost ?? ''),
+    };
+  }
+
+  /// 安全事件：按处置方式 / 按来源计数 + 最近 20 条
+  async securityEvents(zoneId: string, win: AdaptiveWindow): Promise<SecurityEvents> {
+    const variables: GQLVariables = { zoneTag: zoneId, since: win.since, until: win.until };
+    const node = await this.runAdaptive(SECURITY_EVENTS_QUERY, variables, ['byAction', 'bySource', 'recent']);
+    return {
+      byAction: topItems(node.byAction, (g: AdaptiveGroup) => g.dimensions?.action ?? ''),
+      bySource: topItems(node.bySource, (g: AdaptiveGroup) => g.dimensions?.source ?? ''),
+      recent: node.recent ?? [],
+    };
   }
 
   /// Worker 指标摘要（Worker 详情页用）

@@ -355,11 +355,16 @@ export class StorageService {
     } as Record<string, string>);
   }
 
-  createNamespace(accountId: string, title: string): Promise<KVNamespace> {
+  /// 新建命名空间。jurisdiction 为 eu / us 时指定数据驻留，空串 = 不限（不带该字段）
+  createNamespace(accountId: string, title: string, jurisdiction: string): Promise<KVNamespace> {
     interface NsCreate {
       title: string;
+      jurisdiction?: string;
     }
     const body: NsCreate = { title: title };
+    if (jurisdiction !== '') {
+      body.jurisdiction = jurisdiction;
+    }
     return this.client.postObject<KVNamespace>(`/accounts/${accountId}/storage/kv/namespaces`, body);
   }
 

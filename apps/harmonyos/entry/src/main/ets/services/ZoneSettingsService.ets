@@ -38,6 +38,19 @@ export interface BotManagementConfig {
   bot_preference_sync_enabled?: boolean;
 }
 
+/**
+ * Precursor 会话级机器人检测（GET/PUT /zones/{id}/precursor，precursor.read / .write，全套餐）。
+ * schema 已把这些字段标为 deprecated 且没给替代，只做默认模式选择器；enforcement_rules 不碰。
+ * PUT 是局部更新，只发 default_mode。
+ */
+export interface PrecursorConfig {
+  default_mode?: string;            // off / min-friction / max-security
+}
+
+interface PrecursorModeBody {
+  default_mode: string;
+}
+
 interface PurgeFilesBody {
   files: string[];
 }
@@ -86,6 +99,17 @@ export class ZoneSettingsService {
   /// 写机器人管控。PUT 合并语义，body 只带要改的那个键。
   setBotManagement(zoneId: string, body: BotManagementConfig): Promise<BotManagementConfig> {
     return this.client.putObject<BotManagementConfig>(`/zones/${zoneId}/bot_management`, body);
+  }
+
+  /// 读 Precursor 配置（失败由调用方整行隐藏）
+  getPrecursor(zoneId: string): Promise<PrecursorConfig> {
+    return this.client.getObject<PrecursorConfig>(`/zones/${zoneId}/precursor`);
+  }
+
+  /// 改默认模式（只带 default_mode）
+  setPrecursorMode(zoneId: string, mode: string): Promise<PrecursorConfig> {
+    const body: PrecursorModeBody = { default_mode: mode };
+    return this.client.putObject<PrecursorConfig>(`/zones/${zoneId}/precursor`, body);
   }
 
   /// 缓存操作端点：invalidate=false 走 purge_cache（删除），true 走 invalidate_cache（标记过期）。

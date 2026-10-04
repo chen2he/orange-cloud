@@ -7,6 +7,7 @@ import {
   WorkerCustomDomain,
   WorkerDeployment,
   WorkerDeploymentsResult,
+  WorkerPreview,
   WorkerRoute,
   WorkerSchedule,
   WorkerScript,
@@ -181,6 +182,16 @@ export class WorkerService {
 
   listScripts(accountId: string): Promise<WorkerScript[]> {
     return this.client.getList<WorkerScript>(`/accounts/${accountId}/workers/scripts`);
+  }
+
+  /// Worker 预览（beta）：最近部署的 20 个，worker_id 位置可直接传脚本名
+  previews(accountId: string, scriptName: string): Promise<WorkerPreview[]> {
+    return this.client.getList<WorkerPreview>(
+      `/accounts/${accountId}/workers/workers/${encodeURIComponent(scriptName)}/previews`, {
+        'per_page': '20',
+        'order_by': 'deployed_on',
+        'order': 'desc',
+      } as Record<string, string>);
   }
 
   /// 取单个脚本的元信息。Workers 没有「单脚本 metadata」端点

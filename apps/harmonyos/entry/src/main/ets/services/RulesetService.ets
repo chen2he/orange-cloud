@@ -56,6 +56,21 @@ export class RulesetService {
     return this.client.delete(`/zones/${zoneId}/rulesets/${rulesetId}/rules/${ruleId}`);
   }
 
+  /// 规则校验（?dry_run=true）：发与保存完全相同的请求，只校验不落库，成功时 result 为 null。
+  /// 编辑 → PATCH 规则；新建 → POST 到规则集；还没有规则集 → PUT entrypoint
+  async validateRule(zoneId: string, phase: string, rulesetId: string, ruleId: string,
+    rule: RulesetRuleCreate): Promise<void> {
+    if (ruleId !== '' && rulesetId !== '') {
+      await this.client.patchVoid(`/zones/${zoneId}/rulesets/${rulesetId}/rules/${ruleId}?dry_run=true`, rule);
+    } else if (rulesetId !== '') {
+      await this.client.postVoid(`/zones/${zoneId}/rulesets/${rulesetId}/rules?dry_run=true`, rule);
+    } else {
+      const body: EntrypointUpdate = { rules: [rule] };
+      await this.client.putRaw(`/zones/${zoneId}/rulesets/phases/${phase}/entrypoint?dry_run=true`,
+        JSON.stringify(body), 'application/json');
+    }
+  }
+
   // —— Page Rules（传统 REST，仅列表 / 启停 / 删除）——
 
   listPageRules(zoneId: string): Promise<PageRule[]> {
@@ -90,6 +105,7 @@ export class RulesetVM {
   @Trace isSaving: boolean = false;
   @Trace error: string = '';
   @Trace saveError: string = '';
+  @Trace isValidating: boolean = false;
 
   private service: RulesetService = new RulesetService();
   private phase: string;
@@ -142,6 +158,19 @@ export class RulesetVM {
       return false;
     } finally {
       this.isSaving = false;
+    }
+  }
+
+  /// 校验（dry_run）：返回 '' = 通过，否则为 API 错误消息。不改动列表与保存流程
+  async validate(zoneId: string, ruleId: string, rule: RulesetRuleCreate): Promise<string> {
+    this.isValidating = true;
+    try {
+      await this.service.validateRule(zoneId, this.phase, this.ruleset?.id ?? '', ruleId, rule);
+      return '';
+    } catch (e) {
+      return (e as Error).message ?? '校验失败';
+    } finally {
+      this.isValidating = false;
     }
   }
 

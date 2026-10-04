@@ -174,3 +174,99 @@ export function workerStatusColor(status: string): string {
   }
   return '#DC2626';
 }
+
+// ---- 访问明细 / 安全事件（adaptive 数据集，2026-10-02 起 Free/Pro 保留 ≥31 天、可查 30 天）----
+
+/// adaptive 分组的维度（各别名按需取一个）
+export interface AdaptiveDimensions {
+  clientCountryName?: string;
+  edgeResponseStatus?: number;
+  clientRequestPath?: string;
+  clientRequestHTTPHost?: string;
+  action?: string;
+  source?: string;
+}
+
+export interface AdaptiveGroup {
+  count?: number;
+  dimensions?: AdaptiveDimensions;
+}
+
+/// firewallEventsAdaptive 单条事件
+export interface FirewallEventRow {
+  datetime?: string;
+  action?: string;
+  source?: string;
+  clientIP?: string;
+  clientCountryName?: string;
+  clientRequestPath?: string;
+  clientRequestHTTPHost?: string;
+  rayName?: string;
+}
+
+/// 数据集可用性与查询上限（maxDuration / notOlderThan 单位秒）
+export interface DatasetSetting {
+  enabled?: boolean;
+  maxDuration?: number;
+  notOlderThan?: number;
+}
+
+export interface ZoneDatasetSettings {
+  httpRequestsAdaptiveGroups?: DatasetSetting;
+  firewallEventsAdaptive?: DatasetSetting;
+}
+
+export interface AdaptiveZoneNode {
+  settings?: ZoneDatasetSettings;
+  byCountry?: AdaptiveGroup[];
+  byStatus?: AdaptiveGroup[];
+  byPath?: AdaptiveGroup[];
+  byHost?: AdaptiveGroup[];
+  byAction?: AdaptiveGroup[];
+  bySource?: AdaptiveGroup[];
+  recent?: FirewallEventRow[];
+}
+
+export interface AdaptiveViewer {
+  zones?: AdaptiveZoneNode[];
+}
+
+export interface AdaptiveData {
+  viewer?: AdaptiveViewer;
+}
+
+export interface AdaptiveResponse {
+  data?: AdaptiveData;
+  errors?: GQLError[];
+}
+
+/// Top N 的一项（标签 + 次数）
+export interface TopItem {
+  label: string;
+  count: number;
+}
+
+/// 访问明细：四个维度各自 Top 10
+export interface AccessDetails {
+  country: TopItem[];
+  status: TopItem[];
+  path: TopItem[];
+  host: TopItem[];
+}
+
+/// 安全事件：按处置方式 / 按来源计数 + 最近 20 条
+export interface SecurityEvents {
+  byAction: TopItem[];
+  bySource: TopItem[];
+  recent: FirewallEventRow[];
+}
+
+/// 按数据集上限裁剪后的查询窗口
+export interface AdaptiveWindow {
+  since: string;
+  until: string;
+  /// 数据集停用（enabled=false）
+  unavailable: boolean;
+  /// 被裁剪后的实际秒数；0 = 未裁剪
+  clampedSeconds: number;
+}

@@ -1,6 +1,7 @@
 import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 流量分析：24h/7d/30d 切换 + 汇总卡 + 请求柱状图 + 国家/地区排行（对齐 Android ZoneAnalyticsScreen）。
+// 下方另挂「访问明细」「安全事件」（adaptive 数据集，见 ZoneAdaptiveSections），时间窗跟随同一选择器。
 import { AnalyticsRange, CountryTraffic, TrafficDataPoint } from '../../models/AnalyticsModels';
 import { ZoneRouteParam } from '../../models/Routes';
 import { AnalyticsService } from '../../services/AnalyticsService';
@@ -15,6 +16,7 @@ import { MapComponent } from '@hms.core.map.MapComponent';
 import { map, mapCommon } from '@kit.MapKit';
 import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
 import { OCSkyBackground } from '../common/OCSky';
+import { ZoneAdaptiveSections } from './ZoneAdaptiveSections';
 
 const RANGES: AnalyticsRange[] = ['24h', '7d', '30d'];
 
@@ -541,6 +543,11 @@ export struct ZoneAnalyticsSection {
           }
           .width('100%')
         }
+      }
+
+      // 访问明细 / 安全事件：主图出错（多半无 analytics 权限）时不再追加查询
+      if (this.vm.error === '' && !(this.vm.isLoading && this.vm.points.length === 0)) {
+        ZoneAdaptiveSections({ zoneId: this.zoneId, range: this.range })
       }
     }
     .width('100%')

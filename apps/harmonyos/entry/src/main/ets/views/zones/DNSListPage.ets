@@ -4,7 +4,7 @@ import { HdsListItem } from '@kit.UIDesignKit';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // DNS 记录列表（NavDestination）：读 + 新建 / 编辑 / 侧滑删除
-import { DNSRecord, DNSRecordPayload } from '../../models/Models';
+import { DNSRecord, DNSRecordPayload, dnsRecordShadowed, dnsShadowedCount } from '../../models/Models';
 import { ZoneRouteParam } from '../../models/Routes';
 import { DNSListViewModel } from '../../viewmodels/DNSListViewModel';
 import { OCLayout } from '../common/Daybreak';
@@ -13,6 +13,9 @@ import { ocSheet } from '../common/Sheets';
 import { OCSkyBackground } from '../common/OCSky';
 
 const RECORD_TYPES: string[] = ['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'NS', 'SRV', 'CAA', 'PTR'];
+/// 被遮蔽记录的说明（编辑表单顶部展示）
+const SHADOWED_NOTE: string = '该名称已通过 NS 记录委派给其他域名服务器，Cloudflare 不会响应这条记录。';
+const SHADOW_COLOR: string = '#EA580C';
 const TTL_PRESETS: number[] = [1, 60, 300, 1800, 3600, 86400];
 /// 可开启 Cloudflare 代理的记录类型
 const PROXYABLE_TYPES: string[] = ['A', 'AAAA', 'CNAME'];
@@ -66,6 +69,8 @@ export struct DNSListPage {
   // ---- 编辑表单状态（editingId 为空 = 新建）----
   @Local editorVisible: boolean = false;
   @Local editingId: string = '';
+  /// 正在编辑的记录是否被 NS 委派遮蔽（表单顶部给说明）
+  @Local editingShadowed: boolean = false;
   @Local fType: string = 'A';
   @Local fName: string = '';
   @Local fContent: string = '';
@@ -81,6 +86,7 @@ export struct DNSListPage {
     this.vm.saveError = '';
     if (record) {
       this.editingId = record.id;
+      this.editingShadowed = dnsRecordShadowed(record);
       this.fType = record.type;
       this.fName = record.name;
       this.fContent = record.content;
@@ -94,6 +100,7 @@ export struct DNSListPage {
         : TTL_PRESETS.concat([record.ttl]);
     } else {
       this.editingId = '';
+      this.editingShadowed = false;
       this.fType = 'A';
       this.fName = '';
       this.fContent = '';
@@ -205,6 +212,13 @@ export struct DNSListPage {
         .fontColor($r('sys.color.font_primary'))
         .width('100%')
         .margin({ top: 8 })
+
+      if (this.editingId !== '' && this.editingShadowed) {
+        Text(SHADOWED_NOTE)
+          .fontSize(12)
+          .fontColor(SHADOW_COLOR)
+          .width('100%')
+      }
 
       this.formLabel('类型')
       Select(RECORD_TYPES.map((t: string): SelectOption => ({ value: t })))
@@ -372,9 +386,26 @@ export struct DNSListPage {
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
         }
-        Text(ttlLabel(record.ttl))
-          .fontSize(10)
-          .fontColor($r('sys.color.font_tertiary'))
+        Row({ space: 6 }) {
+          Text(ttlLabel(record.ttl))
+            .fontSize(10)
+            .fontColor($r('sys.color.font_tertiary'))
+          // 被 NS 委派遮蔽：Cloudflare 不再响应这条记录（详细说明在编辑表单里）
+          if (dnsRecordShadowed(record)) {
+            Text('已被遮蔽')
+              .fontSize(10)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(SHADOW_COLOR)
+              .padding({ left: 6, right: 6, top: 1, bottom: 1 })
+              .backgroundColor('#1AEA580C')
+              .borderRadius(4)
+          }
+          if (record.type === 'NS' && dnsShadowedCount(record) > 0) {
+            Text(`遮蔽了 ${dnsShadowedCount(record)} 条记录`)
+              .fontSize(10)
+              .fontColor($r('sys.color.font_secondary'))
+          }
+        }
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)

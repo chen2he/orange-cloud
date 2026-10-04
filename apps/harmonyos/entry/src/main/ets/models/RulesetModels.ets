@@ -168,6 +168,8 @@ export class RulesetPhases {
   static readonly CONFIG = 'http_config_settings';
   static readonly COMPRESSION = 'http_response_compression';
   static readonly CUSTOM_ERRORS = 'http_custom_errors';
+  /// 缓存响应规则（Cache Response Rules）：App 内只看 / 启停 / 删除，不提供新建与编辑
+  static readonly RESPONSE_CACHE = 'http_response_cache_settings';
 }
 
 /// 规则中心 phase 元信息：固定 action 名 + OAuth scope（ID 对照 iOS ZoneRuleModels，已按 OpenAPI 核实）
@@ -215,7 +217,42 @@ const PHASE_METAS: PhaseMeta[] = [
     readScope: 'custom-errors.read',
     writeScope: 'custom-errors.write',
   },
+  {
+    phase: RulesetPhases.RESPONSE_CACHE,
+    title: '缓存响应规则',
+    action: '',
+    readScope: 'cache-settings.read',
+    writeScope: 'cache-settings.write',
+  },
 ];
+
+/// 该 phase 是否支持在 App 内新建 / 编辑（缓存响应规则只读：参数形态未建模，整量回写会丢配置）
+export function phaseEditable(phase: string): boolean {
+  return phase !== RulesetPhases.RESPONSE_CACHE;
+}
+
+/// action_parameters 的尽力摘要：只列标量项（键 = 值），嵌套对象只列键名；
+/// 取不到任何项返回空数组，界面只显示表达式
+export function actionParamsSummary(params: RuleActionParameters | undefined): string[] {
+  if (params === undefined || params === null) {
+    return [];
+  }
+  const lines: string[] = [];
+  try {
+    const record = JSON.parse(JSON.stringify(params)) as Record<string, Object>;
+    for (const key of Object.keys(record)) {
+      const value: Object = record[key];
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        lines.push(`${key} = ${String(value)}`);
+      } else if (value !== null && value !== undefined) {
+        lines.push(key);
+      }
+    }
+  } catch (e) {
+    return [];
+  }
+  return lines;
+}
 
 export function phaseMeta(phase: string): PhaseMeta {
   for (const meta of PHASE_METAS) {

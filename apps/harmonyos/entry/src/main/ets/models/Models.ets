@@ -67,6 +67,14 @@ export function zoneDisplayStatus(zone: Zone): string {
   return zone.paused === true ? 'paused' : zone.status;
 }
 
+/// include_shadow_metadata=true 时附带的遮蔽信息
+export interface DNSRecordMeta {
+  /// 遮蔽本记录的 NS 委派记录 id；非空 = 该名称已委派出去，Cloudflare 不会响应这条记录
+  shadowed_by?: string[];
+  /// 仅 NS 委派记录：被它遮蔽的记录条数
+  shadowed_records_count?: number;
+}
+
 export interface DNSRecord {
   id: string;
   type: string; // A, AAAA, CNAME, TXT, MX 等
@@ -76,6 +84,17 @@ export interface DNSRecord {
   ttl: number;
   priority?: number;
   comment?: string;
+  meta?: DNSRecordMeta;
+}
+
+/// 该记录是否被 NS 委派遮蔽
+export function dnsRecordShadowed(record: DNSRecord): boolean {
+  return (record.meta?.shadowed_by ?? []).length > 0;
+}
+
+/// NS 委派记录遮蔽的记录条数（非 NS 或无数据为 0）
+export function dnsShadowedCount(record: DNSRecord): number {
+  return record.meta?.shadowed_records_count ?? 0;
 }
 
 /// DNS 记录创建/更新请求体（POST/PUT /zones/{id}/dns_records）

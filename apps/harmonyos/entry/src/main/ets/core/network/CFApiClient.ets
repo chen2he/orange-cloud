@@ -287,6 +287,15 @@ export class CFApiClient {
     }
   }
 
+  /// POST、只校验信封 success（回包 result 为 null 的端点，如规则 dry_run 校验）
+  async postVoid(path: string, body: object): Promise<void> {
+    const text = await this.requestText(http.RequestMethod.POST, path, undefined, JSON.stringify(body));
+    const envelope = JSON.parse(text) as CFObjectEnvelope<object>;
+    if (!envelope.success) {
+      throw envelopeError(envelope.errors);
+    }
+  }
+
   /// POST 返回列表信封（如 D1 query、rulesets 部分端点）
   async postForList<T>(path: string, body: object): Promise<T[]> {
     const text = await this.requestText(http.RequestMethod.POST, path, undefined, JSON.stringify(body));

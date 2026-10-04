@@ -43,6 +43,11 @@ export class DNSListViewModel {
         this.records = [created, ...this.records];
       } else {
         const updated = await this.dnsService.updateRecord(this.zoneId, recordId, payload);
+        // PUT 回包不带遮蔽信息（没传 include_shadow_metadata），沿用旧值直到下次刷新
+        const previous = this.records.find((r: DNSRecord) => r.id === recordId);
+        if (updated.meta === undefined && previous !== undefined) {
+          updated.meta = previous.meta;
+        }
         this.records = this.records.map((r: DNSRecord) => r.id === recordId ? updated : r);
       }
       return true;

@@ -21,6 +21,30 @@ interface AutoRenewUpdate {
   auto_renew: boolean;
 }
 
+/// 域名搜索 / 实时检查的价格（金额是字符串，原样展示）
+export interface DomainPricing {
+  currency?: string;
+  registration_cost?: string;
+  renewal_cost?: string;
+}
+
+/// 域名搜索 / 实时检查结果项。reason 见 domainReasonLabel；tier 为 standard / premium
+export interface DomainAvailability {
+  name: string;
+  registrable?: boolean;
+  tier?: string;
+  reason?: string;
+  pricing?: DomainPricing;
+}
+
+interface DomainSearchResult {
+  domains?: DomainAvailability[];
+}
+
+interface DomainCheckBody {
+  domains: string[];
+}
+
 export class RegistrarService {
   private client: CFApiClient;
 
@@ -33,6 +57,24 @@ export class RegistrarService {
     return this.client.getList<DomainRegistration>(`/accounts/${accountId}/registrar/registrations`, {
       'per_page': '50',
     } as Record<string, string>);
+  }
+
+  /// 搜索可注册的新域名（结果可能有延迟，点开后再用 check 实时确认）。registrar-domains.read
+  async search(accountId: string, query: string): Promise<DomainAvailability[]> {
+    const result = await this.client.getObject<DomainSearchResult>(
+      `/accounts/${accountId}/registrar/domain-search`, {
+        'q': query,
+        'limit': '20',
+      } as Record<string, string>);
+    return result.domains ?? [];
+  }
+
+  /// 实时向注册局确认（单次最多 20 个）
+  async check(accountId: string, names: string[]): Promise<DomainAvailability[]> {
+    const body: DomainCheckBody = { domains: names };
+    const result = await this.client.postObject<DomainSearchResult>(
+      `/accounts/${accountId}/registrar/domain-check`, body);
+    return result.domains ?? [];
   }
 
   /// 设置自动续费。返回异步 workflow 状态，调用方成功后应回读列表。

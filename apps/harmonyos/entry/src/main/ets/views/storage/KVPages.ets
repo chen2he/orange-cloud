@@ -3,13 +3,26 @@ import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // KV：命名空间列表 → 键列表（游标分页）+ 读/写/删值（对齐 Android KVScreens）。
-import { KVKey, KVNamespace } from '../../models/StorageModels';
+// 新建时可选数据驻留（欧盟 / 美国），列表上给区域命名空间挂徽标（与 R2 区域桶同款）。
+import { KVKey, KVNamespace, r2JurisdictionLabel } from '../../models/StorageModels';
 import { Routes, IdNameParam } from '../../models/Routes';
 import { StorageService, CursorPage } from '../../services/StorageService';
 import { accountStore } from '../../core/store/AccountStore';
 import { BRAND_ORANGE, BRAND_ORANGE_BG, OCEmpty, OCError, OCLoading, ResourceCard } from '../common/Components';
 import { ocSheet } from '../common/Sheets';
 import { OCSkyBackground } from '../common/OCSky';
+
+/// 数据驻留选项（value 空串 = 不限，请求体不带 jurisdiction；FedRAMP 不在界面提供）
+interface ResidencyOption {
+  value: string;
+  label: string;
+}
+
+const RESIDENCY_OPTIONS: ResidencyOption[] = [
+  { value: '', label: '不限' },
+  { value: 'eu', label: '欧盟' },
+  { value: 'us', label: '美国' },
+];
 
 @ObservedV2
 class NamespacesVM {
@@ -31,10 +44,14 @@ class NamespacesVM {
     }
   }
 
-  async create(title: string): Promise<string> {
+  async create(title: string, jurisdiction: string): Promise<string> {
     this.isCreating = true;
     try {
-      const created = await this.service.createNamespace(accountStore.selectedId, title);
+      const created = await this.service.createNamespace(accountStore.selectedId, title, jurisdiction);
+      // 回包若没带 jurisdiction，按所选补上，徽标即时可见
+      if ((created.jurisdiction ?? '') === '' && jurisdiction !== '') {
+        created.jurisdiction = jurisdiction;
+      }
       this.namespaces = this.namespaces.concat([created]);
       return '';
     } catch (e) {
@@ -61,6 +78,8 @@ export struct KVNamespacesPage {
   @Local refreshing: boolean = false;
   @Local showCreate: boolean = false;
   @Local fTitle: string = '';
+  /// 新建时的数据驻留（'' = 不限）
+  @Local fJurisdiction: string = '';
   private pathStack: NavPathStack | null = null;
 
   private toast(message: string): void {
@@ -84,6 +103,27 @@ export struct KVNamespacesPage {
         .onChange((value: string) => {
           this.fTitle = value;
         })
+      Row({ space: 12 }) {
+        Text('数据驻留')
+          .fontSize(14)
+          .fontColor($r('sys.color.font_primary'))
+        Blank()
+        Row({ space: 6 }) {
+          ForEach(RESIDENCY_OPTIONS, (opt: ResidencyOption) => {
+            Text(opt.label)
+              .fontSize(13)
+              .fontWeight(this.fJurisdiction === opt.value ? FontWeight.Medium : FontWeight.Normal)
+              .fontColor(this.fJurisdiction === opt.value ? $r('app.color.oc_brand_text') : $r('sys.color.font_secondary'))
+              .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+              .backgroundColor(this.fJurisdiction === opt.value ? $r('app.color.oc_brand_bg') : $r('sys.color.background_secondary'))
+              .borderRadius(14)
+              .onClick(() => {
+                this.fJurisdiction = opt.value;
+              })
+          }, (opt: ResidencyOption) => `res-${opt.value}`)
+        }
+      }
+      .width('100%')
       Button(this.vm.isCreating ? '正在创建…' : '创建')
         .width('100%')
         .height(44)
@@ -92,10 +132,11 @@ export struct KVNamespacesPage {
         .backgroundColor($r('app.color.oc_brand_cta'))
         .enabled(!this.vm.isCreating && this.fTitle.trim() !== '')
         .onClick(() => {
-          this.vm.create(this.fTitle.trim()).then((err: string) => {
+          this.vm.create(this.fTitle.trim(), this.fJurisdiction).then((err: string) => {
             if (err === '') {
               this.showCreate = false;
               this.fTitle = '';
+              this.fJurisdiction = '';
             } else {
               this.toast(err);
             }
@@ -142,6 +183,7 @@ export struct KVNamespacesPage {
                   ResourceCard({
                     symbol: $r('sys.symbol.folder'),
                     title: ns.title,
+                    badge: r2JurisdictionLabel(ns.jurisdiction),
                     onTap: () => {
                       const param: IdNameParam = { id: ns.id, name: ns.title };
                       this.pathStack?.pushPathByName(Routes.KV_KEYS, param);

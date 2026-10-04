@@ -25,6 +25,7 @@ import { namespaceLabel, namespaceSqlName, tableSqlName, R2Catalog, R2CatalogNam
 import { R2SQLResult, R2SQLService } from '../../services/R2SQLService';
 import { promptAction } from '@kit.ArkUI';
 import { OCSkyBackground } from '../common/OCSky';
+import { R2BandwidthCard } from './R2Bandwidth';
 
 const CORS_METHODS: string[] = ['GET', 'PUT', 'POST', 'DELETE', 'HEAD'];
 
@@ -289,6 +290,8 @@ class SettingsVM {
 export struct R2SettingsPage {
   @Local vm: SettingsVM = new SettingsVM();
   @Local bucket: string = '';
+  /// 桶的数据区域（带宽卡按区域前缀查桶名）
+  @Local jurisdiction: string = '';
   @Local showAddDomain: boolean = false;
   @Local fDomain: string = '';
   @Local fZoneId: string = '';
@@ -775,6 +778,11 @@ export struct R2SettingsPage {
         } else {
           Scroll() {
             Column({ space: 4 }) {
+              // ---- 带宽（近 30 天，单桶）----
+              if (this.bucket !== '') {
+                R2BandwidthCard({ bucketName: this.bucket, jurisdiction: this.jurisdiction })
+                  .margin({ top: 8, bottom: 4 })
+              }
               // ---- 公开访问（r2.dev）----
               Column() {
                 SectionHeader({ title: '公开开发 URL（r2.dev）' })
@@ -1049,6 +1057,7 @@ export struct R2SettingsPage {
     .onReady((context: NavDestinationContext) => {
       const param = context.pathInfo.param as R2BucketParam;
       this.bucket = param.name;
+      this.jurisdiction = param.jurisdiction ?? '';
       this.vm.jurisdiction = param.jurisdiction ?? '';
       this.vm.load(param.name).catch(() => {
       });

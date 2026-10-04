@@ -3,6 +3,7 @@ import { systemMaterial, OC_TITLE_BAR_INSET } from '../common/Effects';
 import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // WAF 自定义规则（Rulesets http_request_firewall_custom）：列表 / 启停 / 新建 / 编辑 / 删除。
+// 编辑器另有「校验」：发与保存相同的请求但带 ?dry_run=true，只校验不落库。
 // 对齐 Android WafRulesScreen（AI 表达式生成为安卓云端能力，此处提供表达式直编）。
 import { RulesetPhases, RulesetRule, RulesetRuleCreate } from '../../models/RulesetModels';
 import { ZoneRouteParam } from '../../models/Routes';
@@ -56,11 +57,12 @@ export struct WafRulesPage {
     this.editorVisible = true;
   }
 
-  private submit(): void {
+  /// 由表单组装请求体；表达式本地 lint 不过时 toast 并返回 null
+  private buildRule(): RulesetRuleCreate | null {
     const lint: string = lintExpression(this.fExpression.trim());
     if (lint !== '') {
       this.toast(lint);
-      return;
+      return null;
     }
     const rule: RulesetRuleCreate = {
       action: this.fAction,
@@ -68,6 +70,25 @@ export struct WafRulesPage {
       description: this.fDescription.trim(),
       enabled: this.fEnabled,
     };
+    return rule;
+  }
+
+  /// 校验：与保存同一请求体，带 dry_run，不关表单、不改列表
+  private validate(): void {
+    const rule = this.buildRule();
+    if (rule === null) {
+      return;
+    }
+    this.vm.validate(this.zoneId, this.editingId, rule).then((err: string) => {
+      this.toast(err === '' ? '规则校验通过' : err);
+    });
+  }
+
+  private submit(): void {
+    const rule = this.buildRule();
+    if (rule === null) {
+      return;
+    }
     this.vm.save(this.zoneId, this.editingId, rule).then((ok: boolean) => {
       if (ok) {
         this.editorVisible = false;
@@ -155,16 +176,29 @@ export struct WafRulesPage {
           .width('100%')
       }
 
-      Button(this.vm.isSaving ? '正在保存…' : (this.editingId === '' ? '创建' : '保存'))
-        .width('100%')
-        .height(44)
-        .fontSize(15)
-        .fontColor(Color.White)
-        .backgroundColor($r('app.color.oc_brand_cta'))
-        .enabled(!this.vm.isSaving && this.fExpression.trim() !== '')
-        .onClick(() => {
-          this.submit();
-        })
+      Row({ space: 10 }) {
+        Button(this.vm.isValidating ? '正在校验…' : '校验')
+          .layoutWeight(1)
+          .height(44)
+          .fontSize(15)
+          .fontColor($r('app.color.oc_brand_text'))
+          .backgroundColor($r('sys.color.comp_background_tertiary'))
+          .enabled(!this.vm.isSaving && !this.vm.isValidating && this.fExpression.trim() !== '')
+          .onClick(() => {
+            this.validate();
+          })
+        Button(this.vm.isSaving ? '正在保存…' : (this.editingId === '' ? '创建' : '保存'))
+          .layoutWeight(2)
+          .height(44)
+          .fontSize(15)
+          .fontColor(Color.White)
+          .backgroundColor($r('app.color.oc_brand_cta'))
+          .enabled(!this.vm.isSaving && this.fExpression.trim() !== '')
+          .onClick(() => {
+            this.submit();
+          })
+      }
+      .width('100%')
     }
     .padding({ left: 20, right: 20, bottom: 24 })
     .width('100%')

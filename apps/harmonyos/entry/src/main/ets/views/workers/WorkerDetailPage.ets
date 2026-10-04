@@ -8,6 +8,7 @@ import { HdsNavDestination } from '@kit.UIDesignKit';
 //   ① Pro 闸门（requirePro）——管理与调试类能力属付费层，非 Pro 推付费墙
 //   ② scope 门控（workers-scripts.write）——写操作缺授权时拦截并提示重新授权
 import {
+  WorkerPreview,
   WorkerScript,
   WorkerScriptContent,
 } from '../../models/WorkerModels';
@@ -45,6 +46,7 @@ import { OCLayout, StatIsland, RevealBox } from '../common/Daybreak';
 import { MetricsChart, MetricsPoint } from '../common/MetricsChart';
 import { entitlement, EntitlementStore } from '../../core/purchase/EntitlementStore';
 import { requirePro } from '../paywall/ProGate';
+import { GlobalContext } from '../../core/system/GlobalContext';
 
 const METRIC_RANGES: AnalyticsRange[] = ['24h', '7d', '30d'];
 
@@ -108,6 +110,8 @@ class WorkerDetailVM {
   @Trace isDeployingCode: boolean = false;
   /// 该 Worker 的活跃问题数（-1 = 未取到：非 Pro / 无权限 / 接口失败）
   @Trace activeIssues: number = -1;
+  /// 预览（beta，只读）；出错或为空时整段隐藏
+  @Trace previews: WorkerPreview[] = [];
 
   private service: WorkerService = new WorkerService();
   private analytics: AnalyticsService = new AnalyticsService();
@@ -126,6 +130,12 @@ class WorkerDetailVM {
           this.activeIssues = -1;
         });
       }
+      // 预览 best-effort：beta 接口，失败只是不显示
+      this.service.previews(accountId, scriptName).then((list: WorkerPreview[]) => {
+        this.previews = list;
+      }).catch(() => {
+        this.previews = [];
+      });
       try {
         this.script = await this.service.findScript(accountId, scriptName);
       } catch (e) {
@@ -235,6 +245,21 @@ class WorkerDetailVM {
       return (e as Error).message ?? '删除失败';
     }
   }
+}
+
+/// 预览的首个可打开 URL（没有补协议的补 https://）
+function previewUrl(preview: WorkerPreview): string {
+  const urls = preview.urls ?? [];
+  const first = urls.length > 0 ? urls[0] : '';
+  if (first === '' || first.startsWith('https://') || first.startsWith('http://')) {
+    return first;
+  }
+  return `https://${first}`;
+}
+
+/// 部署时间：deployed_on 缺省时退到 created_on
+function previewDate(preview: WorkerPreview): string {
+  return preview.deployed_on ?? preview.created_on ?? '';
 }
 
 /// 超过这个体积就不在手机上就地编辑（wrangler 打包产物动辄数百 KB 到数 MB），对齐 iOS
@@ -499,6 +524,65 @@ export struct WorkerDetailPage {
         if ((this.vm.script?.modified_on ?? '') !== '') {
           InfoRow({ label: '最近部署', value: formatTimeAgo(this.vm.script!.modified_on!) })
         }
+      }
+      .width('100%')
+      .backgroundColor($r('sys.color.comp_background_list_card'))
+      .borderRadius(OCLayout.chipRadius)
+      .clip(true)
+    }
+    .width('100%')
+  }
+
+  /// 预览分组：名称 + 首个 URL（点按在浏览器打开）+ 部署时间
+  @Builder
+  previewsSection() {
+    Column({ space: 8 }) {
+      this.groupHeader('预览')
+      Column() {
+        ForEach(this.vm.previews, (preview: WorkerPreview, index: number) => {
+          Column({ space: 3 }) {
+            Text(preview.name ?? preview.slug ?? preview.id)
+              .fontSize(14)
+              .fontWeight(FontWeight.Medium)
+              .fontColor($r('sys.color.font_primary'))
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .width('100%')
+            if (previewUrl(preview) !== '') {
+              Text(previewUrl(preview))
+                .fontSize(12)
+                .fontFamily('monospace')
+                .fontColor($r('app.color.oc_brand_text'))
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .width('100%')
+            }
+            if (previewDate(preview) !== '') {
+              Text(`部署于 ${formatDateTime(previewDate(preview))}`)
+                .fontSize(11)
+                .fontColor($r('sys.color.font_tertiary'))
+                .width('100%')
+            }
+          }
+          .width('100%')
+          .padding({ left: 14, right: 14, top: 10, bottom: 10 })
+          .onClick(() => {
+            const url = previewUrl(preview);
+            if (url !== '') {
+              try {
+                GlobalContext.get().openLink(url).catch(() => {
+                });
+              } catch (e) {
+              }
+            }
+          })
+          if (index < this.vm.previews.length - 1) {
+            Divider()
+              .strokeWidth(0.5)
+              .color($r('sys.color.comp_divider'))
+              .margin({ left: 14 })
+          }
+        }, (preview: WorkerPreview) => preview.id)
       }
       .width('100%')
       .backgroundColor($r('sys.color.comp_background_list_card'))
@@ -851,6 +935,9 @@ export struct WorkerDetailPage {
                   RevealBox({ idx: 1 }) {
                     this.infoSection()
                   }
+                }
+                if (this.vm.previews.length > 0) {
+                  this.previewsSection()
                 }
                 RevealBox({ idx: 2 }) {
                   this.metricsSection()

@@ -33,6 +33,7 @@ import { GlobalContext } from '../../core/system/GlobalContext';
 import { withDataTransfer } from '../../core/system/BackgroundTransfer';
 import { ocSheet } from '../common/Sheets';
 import { OCSkyBackground } from '../common/OCSky';
+import { R2BandwidthCard } from './R2Bandwidth';
 
 /// 复制/移动客户端内存保护上限：100MB（iOS 上限 300MB，移动端从紧——字节须整段过设备内存）
 const MAX_TRANSFER_BYTES = 100 * 1024 * 1024;
@@ -185,6 +186,11 @@ export struct R2BucketsPage {
         } else {
           Refresh({ refreshing: this.refreshing }) {
             List() {
+              // 全账号带宽（近 30 天）；数据集不可用时整卡隐藏
+              ListItem() {
+                R2BandwidthCard()
+                  .margin({ top: 4, bottom: 6 })
+              }
               ForEach(this.vm.buckets, (bucket: R2Bucket) => {
                 ListItem() {
                   ResourceCard({

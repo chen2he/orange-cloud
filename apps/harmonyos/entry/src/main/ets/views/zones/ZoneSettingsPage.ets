@@ -7,7 +7,7 @@ import { HdsNavDestination } from '@kit.UIDesignKit';
 // 注意暂停与另两个开关不同源：开发模式 / Under Attack 走 zone settings（zone-settings.*），
 // 暂停读写域名本身（zone.read / zone.write），权限链路各自独立。
 import { ZoneRouteParam } from '../../models/Routes';
-import { BotManagementConfig, ZoneSettingsService } from '../../services/ZoneSettingsService';
+import { BotManagementConfig, PrecursorConfig, ZoneSettingsService } from '../../services/ZoneSettingsService';
 import { ZoneService } from '../../services/ZoneService';
 import { Zone } from '../../models/Models';
 import { Scopes } from '../../core/auth/Scopes';
@@ -49,6 +49,13 @@ const AI_TRAINING_OPTIONS: AiBotsOption[] = [
   { value: 'disallow', label: '在 robots.txt 中声明禁止' },
   { value: 'block', label: '全部拦截' },
   { value: 'only_on_ad_pages', label: '仅拦截含广告的页面' },
+];
+
+/// Precursor 会话级机器人检测的默认模式
+const PRECURSOR_OPTIONS: AiBotsOption[] = [
+  { value: 'off', label: '关闭' },
+  { value: 'min-friction', label: '低打扰' },
+  { value: 'max-security', label: '最高安全' },
 ];
 
 /// 标记过期的说明（清除 / 标记过期分段切到后者时展示）
@@ -112,6 +119,9 @@ class ZoneSettingsVM {
   @Trace preferenceSync: boolean = false;
   @Trace hasPreferenceSync: boolean = false;
   @Trace botConfigLoaded: boolean = false;
+  // Precursor（precursor.*，独立权限链路）：GET 失败整行不显示
+  @Trace precursorMode: string = '';
+  @Trace precursorLoaded: boolean = false;
   @Trace isLoading: boolean = false;
   @Trace isSaving: boolean = false;
   @Trace error: string = '';
@@ -213,6 +223,33 @@ class ZoneSettingsVM {
     }
     this.preferenceSync = sync === true;
     this.botConfigLoaded = true;
+  }
+
+  /// 读 Precursor 默认模式；无 precursor.read 不发请求，失败静默（整行隐藏）
+  async loadPrecursor(zoneId: string): Promise<void> {
+    if (!authManager.hasScope(Scopes.PRECURSOR_READ)) {
+      return;
+    }
+    try {
+      const cfg: PrecursorConfig = await this.service.getPrecursor(zoneId);
+      this.precursorMode = cfg.default_mode ?? '';
+      this.precursorLoaded = true;
+    } catch (e) {
+      this.precursorLoaded = false;
+    }
+  }
+
+  async setPrecursorMode(zoneId: string, mode: string): Promise<string> {
+    this.isSaving = true;
+    try {
+      const cfg: PrecursorConfig = await this.service.setPrecursorMode(zoneId, mode);
+      this.precursorMode = cfg.default_mode ?? mode;
+      return '';
+    } catch (e) {
+      return (e as Error).message ?? '设置失败';
+    } finally {
+      this.isSaving = false;
+    }
   }
 
   /// 写单个字段。PUT 合并语义，只发改动那一项，不动 sbfm_* 等套餐专属配置。
@@ -419,6 +456,57 @@ export struct ZoneSettingsPage {
     this.vm.setBotField(this.zoneId, body).then((err: string) => {
       this.toast(err);
     });
+  }
+
+  private setPrecursor(mode: string): void {
+    if (this.vm.isSaving || this.vm.precursorMode === mode) {
+      return;
+    }
+    if (!authManager.hasScope(Scopes.PRECURSOR_WRITE)) {
+      this.toast(`当前授权未包含会话级机器人检测写入权限（${Scopes.PRECURSOR_WRITE}），可在「设置 → 身份」中升级授权`);
+      return;
+    }
+    this.vm.setPrecursorMode(this.zoneId, mode).then((err: string) => {
+      this.toast(err);
+    });
+  }
+
+  /// Precursor 默认模式选择器（同 AI 策略的胶囊样式；未知取值不高亮任何项）
+  @Builder
+  precursorPicker() {
+    Column({ space: 6 }) {
+      Text('会话级机器人检测')
+        .fontSize(15)
+        .fontWeight(FontWeight.Medium)
+        .fontColor($r('sys.color.font_primary'))
+        .width('100%')
+      Text('在整个会话中持续评估访客行为（Precursor）')
+        .fontSize(12)
+        .fontColor($r('sys.color.font_secondary'))
+        .width('100%')
+      Flex({ wrap: FlexWrap.Wrap }) {
+        ForEach(PRECURSOR_OPTIONS, (opt: AiBotsOption) => {
+          Text(opt.label)
+            .fontSize(13)
+            .fontWeight(this.vm.precursorMode === opt.value ? FontWeight.Medium : FontWeight.Normal)
+            .fontColor(this.vm.precursorMode === opt.value ? Color.White : $r('sys.color.font_secondary'))
+            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+            .backgroundColor(this.vm.precursorMode === opt.value
+              ? BRAND_ORANGE : $r('sys.color.background_secondary'))
+            .borderRadius(14)
+            .margin({ right: 8, bottom: 8 })
+            .onClick(() => {
+              this.setPrecursor(opt.value);
+            })
+        }, (opt: AiBotsOption) => `precursor-${opt.value}`)
+      }
+      .width('100%')
+      .margin({ top: 4 })
+    }
+    .padding({ left: 14, right: 14, top: 12, bottom: 4 })
+    .backgroundColor($r('sys.color.comp_background_list_card'))
+    .borderRadius(14)
+    .margin({ left: 16, right: 16 })
   }
 
   /// AI 爬虫策略选择器：标题 + 说明 + 可换行的选项胶囊
@@ -664,6 +752,15 @@ export struct ZoneSettingsPage {
                 .width('100%')
               }
 
+              // Precursor 走 precursor.* 独立权限链路；GET 失败（无权限 / 接口异常）整行不显示
+              if (this.vm.precursorLoaded) {
+                Column() {
+                  SectionHeader({ title: '机器人检测' })
+                  this.precursorPicker()
+                }
+                .width('100%')
+              }
+
               Column() {
                 SectionHeader({ title: '按目标清除缓存' })
                 Column({ space: 10 }) {
@@ -764,6 +861,8 @@ export struct ZoneSettingsPage {
       });
       // 机器人管控是另一条权限链路，与上面的 zone-settings 读取互不阻塞
       this.vm.loadBotConfig(param.zoneId).catch(() => {
+      });
+      this.vm.loadPrecursor(param.zoneId).catch(() => {
       });
     })
   }

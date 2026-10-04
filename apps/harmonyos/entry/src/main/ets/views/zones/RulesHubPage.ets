@@ -3,7 +3,7 @@ import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 「规则中心」聚合入口（对照 iOS ZoneRulesHubView）：把域名详情页平铺的规则类条目
 // （Transform / 缓存规则 / Snippets）与五个 Rulesets phase（单条重定向 / 源站 / 配置 /
-// 压缩 / 自定义错误）、Page Rules（传统）、URL 规范化收进一个二级页。
+// 压缩 / 自定义错误）、缓存响应规则（只读 + 启停 / 删除）、Page Rules（传统）、URL 规范化收进一个二级页。
 // Bulk Redirects 是账号级，挂同一入口方便发现。
 import { RulesetPhases, phaseMeta } from '../../models/RulesetModels';
 import { PhaseRulesParam, Routes, ZoneRouteParam } from '../../models/Routes';
@@ -112,6 +112,14 @@ const HUB_SECTIONS: HubSection[] = [
         readScope: Scopes.CACHE_RULES_READ,
       },
       {
+        symbol: $r('sys.symbol.archivebox'),
+        title: '缓存响应规则',
+        subtitle: '按源站响应调整缓存（查看 / 启停 / 删除）',
+        route: Routes.PHASE_RULES,
+        phase: RulesetPhases.RESPONSE_CACHE,
+        readScope: phaseMeta(RulesetPhases.RESPONSE_CACHE).readScope,
+      },
+      {
         symbol: $r('sys.symbol.code_slash'),
         title: 'Snippets',
         subtitle: '边缘 JS 片段',
@@ -123,7 +131,7 @@ const HUB_SECTIONS: HubSection[] = [
   },
   {
     title: '传统与全局',
-    footer: 'Page Rules 为传统功能，仅支持查看、启停与删除；其余规则类型支持在 App 内创建与编辑。',
+    footer: 'Page Rules 与缓存响应规则仅支持查看、启停与删除；其余规则类型支持在 App 内创建与编辑。',
     entries: [
       {
         symbol: $r('sys.symbol.doc_text'),

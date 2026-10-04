@@ -9,9 +9,11 @@ export class DNSService {
     this.client = client;
   }
 
+  /// include_shadow_metadata：附带 meta.shadowed_by / shadowed_records_count（被 NS 委派遮蔽的记录）
   fetchRecords(zoneId: string): Promise<DNSRecord[]> {
     return this.client.getList<DNSRecord>(`/zones/${zoneId}/dns_records`, {
       'per_page': '100',
+      'include_shadow_metadata': 'true',
     } as Record<string, string>);
   }
 

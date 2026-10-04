@@ -15,6 +15,7 @@ import { ZoneAnalyticsPage } from '../views/zones/ZoneAnalyticsPage';
 import { HealthCheckPage } from '../views/zones/HealthCheckPage';
 import { ZoneDnsSettingsPage } from '../views/zones/ZoneDnsSettingsPage';
 import { RegistrarPage } from '../views/account/RegistrarPage';
+import { DomainSearchPage } from '../views/account/DomainSearchPage';
 import { RequestTracerPage } from '../views/account/RequestTracerPage';
 import { WorkerBuildsPage } from '../views/workers/WorkerBuildsPage';
 import { ManagedHeadersPage } from '../views/zones/ManagedHeadersPage';
@@ -139,6 +140,8 @@ struct Index {
       ZoneDnsSettingsPage()
     } else if (name === Routes.REGISTRAR) {
       RegistrarPage()
+    } else if (name === Routes.DOMAIN_SEARCH) {
+      DomainSearchPage()
     } else if (name === Routes.REQUEST_TRACER) {
       RequestTracerPage()
     } else if (name === Routes.WORKER_BUILDS) {

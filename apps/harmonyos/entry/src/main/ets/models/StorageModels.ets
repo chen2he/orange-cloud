@@ -15,7 +15,7 @@ export function r2JurisdictionHeader(jurisdiction: string | undefined): string {
   return j === '' || j === 'default' ? '' : j;
 }
 
-/// 区域徽标：欧盟 / 美国 / FedRAMP；default 不显示
+/// 区域徽标：欧盟 / 美国 / FedRAMP；default 不显示（R2 桶与 KV 命名空间共用）
 export function r2JurisdictionLabel(jurisdiction: string | undefined): string {
   const j = r2JurisdictionHeader(jurisdiction);
   if (j === '') {
@@ -146,6 +146,8 @@ export interface D1QueryResult {
 export interface KVNamespace {
   id: string;
   title: string;
+  /// 数据驻留：eu / us（缺省 = 不限）；KV 命名空间 id 全局唯一，后续读写无需额外请求头
+  jurisdiction?: string;
 }
 
 export interface KVKey {

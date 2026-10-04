@@ -4,6 +4,7 @@ import { ocSnack } from '../common/Snack';
 import { HdsNavDestination } from '@kit.UIDesignKit';
 // 缓存规则（Rulesets http_request_cache_settings）：列表 / 启停 / 新建 / 编辑 / 删除。
 // 表单开放：表达式 + 缓存资格（缓存/绕过）+ 边缘 TTL 覆写（对齐 Android ZoneCacheRulesScreen 常用面）。
+// 编辑器另有「校验」：发与保存相同的请求但带 ?dry_run=true，只校验不落库。
 import { BrowserTTL, cacheRuleHasAdvanced, EdgeTTL, RuleActionParameters, RulesetPhases, RulesetRule,
   RulesetRuleCreate, ServeStale } from '../../models/RulesetModels';
 import { ZoneRouteParam } from '../../models/Routes';
@@ -83,11 +84,35 @@ export struct CacheRulesPage {
     this.editorVisible = true;
   }
 
+  /// 校验：与保存同一请求体，带 dry_run，不关表单、不改列表
+  private validate(): void {
+    const rule = this.buildRule();
+    if (rule === null) {
+      return;
+    }
+    this.vm.validate(this.zoneId, this.editingId, rule).then((err: string) => {
+      this.toast(err === '' ? '规则校验通过' : err);
+    });
+  }
+
   private submit(): void {
+    const rule = this.buildRule();
+    if (rule === null) {
+      return;
+    }
+    this.vm.save(this.zoneId, this.editingId, rule).then((ok: boolean) => {
+      if (ok) {
+        this.editorVisible = false;
+      }
+    });
+  }
+
+  /// 由表单组装请求体（保存与校验共用）；表达式本地 lint 不过时 toast 并返回 null
+  private buildRule(): RulesetRuleCreate | null {
     const lint: string = lintExpression(this.fExpression.trim());
     if (lint !== '') {
       this.toast(lint);
-      return;
+      return null;
     }
     const params: RuleActionParameters = { cache: this.fCache };
     if (this.fCache) {
@@ -115,11 +140,7 @@ export struct CacheRulesPage {
       enabled: this.fEnabled,
       action_parameters: params,
     };
-    this.vm.save(this.zoneId, this.editingId, rule).then((ok: boolean) => {
-      if (ok) {
-        this.editorVisible = false;
-      }
-    });
+    return rule;
   }
 
   private confirmDelete(rule: RulesetRule): void {
@@ -262,16 +283,29 @@ export struct CacheRulesPage {
           .width('100%')
       }
 
-      Button(this.vm.isSaving ? '正在保存…' : (this.editingId === '' ? '创建' : '保存'))
-        .width('100%')
-        .height(44)
-        .fontSize(15)
-        .fontColor(Color.White)
-        .backgroundColor($r('app.color.oc_brand_cta'))
-        .enabled(!this.vm.isSaving && !this.fReadOnly && this.fExpression.trim() !== '')
-        .onClick(() => {
-          this.submit();
-        })
+      Row({ space: 10 }) {
+        Button(this.vm.isValidating ? '正在校验…' : '校验')
+          .layoutWeight(1)
+          .height(44)
+          .fontSize(15)
+          .fontColor($r('app.color.oc_brand_text'))
+          .backgroundColor($r('sys.color.comp_background_tertiary'))
+          .enabled(!this.vm.isSaving && !this.vm.isValidating && !this.fReadOnly && this.fExpression.trim() !== '')
+          .onClick(() => {
+            this.validate();
+          })
+        Button(this.vm.isSaving ? '正在保存…' : (this.editingId === '' ? '创建' : '保存'))
+          .layoutWeight(2)
+          .height(44)
+          .fontSize(15)
+          .fontColor(Color.White)
+          .backgroundColor($r('app.color.oc_brand_cta'))
+          .enabled(!this.vm.isSaving && !this.fReadOnly && this.fExpression.trim() !== '')
+          .onClick(() => {
+            this.submit();
+          })
+      }
+      .width('100%')
     }
     .padding({ left: 20, right: 20, bottom: 24 })
     .width('100%')
