@@ -57,6 +57,12 @@ final class ZoneActionsViewModel {
     /// Bot Preference Sync（按偏好生成 robots.txt）；nil = 响应未带该字段，UI 回退旧「托管 robots.txt」
     private(set) var botPreferenceSync: Bool?
 
+    // MARK: 会话级机器人检测（Precursor，precursor.read/.write）
+
+    /// default_mode 原始取值；nil = 未加载 / 读取失败（行整体隐藏）
+    private(set) var precursorMode: String?
+    var isUpdatingPrecursor = false
+
     var isTogglingUnderAttack = false
     var isTogglingDevMode = false
     var isTogglingAITrainingRedirect = false
@@ -72,18 +78,21 @@ final class ZoneActionsViewModel {
     private let service: ZoneSettingsService
     private let zoneService: ZoneService
     private let botService: BotManagementService
+    private let precursorService: PrecursorService
     private let zoneId: String
 
     init(
         service: ZoneSettingsService,
         zoneService: ZoneService,
         botService: BotManagementService,
+        precursorService: PrecursorService,
         zoneId: String,
         paused: Bool = false
     ) {
         self.service = service
         self.zoneService = zoneService
         self.botService = botService
+        self.precursorService = precursorService
         self.zoneId = zoneId
         self.paused = paused
     }
@@ -168,6 +177,24 @@ final class ZoneActionsViewModel {
 
     func setManagedRobotsTxt(_ on: Bool) async {
         await updateBot(.isRobotsTxtManaged, on)
+    }
+
+    /// 读会话级机器人检测的默认模式。失败（字段已 deprecated、无该能力等）保持 nil，行隐藏。
+    func loadPrecursor() async {
+        guard precursorMode == nil else { return }
+        precursorMode = try? await precursorService.config(zoneId: zoneId).defaultMode ?? PrecursorMode.off.rawValue
+    }
+
+    func setPrecursorMode(_ mode: PrecursorMode) async {
+        guard !isUpdatingPrecursor else { return }
+        isUpdatingPrecursor = true
+        error = nil
+        do {
+            precursorMode = try await precursorService.setMode(zoneId: zoneId, mode: mode).defaultMode ?? mode.rawValue
+        } catch {
+            self.error = error.localizedDescription
+        }
+        isUpdatingPrecursor = false
     }
 
     func setAISearch(_ policy: AICrawlerPolicy) async {

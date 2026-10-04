@@ -15,13 +15,16 @@ import Foundation
 
 // MARK: - Rulesets phase 泛化
 
-/// 收进「规则」入口的五个 zone 级 entrypoint phase
+/// 收进「规则」入口的 zone 级 entrypoint phase
 nonisolated enum ZoneRulePhase: String, CaseIterable, Identifiable, Sendable {
     case singleRedirect = "http_request_dynamic_redirect"
     case origin         = "http_request_origin"
     case config         = "http_config_settings"
     case compression    = "http_response_compression"
     case customErrors   = "http_custom_errors"
+    /// 缓存响应规则（2026 新 phase）：在响应阶段改缓存行为（Cache-Control / Cache-Tag / 去除校验头等）。
+    /// 只做查看 / 启停 / 删除，参数 schema 未建模，不提供编辑器。
+    case cacheResponse  = "http_response_cache_settings"
 
     var id: String { rawValue }
 
@@ -32,8 +35,12 @@ nonisolated enum ZoneRulePhase: String, CaseIterable, Identifiable, Sendable {
         case .config:         String(localized: "配置规则")
         case .compression:    String(localized: "压缩规则")
         case .customErrors:   String(localized: "自定义错误")
+        case .cacheResponse:  String(localized: "缓存响应规则")
         }
     }
+
+    /// 是否提供 App 内创建 / 编辑（其余 phase 的编辑器已建模；缓存响应规则只查看 / 启停 / 删除）
+    var supportsEditor: Bool { self != .cacheResponse }
 
     /// OAuth scope（读 / 写），ID 以 dash 实列为准（cf-oauth-scopes）
     var readScope: String {
@@ -43,6 +50,7 @@ nonisolated enum ZoneRulePhase: String, CaseIterable, Identifiable, Sendable {
         case .config:         "config-settings.read"
         case .compression:    "response-compression.read"
         case .customErrors:   "custom-errors.read"
+        case .cacheResponse:  "cache-settings.read"
         }
     }
 
@@ -53,6 +61,7 @@ nonisolated enum ZoneRulePhase: String, CaseIterable, Identifiable, Sendable {
         case .config:         "config-settings.write"
         case .compression:    "response-compression.write"
         case .customErrors:   "custom-errors.write"
+        case .cacheResponse:  "cache-settings.write"
         }
     }
 
@@ -63,6 +72,7 @@ nonisolated enum ZoneRulePhase: String, CaseIterable, Identifiable, Sendable {
         case .config:         "slider.horizontal.3"
         case .compression:    "rectangle.compress.vertical"
         case .customErrors:   "exclamationmark.bubble"
+        case .cacheResponse:  "arrow.down.doc"
         }
     }
 }
@@ -124,6 +134,37 @@ nonisolated struct ZoneRule: Codable, Identifiable, Sendable {
     }
 }
 
+extension ZoneRule {
+
+    /// 缓存响应规则的参数摘要（best-effort）：认得的键给友好文案，认不出返回空串——
+    /// 列表行此时只显示表达式，不猜测参数含义。
+    var cacheResponseSummary: String {
+        guard case .object(let params)? = actionParameters else { return "" }
+        var parts: [String] = []
+        if case .object(let directives)? = params["cache_control"], !directives.isEmpty {
+            parts.append("Cache-Control: " + directives.keys.sorted().joined(separator: ", "))
+        }
+        if let tags = params["cache_tags"] {
+            var values: [String] = []
+            if case .object(let obj) = tags, case .array(let list)? = obj["values"] {
+                values = list.compactMap { if case .string(let v) = $0 { return v } else { return nil } }
+            } else if case .array(let list) = tags {
+                values = list.compactMap { if case .string(let v) = $0 { return v } else { return nil } }
+            }
+            parts.append(values.isEmpty ? "Cache-Tag" : "Cache-Tag: " + values.joined(separator: ", "))
+        }
+        let strips: [(key: String, header: String)] = [
+            ("strip_etags", "ETag"), ("strip_set_cookie", "Set-Cookie"), ("strip_last_modified", "Last-Modified"),
+        ]
+        for strip in strips {
+            if case .bool(true)? = params[strip.key] {
+                parts.append(String(localized: "去除 \(strip.header)"))
+            }
+        }
+        return parts.joined(separator: " · ")
+    }
+}
+
 /// 启停 PATCH 只带 enabled（其余字段不回写，避免覆盖丢配置）
 nonisolated struct ZoneRuleToggle: Codable, Sendable {
     let enabled: Bool
@@ -138,6 +179,8 @@ extension ZoneRulePhase {
         case .config:         "set_config"
         case .compression:    "compress_response"
         case .customErrors:   "serve_error"
+        // 不在 App 内新建（supportsEditor == false），这里只为穷尽 switch
+        case .cacheResponse:  "set_cache_settings"
         }
     }
 }

@@ -20,6 +20,8 @@ struct ZoneDetailView: View {
 
     // 分析区（内嵌第一层级，ViewModel 由本页持有，下拉刷新共用）
     @State private var analyticsViewModel: ZoneAnalyticsViewModel
+    // 访问明细 / 安全事件（adaptive 数据集，跟随分析区所选范围）
+    @State private var trafficDetailsViewModel: ZoneTrafficDetailsViewModel
 
     // 操作区
     @State private var actionsViewModel: ZoneActionsViewModel
@@ -41,10 +43,14 @@ struct ZoneDetailView: View {
         _analyticsViewModel = State(initialValue: ZoneAnalyticsViewModel(
             analyticsService: session.analyticsService, zoneId: zoneId
         ))
+        _trafficDetailsViewModel = State(initialValue: ZoneTrafficDetailsViewModel(
+            service: session.zoneAdaptiveAnalyticsService, zoneId: zoneId
+        ))
         _actionsViewModel = State(initialValue: ZoneActionsViewModel(
             service: session.zoneSettingsService,
             zoneService: session.zoneService,
             botService: session.botManagementService,
+            precursorService: session.precursorService,
             zoneId: zoneId,
             paused: zone.paused
         ))
@@ -61,6 +67,8 @@ struct ZoneDetailView: View {
     private var canEditSettings: Bool { auth.hasScope("zone-settings.write") }
     private var canReadBots: Bool { auth.hasScope("bot-management.read") }
     private var canEditBots: Bool { auth.hasScope("bot-management.write") }
+    private var canReadPrecursor: Bool { auth.hasScope("precursor.read") }
+    private var canEditPrecursor: Bool { auth.hasScope("precursor.write") }
     private var canPurge: Bool { auth.hasScope("cache.purge") }
     /// 暂停 / 恢复走 zone 本身，权限与 zone-settings 那条链路无关
     private var canEditZone: Bool { auth.hasScope("zone.write") }
@@ -99,6 +107,12 @@ struct ZoneDetailView: View {
                         .padding(.horizontal, 4)
                     if auth.hasScope("analytics.read") {
                         ZoneAnalyticsSection(viewModel: analyticsViewModel)
+                        // 上方图表保持原数据集；明细与安全事件走 adaptive 数据集，范围跟随上方选择器
+                        ZoneTrafficDetailsSection(
+                            viewModel: trafficDetailsViewModel,
+                            range: analyticsViewModel.selectedRange
+                        )
+                        .padding(.top, 6)   // 与分析区内部卡片间距（14）对齐
                     } else {
                         Label("需要「流量分析」权限才能展示流量图表", systemImage: "lock")
                             .font(.footnote)
@@ -409,6 +423,8 @@ struct ZoneDetailView: View {
                         requestToggle: { on in pendingAction = .underAttack(on) }
                     )
 
+                    precursorRow
+
                     settingToggleRow(
                         title: String(localized: "开发模式"),
                         subtitle: String(localized: "临时绕过缓存（3 小时后自动关闭）"),
@@ -560,6 +576,9 @@ struct ZoneDetailView: View {
             if canReadBots {
                 await actionsViewModel.loadBotConfig()
             }
+            if canReadPrecursor {
+                await actionsViewModel.loadPrecursor()
+            }
         }
         .task {
             // 暂停态只需 zone.read（登录必备），与上面的 settings 权限无关：
@@ -578,6 +597,7 @@ struct ZoneDetailView: View {
         .refreshable {
             if auth.hasScope("analytics.read") {
                 await analyticsViewModel.refresh()
+                await trafficDetailsViewModel.refresh(range: analyticsViewModel.selectedRange)
             }
             if canReadSettings {
                 await actionsViewModel.loadSettings()
@@ -585,6 +605,9 @@ struct ZoneDetailView: View {
             }
             if canReadBots {
                 await actionsViewModel.loadBotConfig()
+            }
+            if canReadPrecursor {
+                await actionsViewModel.loadPrecursor()
             }
             await syncPausedFromAPI()
         }
@@ -691,6 +714,46 @@ struct ZoneDetailView: View {
 
     // MARK: - 设置开关行
 
+    /// 会话级机器人检测（Precursor）：缺读权限显示锁定行（点按走一键重授权）；
+    /// 有权限但读取失败（字段已 deprecated、该 zone 无此能力）整行隐藏。
+    @ViewBuilder
+    private var precursorRow: some View {
+        if !canReadPrecursor {
+            settingPickerRow(
+                title: String(localized: "会话级机器人检测"),
+                subtitle: String(localized: "在整个会话中持续评估访客行为（Precursor）"),
+                icon: "person.badge.clock",
+                tint: .indigo,
+                options: PrecursorMode.allCases,
+                selection: nil,
+                selectionLabel: "",
+                optionLabel: \.label,
+                isBusy: false,
+                canEdit: false,
+                isLoaded: false,
+                deniedScope: "precursor.read",
+                requestChange: { _ in }
+            )
+        } else if let raw = actionsViewModel.precursorMode {
+            settingPickerRow(
+                title: String(localized: "会话级机器人检测"),
+                subtitle: String(localized: "在整个会话中持续评估访客行为（Precursor）"),
+                icon: "person.badge.clock",
+                tint: .indigo,
+                options: PrecursorMode.allCases,
+                selection: PrecursorMode(rawValue: raw),
+                selectionLabel: PrecursorMode.displayLabel(for: raw),
+                optionLabel: \.label,
+                isBusy: actionsViewModel.isUpdatingPrecursor,
+                canEdit: canEditPrecursor,
+                deniedScope: "precursor.write",
+                requestChange: { mode in
+                    Task { await actionsViewModel.setPrecursorMode(mode) }
+                }
+            )
+        }
+    }
+
     /// 2026-09 拆分后的三项 AI 爬虫策略（搜索 / 助手与 Agent / 训练），共用同一个 PUT 端点与忙态
     @ViewBuilder
     private var aiCrawlerPolicyRows: some View {
@@ -761,6 +824,7 @@ struct ZoneDetailView: View {
         optionLabel: @escaping (Option) -> String,
         isBusy: Bool,
         canEdit: Bool,
+        isLoaded: Bool = true,
         deniedScope: String,
         requestChange: @escaping (Option) -> Void
     ) -> some View {
@@ -800,11 +864,20 @@ struct ZoneDetailView: View {
                     deniedScopeHint = deniedScope
                     showActionDenied = true
                 } label: {
-                    Text(selectionLabel)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.trailing)
+                    if isLoaded {
+                        Text(selectionLabel)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.trailing)
+                    } else {
+                        // 缺读权限：只显示锁，点按提示补授权
+                        Image(systemName: "lock.fill")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
+                    }
                 }
+                .accessibilityLabel(title)
             }
         }
     }

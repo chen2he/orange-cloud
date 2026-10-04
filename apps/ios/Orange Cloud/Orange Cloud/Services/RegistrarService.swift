@@ -52,6 +52,38 @@ struct RegistrarService {
     }
 }
 
+// MARK: - 搜索新域名（只查不买：注册必须去 Cloudflare 控制台）
+
+extension RegistrarService {
+
+    /// 关键词搜索候选域名（结果可能有延迟，点开后再用 check 实时确认）
+    func searchDomains(accountId: String, query: String, limit: Int = 20) async throws -> [DomainAvailability] {
+        let response: CFAPIResponse<DomainSearchResponse> = try await client.get(
+            "accounts/\(accountId)/registrar/domain-search",
+            queryItems: [
+                URLQueryItem(name: "q", value: query),
+                URLQueryItem(name: "limit", value: String(limit)),
+            ]
+        )
+        guard response.success else {
+            throw response.toAPIError()
+        }
+        return response.result?.domains ?? []
+    }
+
+    /// 向注册局实时确认（单次 ≤ 20 个）
+    func checkDomains(accountId: String, names: [String]) async throws -> [DomainAvailability] {
+        let response: CFAPIResponse<DomainSearchResponse> = try await client.post(
+            "accounts/\(accountId)/registrar/domain-check",
+            body: DomainCheckRequest(domains: Array(names.prefix(20)))
+        )
+        guard response.success else {
+            throw response.toAPIError()
+        }
+        return response.result?.domains ?? []
+    }
+}
+
 /// PATCH 的异步 workflow 结果，只取判定是否完成所需的字段
 nonisolated struct RegistrarWorkflowStatus: Codable, Sendable {
     let completed: Bool?

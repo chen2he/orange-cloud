@@ -172,6 +172,22 @@ struct WorkerService {
         try await client.delete("accounts/\(accountId)/workers/scripts/\(scriptName)/deployments/\(deploymentId)")
     }
 
+    // MARK: - 预览（beta，workers-scripts.read）
+
+    /// 该 Worker 的预览，按部署时间倒序取前 20 个。worker_id 段接受 Worker 名。
+    func previews(accountId: String, scriptName: String) async throws -> [WorkerPreview] {
+        let response: CFAPIResponseArray<WorkerPreview> = try await client.get(
+            "accounts/\(accountId)/workers/workers/\(scriptName)/previews",
+            queryItems: [
+                URLQueryItem(name: "per_page", value: "20"),
+                URLQueryItem(name: "order_by", value: "deployed_on"),
+                URLQueryItem(name: "order", value: "desc"),
+            ]
+        )
+        guard response.success else { throw response.toAPIError() }
+        return response.result ?? []
+    }
+
     // MARK: - 静态资源（Workers Assets）
     //
     // 流程：① assets-upload-session 提交 manifest（路径→{hash,size}）拿 jwt + 待传分桶

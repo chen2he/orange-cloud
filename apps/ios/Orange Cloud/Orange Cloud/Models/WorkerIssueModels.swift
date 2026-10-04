@@ -27,7 +27,8 @@ nonisolated enum WorkerIssueStatus: String, CaseIterable, Identifiable, Sendable
 
     var label: String {
         switch self {
-        case .active:   String(localized: "活跃")
+        // 独立键：「活跃」已被部署列表占用（繁中「使用中」），作问题状态不通顺
+        case .active:   String(localized: "worker_issue.status.active", defaultValue: "活跃")
         case .resolved: String(localized: "已解决")
         case .ignored:  String(localized: "已忽略")
         }

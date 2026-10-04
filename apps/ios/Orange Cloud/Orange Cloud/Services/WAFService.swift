@@ -95,6 +95,32 @@ struct WAFService {
         return ruleset
     }
 
+    /// 只校验不保存（?dry_run=true）：发与保存完全相同的请求——编辑走 PATCH 规则、
+    /// 已有规则集走 POST 追加、还没有规则集走 PUT entrypoint。成功时 result 为 null，
+    /// 失败原样抛 CF 的校验错误。
+    func validateRule(zoneId: String, rulesetId: String?, ruleId: String?, rule: WAFRuleCreate) async throws {
+        let dryRun = [URLQueryItem(name: "dry_run", value: "true")]
+        let response: CFAPIResponse<JSONValue>
+        if let rulesetId, let ruleId {
+            response = try await client.patch(
+                "zones/\(zoneId)/rulesets/\(rulesetId)/rules/\(ruleId)", body: rule, queryItems: dryRun
+            )
+        } else if let rulesetId {
+            response = try await client.post(
+                "zones/\(zoneId)/rulesets/\(rulesetId)/rules", body: rule, queryItems: dryRun
+            )
+        } else {
+            response = try await client.put(
+                "zones/\(zoneId)/rulesets/phases/http_request_firewall_custom/entrypoint",
+                body: WAFEntrypointUpdate(rules: [rule]),
+                queryItems: dryRun
+            )
+        }
+        guard response.success else {
+            throw response.toAPIError()
+        }
+    }
+
     /// 删除规则（响应即更新后的 ruleset，但统一由调用方重新加载）
     func deleteRule(zoneId: String, rulesetId: String, ruleId: String) async throws {
         try await client.delete("zones/\(zoneId)/rulesets/\(rulesetId)/rules/\(ruleId)")

@@ -113,6 +113,17 @@ struct ZoneRulesHubView: View {
                 ) {
                     CacheRulesListView(zoneId: zoneId, session: session)
                 }
+                // 缓存响应规则（http_response_cache_settings）：同缓存规则的 Pro 门槛与 cache-settings 权限，
+                // 查看 / 启停 / 删除
+                ProGatedNavigationLink(
+                    label: ZoneRulePhase.cacheResponse.title,
+                    systemImage: ZoneRulePhase.cacheResponse.systemImage,
+                    requiredScope: ZoneRulePhase.cacheResponse.readScope,
+                    feature: .cacheRules,
+                    tint: .cyan
+                ) {
+                    ZonePhaseRulesListView(zoneId: zoneId, phase: .cacheResponse, session: session)
+                }
                 // Snippets 列表内部还要 push 详情页（代码 + 规则），入口必须值式
                 ProGatedValueLink(
                     label: "Snippets",
@@ -178,6 +189,8 @@ struct ZonePhaseRulesListView: View {
     }
 
     private var canWrite: Bool { auth.hasScope(phase.writeScope) }
+    /// 可在 App 内新建 / 编辑（缓存响应规则只查看 / 启停 / 删除）
+    private var canEditRules: Bool { canWrite && phase.supportsEditor }
 
     var body: some View {
         Group {
@@ -187,11 +200,13 @@ struct ZonePhaseRulesListView: View {
                 ContentUnavailableView {
                     Label(String(localized: "没有\(phase.title)"), systemImage: phase.systemImage)
                 } description: {
-                    Text(canWrite
+                    Text(!phase.supportsEditor
+                         ? String(localized: "此域名还没有这类规则，可在 Cloudflare 控制台创建。")
+                         : canWrite
                          ? String(localized: "此域名还没有这类规则。点右上角 + 创建第一条。")
                          : String(localized: "此域名还没有这类规则。当前授权仅限读取（\(phase.readScope)），无法创建。"))
                 } actions: {
-                    if canWrite {
+                    if canEditRules {
                         Button("添加规则") { editorTarget = ZoneRuleEditorTarget(rule: nil) }
                             .buttonStyle(.borderedProminent)
                             .tint(Color.ocOrangePressed)
@@ -223,9 +238,11 @@ struct ZonePhaseRulesListView: View {
                                 }
                         }
                     } footer: {
-                        Text(canWrite
+                        Text(!canWrite
+                             ? String(localized: "当前授权仅限读取（\(phase.readScope)），无法修改规则。")
+                             : phase.supportsEditor
                              ? String(localized: "规则按从上到下顺序执行；点按编辑，左滑启停，右滑删除。")
-                             : String(localized: "当前授权仅限读取（\(phase.readScope)），无法修改规则。"))
+                             : String(localized: "规则按从上到下顺序执行；点按查看，左滑启停，右滑删除。"))
                     }
                     .glassRow()
                 }
@@ -237,9 +254,11 @@ struct ZonePhaseRulesListView: View {
         .navigationTitle(phase.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("添加", systemImage: "plus") {
-                    if canWrite { editorTarget = ZoneRuleEditorTarget(rule: nil) } else { showDenied = true }
+            if phase.supportsEditor {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("添加", systemImage: "plus") {
+                        if canWrite { editorTarget = ZoneRuleEditorTarget(rule: nil) } else { showDenied = true }
+                    }
                 }
             }
         }
@@ -287,8 +306,8 @@ struct ZonePhaseRulesListView: View {
 
     private func row(_ rule: ZoneRule) -> some View {
         Button {
-            // 有写权限点行进编辑器；只读授权保持只读详情
-            if canWrite { editorTarget = ZoneRuleEditorTarget(rule: rule) } else { detailRule = rule }
+            // 有写权限且该 phase 有编辑器才进编辑器；否则只读详情
+            if canEditRules { editorTarget = ZoneRuleEditorTarget(rule: rule) } else { detailRule = rule }
         } label: {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
@@ -304,10 +323,14 @@ struct ZonePhaseRulesListView: View {
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.tertiary)
                 }
-                Text(rule.summary)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                // 缓存响应规则参数未建模：认得的给摘要，认不出就只显示表达式
+                let summary = phase == .cacheResponse ? rule.cacheResponseSummary : rule.summary
+                if !summary.isEmpty {
+                    Text(summary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
                 if let expr = rule.expression, !expr.isEmpty {
                     Text(expr)
                         .font(.caption.monospaced())

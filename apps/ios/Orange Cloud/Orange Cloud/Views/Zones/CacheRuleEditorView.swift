@@ -130,9 +130,20 @@ struct CacheRuleEditorView: View {
                     optionsSection
                 }
 
+                if !isReadOnly {
+                    RuleValidateSection(
+                        isValidating: viewModel.isValidating,
+                        passed: viewModel.validationPassed,
+                        disabled: !canSave || viewModel.isValidating
+                    ) {
+                        Task { await validate() }
+                    }
+                }
+
                 if let error = viewModel.error {
                     Section {
                         Text(error).font(.footnote).foregroundStyle(.red)
+                        APIErrorDocLink(message: error)
                     }
                 }
             }
@@ -157,7 +168,12 @@ struct CacheRuleEditorView: View {
                 }
             }
             .interactiveDismissDisabled(viewModel.isSaving)
-            .onDisappear { viewModel.error = nil }
+            // 草稿一改，上次的「校验通过」就不再代表当前内容
+            .onChange(of: draftSignature) { viewModel.validationPassed = false }
+            .onDisappear {
+                viewModel.error = nil
+                viewModel.validationPassed = false
+            }
         }
     }
 
@@ -225,8 +241,8 @@ struct CacheRuleEditorView: View {
         return String(localized: "= \(formatted)")
     }
 
-    private func save() async {
-        viewModel.error = nil
+    /// 保存与校验共用的草稿（参数构造与保存完全一致）
+    private func makeDraft() -> CacheRuleCreate {
         let trimmedExpr = expression.trimmingCharacters(in: .whitespacesAndNewlines)
         var params = CacheActionParameters()
 
@@ -249,17 +265,35 @@ struct CacheRuleEditorView: View {
         }
 
         let trimmedDesc = ruleDescription.trimmingCharacters(in: .whitespaces)
-        let draft = CacheRuleCreate(
+        return CacheRuleCreate(
             action: "set_cache_settings",
             expression: trimmedExpr,
             description: trimmedDesc.isEmpty ? nil : trimmedDesc,
             enabled: enabled,
             actionParameters: params
         )
-        if await viewModel.save(ruleId: existing?.id, draft: draft) {
+    }
+
+    /// 草稿指纹：任一字段变动即清掉上次的校验结果
+    private var draftSignature: String {
+        "\(ruleDescription)|\(enabled)|\(expression)|\(eligibility)|\(edgeMode)|\(edgeSeconds)|"
+            + "\(browserMode)|\(browserSeconds)|\(serveStaleWhileRevalidating)|"
+            + "\(respectStrongEtags)|\(originErrorPagePassthru)"
+    }
+
+    /// 「校验」：发保存同款请求带 ?dry_run=true，不落库、不关表单
+    private func validate() async {
+        viewModel.error = nil
+        await viewModel.validate(ruleId: existing?.id, draft: makeDraft())
+    }
+
+    private func save() async {
+        viewModel.error = nil
+        if await viewModel.save(ruleId: existing?.id, draft: makeDraft()) {
             dismiss()
         }
     }
+
     /// 点按插入字段：光标概念在 TextEditor 里不好拿，直接追加到末尾并补一个空格
     private func insert(_ token: String) {
         if expression.isEmpty {

@@ -86,3 +86,67 @@ nonisolated extension ISO8601DateFormatter {
         return formatter
     }()
 }
+
+// MARK: - 搜索新域名（domain-search / domain-check）
+
+/// GET /registrar/domain-search 与 POST /registrar/domain-check 的 result（{ domains: [...] }）
+nonisolated struct DomainSearchResponse: Codable, Sendable {
+    let domains: [DomainAvailability]?
+}
+
+/// 单个候选域名。搜索结果可能是缓存（有延迟），domain-check 才是向注册局实时确认。
+nonisolated struct DomainAvailability: Codable, Identifiable, Hashable, Sendable {
+    let name:        String
+    let registrable: Bool?
+    /// standard | premium
+    let tier:        String?
+    /// 不可注册原因（见 DomainUnavailableReason）
+    let reason:      String?
+    let pricing:     DomainPricing?
+
+    var id: String { name }
+    var isRegistrable: Bool { registrable == true }
+    var isPremium: Bool { tier == "premium" || reason == "domain_premium" }
+
+    /// 不可注册原因的中文；未知原因原样显示
+    var reasonText: String? {
+        guard let reason, !reason.isEmpty else { return nil }
+        return DomainUnavailableReason(rawValue: reason)?.label ?? reason
+    }
+}
+
+/// 价格（字符串，保留注册商给的精度）
+nonisolated struct DomainPricing: Codable, Hashable, Sendable {
+    let currency:         String?
+    let registrationCost: String?
+    let renewalCost:      String?
+
+    enum CodingKeys: String, CodingKey {
+        case currency
+        case registrationCost = "registration_cost"
+        case renewalCost      = "renewal_cost"
+    }
+}
+
+nonisolated enum DomainUnavailableReason: String, Sendable {
+    case extensionNotSupportedViaAPI   = "extension_not_supported_via_api"
+    case extensionNotSupported         = "extension_not_supported"
+    case extensionDisallowsRegistration = "extension_disallows_registration"
+    case domainPremium                 = "domain_premium"
+    case domainUnavailable             = "domain_unavailable"
+
+    var label: String {
+        switch self {
+        case .extensionNotSupportedViaAPI:    String(localized: "该后缀暂不支持通过 API 注册")
+        case .extensionNotSupported:          String(localized: "Cloudflare 不支持该后缀")
+        case .extensionDisallowsRegistration: String(localized: "该后缀不开放注册")
+        case .domainPremium:                  String(localized: "溢价域名")
+        case .domainUnavailable:              String(localized: "已被注册")
+        }
+    }
+}
+
+/// POST domain-check 请求体（≤ 20 个）
+nonisolated struct DomainCheckRequest: Codable, Sendable {
+    let domains: [String]
+}

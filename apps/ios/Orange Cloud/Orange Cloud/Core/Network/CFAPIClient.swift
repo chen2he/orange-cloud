@@ -45,27 +45,35 @@ actor CFAPIClient {
         try await request(method: "GET", path: path, queryItems: queryItems, body: nil, headers: headers)
     }
 
+    // queryItems：写请求偶尔也要带查询参数（如 Rulesets 的 ?dry_run=true 只校验不落库），默认无。
+
     func post<T: Codable & Sendable, B: Codable & Sendable>(
         _ path: String,
         body: B,
+        queryItems: [URLQueryItem] = [],
         headers: [String: String] = [:]
     ) async throws -> T {
         let data = try JSONEncoder().encode(body)
-        return try await request(method: "POST", path: path, queryItems: [], body: data, headers: headers)
+        return try await request(method: "POST", path: path, queryItems: queryItems, body: data, headers: headers)
     }
 
     func put<T: Codable & Sendable, B: Codable & Sendable>(
         _ path: String,
         body: B,
+        queryItems: [URLQueryItem] = [],
         headers: [String: String] = [:]
     ) async throws -> T {
         let data = try JSONEncoder().encode(body)
-        return try await request(method: "PUT", path: path, queryItems: [], body: data, headers: headers)
+        return try await request(method: "PUT", path: path, queryItems: queryItems, body: data, headers: headers)
     }
 
-    func patch<T: Codable & Sendable, B: Codable & Sendable>(_ path: String, body: B) async throws -> T {
+    func patch<T: Codable & Sendable, B: Codable & Sendable>(
+        _ path: String,
+        body: B,
+        queryItems: [URLQueryItem] = []
+    ) async throws -> T {
         let data = try JSONEncoder().encode(body)
-        return try await request(method: "PATCH", path: path, queryItems: [], body: data)
+        return try await request(method: "PATCH", path: path, queryItems: queryItems, body: data)
     }
 
     func delete(_ path: String, headers: [String: String] = [:]) async throws {

@@ -47,6 +47,12 @@ final class DashboardViewModel {
     private var inventoryLoadedForAccount: String?
     private var inventoryTask: Task<Void, Never>?
 
+    /// 桶列表在一轮刷新里会被要两次（用量格的桶数 + 资源清单），而 listBuckets 现在要发
+    /// 3 个请求（默认 + eu/us 辖区探测）。短时间内复用同一次结果，进行中的请求共享。
+    private var bucketListCache: (accountId: String, at: Date, buckets: [R2Bucket])?
+    private var bucketListTask: (accountId: String, task: Task<[R2Bucket], Error>)?
+    private static let bucketListReuseWindow: TimeInterval = 30
+
     private var loadedZoneIds: Set<String> = []
     private var assetsLoadedForAccount: String?
     private var usageLoadedForAccount: String?
@@ -94,6 +100,26 @@ final class DashboardViewModel {
     /// 资源清单补拉（R2 / D1 / KV / Tunnel）。同一账号只拉一次，下拉刷新强制重拉；
     /// 每类各自 scope 门控，失败或无权限保持空数组（搜索/告警里自然缺席，不弹错）。
     /// 加载跑在 VM 持有的独立 Task：与 loadAssets 同理，手势取消不能波及它。
+    /// 同一账号 30 秒内复用上一次桶列表；进行中的请求直接等它（见 bucketListCache 注释）
+    private func sharedBucketList(accountId: String) async throws -> [R2Bucket] {
+        if let cache = bucketListCache, cache.accountId == accountId,
+           Date().timeIntervalSince(cache.at) < Self.bucketListReuseWindow {
+            return cache.buckets
+        }
+        if let inflight = bucketListTask, inflight.accountId == accountId {
+            return try await inflight.task.value
+        }
+        let service = r2Service
+        let task = Task { try await service.listBuckets(accountId: accountId) }
+        bucketListTask = (accountId, task)
+        defer {
+            if bucketListTask?.accountId == accountId { bucketListTask = nil }
+        }
+        let buckets = try await task.value
+        bucketListCache = (accountId, Date(), buckets)
+        return buckets
+    }
+
     func loadInventory(
         accountId: String,
         canReadR2: Bool,
@@ -128,7 +154,7 @@ final class DashboardViewModel {
         canReadKV: Bool,
         canReadTunnel: Bool
     ) async {
-        if canReadR2, let buckets = try? await r2Service.listBuckets(accountId: accountId) {
+        if canReadR2, let buckets = try? await sharedBucketList(accountId: accountId) {
             r2Buckets = buckets
             r2BucketCount = buckets.count
         }
@@ -351,7 +377,7 @@ final class DashboardViewModel {
             anyData = true
         }
         // 存储桶数（指标格用，失败保持 nil；不计入 anyData——它是统计格不是用量）
-        if let buckets = try? await r2Service.listBuckets(accountId: accountId) {
+        if let buckets = try? await sharedBucketList(accountId: accountId) {
             r2BucketCount = buckets.count
         }
         // CPU 总耗时（独立查询，schema 不支持时保持 nil → UI 回退分位展示）

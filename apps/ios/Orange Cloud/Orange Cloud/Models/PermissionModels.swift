@@ -212,8 +212,9 @@ extension FeaturePermission {
             title: String(localized: "AI 与机器人"),
             description: String(localized: "管控 AI 爬虫、内容机器人与 robots.txt"),
             icon: "ant",
-            readScopes: ["bot-management.read"],
-            editScopes: ["bot-management.write"],
+            // precursor.*：会话级机器人检测（Precursor）的默认模式，同属机器人管控，并入本组
+            readScopes: ["bot-management.read", "precursor.read"],
+            editScopes: ["bot-management.write", "precursor.write"],
             isRequired: false
         ),
         .init(

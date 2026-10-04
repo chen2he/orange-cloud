@@ -450,6 +450,29 @@ struct AnalyticsService {
         return byBucket
     }
 
+    /// R2 带宽：近 30 天上传 / 下载合计（数据集单次最长 31 天）。bucketName 为 nil = 全账号；
+    /// 按桶查须传 GraphQL 口径的桶名（区域限制桶带 eu_ / us_ 前缀，见 R2Bucket.analyticsBucketName）。
+    /// authz / schema 不支持时抛错，由调用方隐藏该块。
+    func r2Bandwidth(accountId: String, bucketName: String? = nil, days: Int = 30) async throws -> R2Bandwidth {
+        let now = Date()
+        let data: R2BandwidthData = try await client.graphQL(
+            query: bucketName == nil ? R2BandwidthQuery.account : R2BandwidthQuery.bucket,
+            variables: R2BandwidthVariables(
+                accountTag: accountId,
+                since: ISO8601Parse.plain.string(from: now.addingTimeInterval(-Double(days) * 86400)),
+                until: ISO8601Parse.plain.string(from: now),
+                bucketName: bucketName
+            )
+        )
+        guard let account = data.viewer.accounts.first else {
+            throw APIError.notFound
+        }
+        return (account.bandwidth ?? []).reduce(into: R2Bandwidth()) {
+            $0.uploadBytes   += $1.sum?.bytesUpload ?? 0
+            $0.downloadBytes += $1.sum?.bytesDownload ?? 0
+        }
+    }
+
     private func fetch(
         zoneId: String,
         range: AnalyticsTimeRange,

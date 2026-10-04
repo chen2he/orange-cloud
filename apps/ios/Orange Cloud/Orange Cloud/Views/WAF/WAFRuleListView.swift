@@ -275,11 +275,20 @@ private struct WAFRuleFormView: View {
                     expressionSection
                 }
 
+                RuleValidateSection(
+                    isValidating: viewModel.isValidating,
+                    passed: viewModel.validationPassed,
+                    disabled: !canSave || viewModel.isValidating
+                ) {
+                    Task { await validate() }
+                }
+
                 if let error = viewModel.error {
                     Section {
                         Text(error)
                             .font(.footnote)
                             .foregroundStyle(.red)
+                        APIErrorDocLink(message: error)
                     }
                 }
             }
@@ -303,9 +312,12 @@ private struct WAFRuleFormView: View {
                 }
             }
             .interactiveDismissDisabled(viewModel.isSaving)
+            // 草稿一改，上次的「校验通过」就不再代表当前内容
+            .onChange(of: draftSignature) { viewModel.validationPassed = false }
             .onDisappear {
                 viewModel.error = nil
                 viewModel.generationError = nil
+                viewModel.validationPassed = false
             }
         }
     }
@@ -464,19 +476,36 @@ private struct WAFRuleFormView: View {
         }
     }
 
-    private func save() async {
-        viewModel.error = nil
+    /// 保存与校验共用的草稿；本地语法检查不过时写 error 并返回 nil
+    private func makeDraft() -> WAFRuleCreate? {
         let trimmedExpression = effectiveExpression
         if let problem = WAFExpressionLint.problem(in: trimmedExpression) {
             viewModel.error = problem
-            return
+            return nil
         }
-        let draft = WAFRuleCreate(
+        return WAFRuleCreate(
             action: action.rawValue,
             expression: trimmedExpression,
             description: name.trimmingCharacters(in: .whitespaces),
             enabled: enabled
         )
+    }
+
+    /// 草稿指纹：任一字段变动即清掉上次的校验结果
+    private var draftSignature: String {
+        [name, action.rawValue, String(enabled), effectiveExpression].joined(separator: "\u{1F}")
+    }
+
+    /// 「校验」：发保存同款请求带 ?dry_run=true，不落库、不关表单
+    private func validate() async {
+        viewModel.error = nil
+        guard let draft = makeDraft() else { return }
+        await viewModel.validate(ruleId: rule?.id, draft: draft)
+    }
+
+    private func save() async {
+        viewModel.error = nil
+        guard let draft = makeDraft() else { return }
         let saved: Bool
         if let rule {
             saved = await viewModel.updateRule(ruleId: rule.id, draft: draft)

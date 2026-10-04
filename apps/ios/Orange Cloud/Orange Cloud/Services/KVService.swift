@@ -62,10 +62,11 @@ struct KVService {
     }
 
     /// 创建命名空间（workers-kv-storage.write）。POST 返回新建的 KVNamespace。
-    func createNamespace(accountId: String, title: String) async throws -> KVNamespace {
+    func createNamespace(accountId: String, title: String, jurisdiction: String? = nil) async throws -> KVNamespace {
+        // jurisdiction：数据驻留（eu / us），nil = 不限（字段省略）
         let response: CFAPIResponse<KVNamespace> = try await client.post(
             "accounts/\(accountId)/storage/kv/namespaces",
-            body: KVCreateRequest(title: title)
+            body: KVCreateRequest(title: title, jurisdiction: jurisdiction)
         )
         guard response.success, let namespace = response.result else {
             throw response.toAPIError()

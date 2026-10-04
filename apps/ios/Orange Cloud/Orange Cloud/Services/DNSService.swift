@@ -13,7 +13,9 @@ struct DNSService {
         self.client = client
     }
 
-    /// 拉取 Zone 下全部 DNS 记录（自动翻页）
+    /// 拉取 Zone 下全部 DNS 记录（自动翻页）。带 include_shadow_metadata=true：
+    /// 被 NS 委派遮蔽的记录在 meta.shadowed_by 里列出遮蔽它的 NS 记录，
+    /// NS 委派记录在 meta.shadowed_records_count 里给出遮蔽数。
     func listRecords(zoneId: String) async throws -> [DNSRecord] {
         var records: [DNSRecord] = []
         var page = 1
@@ -23,6 +25,7 @@ struct DNSService {
                 queryItems: [
                     URLQueryItem(name: "page",     value: String(page)),
                     URLQueryItem(name: "per_page", value: "100"),
+                    URLQueryItem(name: "include_shadow_metadata", value: "true"),
                 ]
             )
             guard response.success else {

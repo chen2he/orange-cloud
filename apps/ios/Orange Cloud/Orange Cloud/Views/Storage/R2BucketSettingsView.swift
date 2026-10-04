@@ -26,6 +26,10 @@ struct R2BucketSettingsView: View {
     private let bucketName: String
     /// 区域限制桶的辖区：挂载时编进 domain，extension 的每个请求都要带 cf-r2-jurisdiction 头
     private let jurisdiction: String?
+    /// GraphQL 分析口径的桶名（区域限制桶带 eu_ / us_ 前缀），按桶查带宽用
+    private let analyticsBucketName: String
+    /// 本桶近 30 天带宽（best-effort，账户级 GraphQL 不可用时为 nil，整段隐藏）
+    @State private var bandwidth: R2Bandwidth?
     private let accountId: String
     private let session: SessionStore
     @State private var isMounted = false
@@ -36,6 +40,7 @@ struct R2BucketSettingsView: View {
         self.canWrite = canWrite
         self.bucketName = bucket.name
         self.jurisdiction = bucket.jurisdiction
+        self.analyticsBucketName = bucket.analyticsBucketName
         self.accountId = session.selectedAccount?.id ?? ""
         self.session = session
         _viewModel = State(initialValue: R2BucketSettingsViewModel(
@@ -54,6 +59,7 @@ struct R2BucketSettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                bandwidthSection
                 filesSection
                 managedSection
                 customDomainsSection
@@ -68,6 +74,12 @@ struct R2BucketSettingsView: View {
                 }
             }
             .task { await refreshMountState() }
+            .task {
+                guard !accountId.isEmpty else { return }
+                bandwidth = try? await session.analyticsService.r2Bandwidth(
+                    accountId: accountId, bucketName: analyticsBucketName
+                )
+            }
             .task { if auth.hasScope("r2-catalog.read") { await catalogViewModel.load() } }
             .confirmationDialog(
                 "启用数据目录",
@@ -111,6 +123,21 @@ struct R2BucketSettingsView: View {
                 Text(viewModel.error ?? "")
             }
             .sensoryFeedback(.success, trigger: viewModel.didChange)
+        }
+    }
+
+    // MARK: - 带宽（近 30 天）
+
+    @ViewBuilder
+    private var bandwidthSection: some View {
+        if let bandwidth {
+            Section {
+                R2BandwidthRow(bandwidth: bandwidth)
+            } header: {
+                Text("带宽（近 30 天）")
+            } footer: {
+                Text("不含小于 100 KiB 的传输")
+            }
         }
     }
 

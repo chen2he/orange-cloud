@@ -100,6 +100,12 @@ final class CachedDNSRecord {
     var comment:   String?
     var zoneId:    String
     var updatedAt: Date
+    // 遮蔽信息（列表带 include_shadow_metadata=true 时回写）。带默认值的新增字段走轻量迁移，
+    // 与 CachedZone.paused 同做法；老缓存在下次刷新前按「未遮蔽」显示。
+    /// 该名称已被 NS 委派遮蔽，Cloudflare 不会响应这条记录
+    var isShadowed: Bool = false
+    /// NS 委派记录遮蔽了多少条记录
+    var shadowedRecordsCount: Int = 0
 
     init(from record: DNSRecord, zoneId: String) {
         self.id        = record.id
@@ -112,9 +118,13 @@ final class CachedDNSRecord {
         self.comment   = record.comment
         self.zoneId    = zoneId
         self.updatedAt = Date()
+        self.isShadowed = record.isShadowed
+        self.shadowedRecordsCount = record.shadowedRecordsCount
     }
 
-    func update(from record: DNSRecord) {
+    /// includesShadowMetadata：列表刷新（带 include_shadow_metadata）时为 true，以响应为准覆盖；
+    /// 单条增改（POST/PUT 响应）不带遮蔽信息，保留已知值，等下次列表刷新再校准。
+    func update(from record: DNSRecord, includesShadowMetadata: Bool = false) {
         type      = record.type
         name      = record.name
         content   = record.content
@@ -123,5 +133,9 @@ final class CachedDNSRecord {
         priority  = record.priority
         comment   = record.comment
         updatedAt = Date()
+        if includesShadowMetadata {
+            isShadowed = record.isShadowed
+            shadowedRecordsCount = record.shadowedRecordsCount
+        }
     }
 }

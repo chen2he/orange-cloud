@@ -157,6 +157,8 @@ struct ZoneRuleEditorView: View {
                 case .config:         configSections
                 case .compression:    compressionSections
                 case .customErrors:   customErrorSections
+                // 缓存响应规则只做查看 / 启停 / 删除，列表页不会打开编辑器
+                case .cacheResponse:  EmptyView()
                 }
 
                 if let error = viewModel.error {
@@ -214,6 +216,8 @@ struct ZoneRuleEditorView: View {
             let statusOK = errorStatusCode.isEmpty || Int(errorStatusCode).map { (400...999).contains($0) } == true
             let bodyOK = preservedAssetName != nil || !errorContent.isEmpty
             return statusOK && bodyOK
+        case .cacheResponse:
+            return false
         }
     }
 
@@ -272,6 +276,10 @@ struct ZoneRuleEditorView: View {
                 params["content"] = .string(errorContent)
             }
             return .object(params)
+
+        case .cacheResponse:
+            // 不提供编辑器（supportsEditor == false），原样回传以防万一
+            return .object(rawParams)
         }
     }
 

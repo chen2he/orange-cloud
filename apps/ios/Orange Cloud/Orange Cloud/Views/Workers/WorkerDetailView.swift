@@ -22,6 +22,8 @@ struct WorkerDetailView: View {
     @State private var editPaywallPresented = false
     /// 该 Worker 的活跃问题数（Workers Issues 汇总，service=脚本名）；未加载 / 不可用为 nil
     @State private var activeIssueCount: Int?
+    /// 预览（beta）：出错或为空时整段隐藏
+    @State private var previews: [WorkerPreview] = []
 
     init(script: CachedWorkerScript, session: SessionStore) {
         self.script = script
@@ -67,6 +69,11 @@ struct WorkerDetailView: View {
 
             metricsSection
                 .glassRow()
+
+            if !previews.isEmpty {
+                previewsSection
+                    .glassRow()
+            }
 
             Section("管理") {
                 Button {
@@ -205,10 +212,46 @@ struct WorkerDetailView: View {
             await metricsViewModel.load()
         }
         .task { await loadIssueCount() }
+        .task { await loadPreviews() }
         .refreshable {
             await loadIssueCount()
+            await loadPreviews()
             guard canViewMetrics else { return }
             await metricsViewModel.refresh()
+        }
+    }
+
+    /// 预览（beta，只读，免费）：失败静默隐藏
+    private func loadPreviews() async {
+        guard auth.hasScope("workers-scripts.read") else { return }
+        if let result = try? await session.workerService.previews(accountId: script.accountId, scriptName: script.id) {
+            previews = result
+        }
+    }
+
+    private var previewsSection: some View {
+        Section("预览") {
+            ForEach(previews) { preview in
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(preview.displayName)
+                        .font(.callout.weight(.semibold))
+                        .lineLimit(1)
+                    if let url = preview.firstURL {
+                        Link(destination: url) {
+                            Text(url.absoluteString)
+                                .font(.caption.monospaced())
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+                    }
+                    if let date = preview.deployedDate {
+                        Text("部署于 \(date.formatted(.dateTime.year().month().day().hour().minute()))")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 2)
+            }
         }
     }
 

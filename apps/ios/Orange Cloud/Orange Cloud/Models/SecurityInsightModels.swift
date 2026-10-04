@@ -87,11 +87,12 @@ nonisolated enum SecurityInsightSeverity: Hashable, Comparable, Sendable {
         }
     }
 
+    /// 独立键：「严重」等中文键已被状态页（事故等级 Major）占用，共用会让英文显示成 Major
     var label: String {
         switch self {
-        case .critical:        String(localized: "严重")
-        case .moderate:        String(localized: "中等")
-        case .low:             String(localized: "低")
+        case .critical:        String(localized: "security_insight.severity.critical", defaultValue: "严重")
+        case .moderate:        String(localized: "security_insight.severity.moderate", defaultValue: "中等")
+        case .low:             String(localized: "security_insight.severity.low", defaultValue: "低")
         case .other(let raw):  raw.isEmpty ? String(localized: "其他") : raw
         }
     }

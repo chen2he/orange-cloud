@@ -42,6 +42,13 @@ nonisolated struct R2Bucket: Codable, Identifiable, Hashable, Sendable {
     /// 需要随请求发送的 cf-r2-jurisdiction 头取值；默认辖区为 nil（不发头）
     var jurisdictionHeader: String? { Self.headerValue(for: jurisdiction) }
 
+    /// GraphQL 分析数据集里的桶名：区域限制桶带辖区下划线前缀（eu_my-bucket / us_my-bucket），
+    /// 默认辖区就是桶名（developers.cloudflare.com/r2/platform/metrics-analytics）。
+    /// 按桶过滤（带宽）与按桶匹配用量（r2StorageAdaptiveGroups / r2OperationsAdaptiveGroups）都用它。
+    var analyticsBucketName: String {
+        jurisdictionHeader.map { "\($0)_\(name)" } ?? name
+    }
+
     /// 非默认辖区的徽章文案：欧盟 / 美国 / FedRAMP；未知辖区原样大写
     var jurisdictionBadge: String? {
         guard let value = jurisdictionHeader else { return nil }
@@ -344,11 +351,46 @@ nonisolated struct D1QueryMeta: Codable, Sendable {
 nonisolated struct KVNamespace: Codable, Identifiable, Hashable, Sendable {
     let id:    String
     let title: String
+    /// 数据驻留辖区（eu / us），未设置为 nil（老响应也没有该字段）
+    let jurisdiction: String?
+
+    /// 列表徽章：与 R2 区域限制桶同一套文案（欧盟 / 美国）
+    var jurisdictionBadge: String? {
+        guard let value = jurisdiction?.lowercased(), !value.isEmpty, value != "default" else { return nil }
+        switch value {
+        case "eu": return String(localized: "欧盟")
+        case "us": return String(localized: "美国")
+        case "fedramp", "fedramp-high": return "FedRAMP"
+        default: return value.uppercased()
+        }
+    }
 }
 
-/// POST /accounts/{id}/storage/kv/namespaces 请求体（仅 title）
+/// KV 数据驻留选项（创建时选，GA）。fedramp 不在 App 内提供。
+nonisolated enum KVJurisdiction: String, CaseIterable, Identifiable, Sendable {
+    case unrestricted = ""
+    case eu
+    case us
+
+    var id: String { rawValue }
+
+    /// 请求体取值；「不限」省略该字段
+    var apiValue: String? { self == .unrestricted ? nil : rawValue }
+
+    var label: String {
+        switch self {
+        // 独立键：中文「不限」已有别处译作 Unlimited，用在数据驻留语义不对
+        case .unrestricted: String(localized: "kv.jurisdiction.unrestricted", defaultValue: "不限")
+        case .eu:   String(localized: "欧盟")
+        case .us:   String(localized: "美国")
+        }
+    }
+}
+
+/// POST /accounts/{id}/storage/kv/namespaces 请求体。jurisdiction 为 nil 时编码器省略（不限）。
 nonisolated struct KVCreateRequest: Codable, Sendable {
     let title: String
+    let jurisdiction: String?
 }
 
 nonisolated struct KVKey: Codable, Identifiable, Hashable, Sendable {

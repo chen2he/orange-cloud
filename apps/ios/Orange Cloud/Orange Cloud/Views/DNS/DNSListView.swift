@@ -205,9 +205,27 @@ struct DNSRecordRow: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
+                // NS 委派记录：遮蔽了同名下多少条记录
+                if record.type == "NS", record.shadowedRecordsCount > 0 {
+                    Text("遮蔽了 \(record.shadowedRecordsCount) 条记录")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
             }
 
             Spacer()
+
+            if record.isShadowed {
+                // 被 NS 委派遮蔽：Cloudflare 不会响应这条记录（详情见编辑页说明）
+                Label("已被遮蔽", systemImage: "eye.slash")
+                    .labelStyle(.titleAndIcon)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.orange.opacity(0.12), in: Capsule())
+                    .fixedSize()
+            }
 
             ProxiedBadge(proxied: record.proxied)
         }

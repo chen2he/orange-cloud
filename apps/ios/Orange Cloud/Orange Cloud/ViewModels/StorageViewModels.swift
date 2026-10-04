@@ -17,7 +17,10 @@ import UIKit
 final class R2BucketListViewModel {
 
     var buckets: [R2Bucket] = []
+    /// 按 GraphQL 桶名（R2Bucket.analyticsBucketName）索引的用量
     var usageByBucket: [String: R2BucketUsage] = [:]
+    /// 全账号近 30 天带宽（best-effort，账户级 GraphQL 不可用时为 nil，UI 隐藏）
+    var bandwidth: R2Bandwidth?
     var isLoading = false
     var error: String?
     var isCreating = false
@@ -62,7 +65,7 @@ final class R2BucketListViewModel {
         do {
             try await service.deleteBucket(accountId: accountId, name: bucket.name, jurisdiction: bucket.jurisdiction)
             buckets.removeAll { $0.id == bucket.id }
-            if bucket.jurisdictionHeader == nil { usageByBucket[bucket.name] = nil }
+            usageByBucket[bucket.analyticsBucketName] = nil
             didDelete.toggle()
             return true
         } catch {
@@ -77,8 +80,11 @@ final class R2BucketListViewModel {
         do {
             buckets = try await service.listBuckets(accountId: accountId)
             isLoading = false
-            // 用量 best-effort：免费账号账户级 GraphQL 常被 authz 挡，失败不影响桶列表
-            usageByBucket = (try? await analyticsService.r2UsageByBucket(accountId: accountId)) ?? [:]
+            // 用量 / 带宽 best-effort：免费账号账户级 GraphQL 常被 authz 挡，失败不影响桶列表
+            async let usageTask = try? analyticsService.r2UsageByBucket(accountId: accountId)
+            async let bandwidthTask = try? analyticsService.r2Bandwidth(accountId: accountId)
+            usageByBucket = await usageTask ?? [:]
+            bandwidth = await bandwidthTask
         } catch {
             // 切分段 / 离开页面取消的请求不算失败（.task(id: kind) 切换会取消飞行中的列表请求）
             if !error.isCancellation { self.error = error.localizedDescription }
@@ -890,14 +896,16 @@ final class KVNamespaceListViewModel {
         self.service = service
     }
 
-    /// 创建命名空间：成功后插到列表顶端，返回 true。
-    func create(accountId: String, title: String) async -> Bool {
+    /// 创建命名空间：成功后插到列表顶端，返回 true。jurisdiction 为数据驻留（nil = 不限）。
+    func create(accountId: String, title: String, jurisdiction: String? = nil) async -> Bool {
         guard !isCreating else { return false }
         isCreating = true
         error = nil
         defer { isCreating = false }
         do {
-            let created = try await service.createNamespace(accountId: accountId, title: title)
+            let created = try await service.createNamespace(
+                accountId: accountId, title: title, jurisdiction: jurisdiction
+            )
             namespaces.insert(created, at: 0)
             didCreate.toggle()
             return true

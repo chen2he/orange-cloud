@@ -213,25 +213,39 @@ private struct StorageContent: View {
             }
             .frame(maxHeight: .infinity)
         } else {
-            List(r2ViewModel.buckets) { bucket in
-                NavigationLink {
-                    R2ObjectListView(bucket: bucket, session: session)
-                } label: {
-                    StorageRow(
-                        icon: "externaldrive", tint: .ocOrange, mono: false,
-                        name: bucket.name,
-                        sub: r2Subtitle(for: bucket),
-                        badge: bucket.jurisdictionBadge
-                    )
-                }
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        if canWriteR2 { bucketToDelete = bucket } else { writeDenied = true }
-                    } label: {
-                        Label("删除", systemImage: "trash")
+            List {
+                // 全账号近 30 天带宽（账户级 GraphQL 不可用时整段隐藏）
+                if let bandwidth = r2ViewModel.bandwidth {
+                    Section {
+                        R2BandwidthRow(bandwidth: bandwidth)
+                    } header: {
+                        Text("带宽（近 30 天）")
+                    } footer: {
+                        Text("不含小于 100 KiB 的传输")
                     }
+                    .glassRow()
                 }
-                .glassRow()
+
+                ForEach(r2ViewModel.buckets) { bucket in
+                    NavigationLink {
+                        R2ObjectListView(bucket: bucket, session: session)
+                    } label: {
+                        StorageRow(
+                            icon: "externaldrive", tint: .ocOrange, mono: false,
+                            name: bucket.name,
+                            sub: r2Subtitle(for: bucket),
+                            badge: bucket.jurisdictionBadge
+                        )
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            if canWriteR2 { bucketToDelete = bucket } else { writeDenied = true }
+                        } label: {
+                            Label("删除", systemImage: "trash")
+                        }
+                    }
+                    .glassRow()
+                }
             }
             .scrollContentBackground(.hidden)
             .refreshable { await load() }
@@ -240,10 +254,9 @@ private struct StorageContent: View {
 
     /// 桶副标题：有用量数据时显示存储/对象/请求，否则回退到位置 · 创建日期
     private func r2Subtitle(for bucket: R2Bucket) -> String {
-        // 用量按桶名聚合（GraphQL 里区域限制桶的 bucketName 带辖区前缀），只对默认辖区桶按名取用量，
-        // 免得同名的 EU 桶误显示默认桶的数据
-        if bucket.jurisdictionHeader == nil,
-           let usage = r2ViewModel.usageByBucket[bucket.name], usage.storageBytes > 0 || usage.objectCount > 0 {
+        // 用量按 GraphQL 桶名聚合：区域限制桶带辖区前缀（eu_xxx），用 analyticsBucketName 对上
+        if let usage = r2ViewModel.usageByBucket[bucket.analyticsBucketName],
+           usage.storageBytes > 0 || usage.objectCount > 0 {
             var parts = [Int64(usage.storageBytes).ocBytes]
             if usage.objectCount > 0 { parts.append(String(localized: "\(usage.objectCount) 个对象")) }
             if usage.totalRequests > 0 { parts.append(String(localized: "本月 \(usage.totalRequests.formatted()) 次操作")) }
@@ -333,7 +346,8 @@ private struct StorageContent: View {
                     StorageRow(
                         icon: "key", tint: .green, mono: true,
                         name: namespace.title,
-                        sub: namespace.id
+                        sub: namespace.id,
+                        badge: namespace.jurisdictionBadge
                     )
                 }
                 .swipeActions(edge: .trailing) {
@@ -392,9 +406,38 @@ private struct StorageContent: View {
     }
 }
 
+// MARK: - R2 带宽行
+
+/// 「上传 / 下载」两格合计，R2 概览与桶设置共用
+struct R2BandwidthRow: View {
+    let bandwidth: R2Bandwidth
+
+    var body: some View {
+        HStack(spacing: 0) {
+            cell(String(localized: "上传"), systemImage: "arrow.up.circle", bytes: bandwidth.uploadBytes)
+            Divider().frame(height: 28)
+            cell(String(localized: "下载"), systemImage: "arrow.down.circle", bytes: bandwidth.downloadBytes)
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func cell(_ title: String, systemImage: String, bytes: Int) -> some View {
+        VStack(spacing: 2) {
+            Label(title, systemImage: systemImage)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(Int64(bytes).ocBytes)
+                .font(.headline)
+                .monospacedDigit()
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+    }
+}
+
 // MARK: - 辖区徽章
 
-/// 区域限制桶的小徽章（欧盟 / 美国 / FedRAMP），用于存储桶列表行
+/// 数据辖区小徽章（欧盟 / 美国 / FedRAMP）：R2 区域限制桶与 KV 数据驻留命名空间共用
 struct R2JurisdictionBadge: View {
     let text: String
 

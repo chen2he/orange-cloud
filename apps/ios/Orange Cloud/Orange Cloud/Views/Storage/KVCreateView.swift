@@ -2,7 +2,7 @@
 //  KVCreateView.swift
 //  Orange Cloud
 //
-//  KV 命名空间创建表单（Sheet）：仅名称。
+//  KV 命名空间创建表单（Sheet）：名称 + 数据驻留（不限 / 欧盟 / 美国）。
 //  入口（StorageView 的 + 按钮）已按 workers-kv-storage.write 门控，此处只管表单提交。
 //
 
@@ -15,6 +15,7 @@ struct KVCreateView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var title = ""
+    @State private var jurisdiction: KVJurisdiction = .unrestricted
     @FocusState private var titleFocused: Bool
 
     private var trimmedTitle: String {
@@ -39,6 +40,12 @@ struct KVCreateView: View {
                     Text("名称")
                 } footer: {
                     Text("为命名空间起一个便于识别的名字。")
+                }
+
+                Section {
+                    Picker("数据驻留", selection: $jurisdiction) {
+                        ForEach(KVJurisdiction.allCases) { Text($0.label).tag($0) }
+                    }
                 }
 
                 if let error = viewModel.error {
@@ -76,7 +83,7 @@ struct KVCreateView: View {
     private func create() async {
         guard canCreate else { return }
         titleFocused = false
-        if await viewModel.create(accountId: accountId, title: trimmedTitle) {
+        if await viewModel.create(accountId: accountId, title: trimmedTitle, jurisdiction: jurisdiction.apiValue) {
             dismiss()
         }
     }

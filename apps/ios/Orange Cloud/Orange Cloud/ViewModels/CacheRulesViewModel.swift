@@ -82,6 +82,29 @@ final class CacheRulesViewModel {
         }
     }
 
+    // MARK: - 规则校验（dry_run，不落库、不改保存流程）
+
+    var isValidating = false
+    /// 最近一次校验通过（编辑器显示「规则校验通过」）；改动草稿后由视图清掉
+    var validationPassed = false
+
+    /// 用保存同款请求带 ?dry_run=true 校验。失败写入 error（与保存失败同处展示）。
+    func validate(ruleId: String?, draft: CacheRuleCreate) async {
+        guard !isValidating, !isSaving else { return }
+        isValidating = true
+        validationPassed = false
+        error = nil
+        defer { isValidating = false }
+        do {
+            try await service.validateRule(
+                zoneId: zoneId, rulesetId: ruleset?.id, ruleId: ruleId, rule: draft
+            )
+            validationPassed = true
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     func delete(rule: CacheRule) async {
         guard let rulesetId = ruleset?.id else { return }
         error = nil

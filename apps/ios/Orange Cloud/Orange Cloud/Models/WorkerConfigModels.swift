@@ -36,6 +36,37 @@ nonisolated struct WorkerDeployment: Codable, Identifiable, Hashable, Sendable {
     var createdDate: Date? { WorkerScript.parseDate(createdOn) }
 }
 
+/// Worker 预览（beta）：GET /workers/workers/{name}/previews 的 result 元素。全部可选、宽容解码。
+nonisolated struct WorkerPreview: Codable, Identifiable, Hashable, Sendable {
+    let id:         String
+    let name:       String?
+    let slug:       String?
+    let urls:       [String]?
+    let createdOn:  String?
+    let updatedOn:  String?
+    let deployedOn: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, slug, urls
+        case createdOn  = "created_on"
+        case updatedOn  = "updated_on"
+        case deployedOn = "deployed_on"
+    }
+
+    var displayName: String { name ?? slug ?? id }
+
+    /// 首个可打开的 http(s) 地址
+    var firstURL: URL? {
+        (urls ?? []).lazy.compactMap { raw -> URL? in
+            let text = raw.hasPrefix("http") ? raw : "https://" + raw
+            guard let url = URL(string: text), url.host != nil else { return nil }
+            return url
+        }.first
+    }
+
+    var deployedDate: Date? { ISO8601Parse.date(deployedOn ?? updatedOn ?? createdOn) }
+}
+
 /// deployments 端点信封的 result（{ deployments: [...] }）
 nonisolated struct WorkerDeploymentsResult: Codable, Sendable {
     let deployments: [WorkerDeployment]

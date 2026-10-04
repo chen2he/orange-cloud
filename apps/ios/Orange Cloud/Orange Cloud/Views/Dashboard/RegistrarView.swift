@@ -2,7 +2,7 @@
 //  RegistrarView.swift
 //  Orange Cloud
 //
-//  在 Cloudflare 注册的域名：到期日、自动续费、转移锁。
+//  在 Cloudflare 注册的域名：到期日、自动续费、转移锁；以及「搜索新域名」（只查不买）。
 //
 
 import SwiftUI
@@ -11,8 +11,11 @@ struct RegistrarView: View {
 
     @Environment(AuthManager.self) private var auth
     @State private var viewModel: RegistrarViewModel
+    @State private var showSearch = false
+    private let session: SessionStore
 
     init(session: SessionStore) {
+        self.session = session
         _viewModel = State(initialValue: RegistrarViewModel(
             service: session.registrarService,
             accountId: session.selectedAccount?.id ?? ""
@@ -23,6 +26,23 @@ struct RegistrarView: View {
 
     var body: some View {
         List {
+            // 搜索新域名：sheet 内自带导航栈（本页被 push 在概览栈里，不再往下 push）
+            Section {
+                Button {
+                    showSearch = true
+                } label: {
+                    HStack(spacing: 12) {
+                        TintIcon(systemImage: "magnifyingglass", color: .ocOrange)
+                        Text("搜索新域名").foregroundStyle(.primary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+            }
+            .glassRow()
+
             Section {
                 if viewModel.isLoading && !viewModel.loaded {
                     ProgressView().frame(maxWidth: .infinity).padding(.vertical, 8)
@@ -49,6 +69,9 @@ struct RegistrarView: View {
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }
         .sensoryFeedback(.success, trigger: viewModel.didMutate)
+        .sheet(isPresented: $showSearch) {
+            DomainSearchView(session: session)
+        }
         .alert("出错了", isPresented: .init(
             get: { viewModel.error != nil }, set: { if !$0 { viewModel.error = nil } }
         )) {

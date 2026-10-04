@@ -147,7 +147,7 @@ final class DNSListViewModel {
             })
             for record in records {
                 if let cached = existingByID[record.id] {
-                    cached.update(from: record)
+                    cached.update(from: record, includesShadowMetadata: true)
                 } else {
                     context.insert(CachedDNSRecord(from: record, zoneId: zoneId))
                 }

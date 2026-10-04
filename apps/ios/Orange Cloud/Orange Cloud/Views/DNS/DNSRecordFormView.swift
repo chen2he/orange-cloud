@@ -64,6 +64,21 @@ struct DNSRecordFormView: View {
                     aiSection
                 }
 
+                // 被 NS 委派遮蔽的记录：编辑也不会生效，先说清楚
+                if case .edit(let record) = mode, record.isShadowed {
+                    Section {
+                        Label {
+                            Text("该名称已通过 NS 记录委派给其他域名服务器，Cloudflare 不会响应这条记录。")
+                                .font(.footnote)
+                        } icon: {
+                            Image(systemName: "eye.slash")
+                                .foregroundStyle(.orange)
+                        }
+                    } header: {
+                        Text("已被遮蔽")
+                    }
+                }
+
                 Section("类型") {
                     Picker("记录类型", selection: $type) {
                         ForEach(Self.recordTypes, id: \.self) { Text($0).tag($0) }
