@@ -25,5 +25,21 @@ sealed class ApiError(message: String?, cause: Throwable? = null) : Exception(me
     /** 反序列化失败 */
     data class Decoding(val original: Throwable) : ApiError(original.message, original)
 
-    data class CfError(val code: Int, val message: String)
+    /**
+     * documentationUrl：2026-08-21 起 CF 在 403 等错误体里给的 `documentation_url`
+     * （该端点所需角色 / 权限的文档）。老端点没有，故可选。
+     */
+    data class CfError(val code: Int, val message: String, val documentationUrl: String? = null)
+
+    /** 首个带文档地址的 CF 业务错误的 documentation_url；没有则 null。界面据此给出「查看所需权限」。 */
+    val documentationUrl: String?
+        get() = when (this) {
+            is Cloudflare -> errors.firstNotNullOfOrNull { it.documentationUrl?.takeIf(String::isNotBlank) }
+            is Http -> cfErrors.firstNotNullOfOrNull { it.documentationUrl?.takeIf(String::isNotBlank) }
+            else -> null
+        }
 }
+
+/** 任意异常上的 CF 文档地址（非 ApiError 恒为 null），供 UI 层直接从 Throwable 取。 */
+val Throwable.cfDocumentationUrl: String?
+    get() = (this as? ApiError)?.documentationUrl

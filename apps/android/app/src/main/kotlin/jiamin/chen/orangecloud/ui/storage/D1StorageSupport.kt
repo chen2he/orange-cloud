@@ -1,8 +1,25 @@
 package jiamin.chen.orangecloud.ui.storage
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import jiamin.chen.orangecloud.R
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
+
+/**
+ * D1 免费套餐每日行读 / 行写上限的报错（2026-09-01 起 REST /query 也强制执行）。
+ * CF 报错文案未固定，按「daily + limit」或「free tier」不区分大小写识别。
+ */
+fun isD1DailyLimitError(message: String?): Boolean {
+    val m = message?.lowercase() ?: return false
+    return ("daily" in m && "limit" in m) || "free tier" in m
+}
+
+/** 用户可见的 D1 报错：命中每日额度上限时先给中文解释，再附原文；否则原文照出。 */
+@Composable
+fun d1ErrorText(raw: String): String =
+    if (isD1DailyLimitError(raw)) stringResource(R.string.d1_daily_limit) + "\n\n" + raw else raw
 
 /** PRAGMA index_list 的一行：索引名 / 是否唯一 / 来源。 */
 data class D1IndexInfo(

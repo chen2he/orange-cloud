@@ -138,7 +138,10 @@ fun formatBytes(bytes: Long): String {
     return "%.1f %s".format(v, units[i])
 }
 
-/** 存储通用列表行：图标 + 标题 + 可选副标题 + 右箭头。onLongClick 提供长按操作（如删除）。 */
+/**
+ * 存储通用列表行：图标 + 标题 + 可选副标题 + 右箭头。onLongClick 提供长按操作（如删除）。
+ * badge 是标题右侧的小徽标（如 R2 区域限制桶的「欧盟」）。
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StorageRow(
@@ -148,6 +151,7 @@ fun StorageRow(
     showChevron: Boolean = true,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
+    badge: String? = null,
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -166,14 +170,21 @@ fun StorageRow(
             Icon(icon, contentDescription = null, tint = OcOrange, modifier = Modifier.size(24.dp))
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(
-                    title,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        title,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    if (badge != null) {
+                        Spacer(Modifier.width(6.dp))
+                        StorageBadge(badge)
+                    }
+                }
                 if (subtitle != null) {
                     Text(
                         subtitle,
@@ -193,4 +204,32 @@ fun StorageRow(
             }
         }
     }
+}
+
+/** 小号描边徽标（R2 / KV 数据驻留区域等）。 */
+@Composable
+fun StorageBadge(text: String) {
+    Surface(
+        color = OcOrange.copy(alpha = 0.14f),
+        shape = RoundedCornerShape(6.dp),
+    ) {
+        Text(
+            text,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = OcOrange,
+            maxLines = 1,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+        )
+    }
+}
+
+/** R2 区域限制徽标文案：欧盟 / 美国 / FedRAMP；默认区域返回 null（不显示）。 */
+@Composable
+fun r2JurisdictionLabel(jurisdiction: String?): String? = when (jurisdiction?.trim()?.lowercase()) {
+    null, "", "default" -> null
+    "eu" -> stringResource(R.string.r2_jurisdiction_eu)
+    "us" -> stringResource(R.string.r2_jurisdiction_us)
+    "fedramp", "fedramp-high" -> "FedRAMP"
+    else -> jurisdiction.uppercase()
 }

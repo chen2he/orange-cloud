@@ -20,7 +20,8 @@ object PermissionCatalog {
         PermissionFeature("account", R.string.perm_account, R.string.perm_account_desc, listOf(Scopes.ACCOUNT_READ)),
         PermissionFeature("zones", R.string.perm_zones, R.string.perm_zones_desc, listOf(Scopes.ZONE_READ), listOf(Scopes.ZONE_WRITE), required = true),
         PermissionFeature("dns", R.string.perm_dns, R.string.perm_dns_desc, listOf(Scopes.DNS_READ), listOf(Scopes.DNS_WRITE)),
-        PermissionFeature("workers", R.string.perm_workers, R.string.perm_workers_desc, listOf(Scopes.WORKERS_READ, Scopes.WORKERS_ROUTES_READ, Scopes.WORKERS_OBSERVABILITY_READ), listOf(Scopes.WORKERS_WRITE, Scopes.WORKERS_ROUTES_WRITE)),
+        // workers-observability.write：Workers Issues 改状态，随 Workers 的编辑级别一起申请
+        PermissionFeature("workers", R.string.perm_workers, R.string.perm_workers_desc, listOf(Scopes.WORKERS_READ, Scopes.WORKERS_ROUTES_READ, Scopes.WORKERS_OBSERVABILITY_READ), listOf(Scopes.WORKERS_WRITE, Scopes.WORKERS_ROUTES_WRITE, Scopes.WORKERS_OBSERVABILITY_WRITE)),
         PermissionFeature("workers_tail", R.string.perm_tail, R.string.perm_tail_desc, listOf(Scopes.WORKERS_TAIL_READ)),
         PermissionFeature("snippets", R.string.perm_snippets, R.string.perm_snippets_desc, listOf(Scopes.SNIPPETS_READ), listOf(Scopes.SNIPPETS_WRITE)),
         PermissionFeature("r2", R.string.perm_r2, R.string.perm_r2_desc, listOf(Scopes.R2_READ), listOf(Scopes.R2_WRITE)),

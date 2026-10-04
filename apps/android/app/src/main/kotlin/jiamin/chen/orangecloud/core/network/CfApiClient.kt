@@ -33,16 +33,25 @@ class CfApiClient @Inject constructor(
     private val tokenProvider: AccessTokenProvider,
 ) {
 
-    suspend inline fun <reified T> get(path: String, query: List<Pair<String, String>> = emptyList()): T {
-        val bytes = executeRaw("GET", path, query, null, JSON_MEDIA_TYPE)
+    /** headers：额外请求头（如 R2 区域限制桶的 cf-r2-jurisdiction），401 重试时一并带上。 */
+    suspend inline fun <reified T> get(
+        path: String,
+        query: List<Pair<String, String>> = emptyList(),
+        headers: Map<String, String> = emptyMap(),
+    ): T {
+        val bytes = executeRaw("GET", path, query, null, JSON_MEDIA_TYPE, headers)
         return decodeResult(bytes, serializer<T>())
     }
 
     /** 列表端点：返回数据 + 分页信息（result_info） */
-    suspend inline fun <reified T> getList(path: String, query: List<Pair<String, String>> = emptyList()): Paged<T> {
-        val bytes = executeRaw("GET", path, query, null, JSON_MEDIA_TYPE)
+    suspend inline fun <reified T> getList(
+        path: String,
+        query: List<Pair<String, String>> = emptyList(),
+        headers: Map<String, String> = emptyMap(),
+    ): Paged<T> {
+        val bytes = executeRaw("GET", path, query, null, JSON_MEDIA_TYPE, headers)
         val env = json.decodeFromString(CfEnvelope.serializer(ListSerializer(serializer<T>())), bytes.decodeToString())
-        if (!env.success) throw ApiError.Cloudflare(env.errors.map { ApiError.CfError(it.code, it.message) })
+        if (!env.success) throw ApiError.Cloudflare(env.errors.map { it.toCfError() })
         return Paged(env.result ?: emptyList(), env.resultInfo)
     }
 
@@ -76,8 +85,8 @@ class CfApiClient @Inject constructor(
     }
 
     /** 只关心 success 的请求（DELETE 等）。非 2xx 由 executeRaw 抛错。 */
-    suspend fun delete(path: String) {
-        executeRaw("DELETE", path, emptyList(), null, JSON_MEDIA_TYPE)
+    suspend fun delete(path: String, headers: Map<String, String> = emptyMap()) {
+        executeRaw("DELETE", path, emptyList(), null, JSON_MEDIA_TYPE, headers)
     }
 
     /** 任意方法 + JSON body 并解码 result（Bulk Redirects 的 DELETE 带 body 等）。 */
@@ -106,7 +115,7 @@ class CfApiClient @Inject constructor(
             val cfErrors = runCatching {
                 json.decodeFromString(CfEnvelope.serializer(JsonElement.serializer()), bytes.decodeToString()).errors
             }.getOrNull().orEmpty()
-            if (cfErrors.isNotEmpty()) throw ApiError.Cloudflare(cfErrors.map { ApiError.CfError(it.code, it.message) })
+            if (cfErrors.isNotEmpty()) throw ApiError.Cloudflare(cfErrors.map { it.toCfError() })
             throw ApiError.Http(code)
         }
         return bytes
@@ -126,9 +135,9 @@ class CfApiClient @Inject constructor(
     }
 
     /** JSON PUT，只校验 success（写端点 result 可能为 null）。 */
-    suspend inline fun <reified B> putChecked(path: String, body: B) {
+    suspend inline fun <reified B> putChecked(path: String, body: B, headers: Map<String, String> = emptyMap()) {
         val payload = json.encodeToString(serializer<B>(), body).encodeToByteArray()
-        checkSuccess(executeRaw("PUT", path, emptyList(), payload, JSON_MEDIA_TYPE))
+        checkSuccess(executeRaw("PUT", path, emptyList(), payload, JSON_MEDIA_TYPE, headers))
     }
 
     /** JSON PATCH，只校验 success（secrets-bulk 等写端点 result 可能为 null）。 */
@@ -138,8 +147,11 @@ class CfApiClient @Inject constructor(
     }
 
     /** KV value 等非 JSON 信封端点：返回原始字节 */
-    suspend fun getRaw(path: String, query: List<Pair<String, String>> = emptyList()): ByteArray =
-        executeRaw("GET", path, query, null, null)
+    suspend fun getRaw(
+        path: String,
+        query: List<Pair<String, String>> = emptyList(),
+        headers: Map<String, String> = emptyMap(),
+    ): ByteArray = executeRaw("GET", path, query, null, null, headers)
 
     /** JSON body POST，返回原始字节（Workers AI 文生图直接回图片二进制，不走 JSON 信封解码）。 */
     suspend inline fun <reified B> postRaw(path: String, body: B): ByteArray {
@@ -165,15 +177,21 @@ class CfApiClient @Inject constructor(
     }
 
     /** 原始字节 PUT，只校验 success（R2 上传等 result 可能为 null）。 */
-    suspend fun putRawVoid(path: String, body: ByteArray, contentType: String) {
-        executeRaw("PUT", path, emptyList(), body, contentType)
+    suspend fun putRawVoid(path: String, body: ByteArray, contentType: String, headers: Map<String, String> = emptyMap()) {
+        executeRaw("PUT", path, emptyList(), body, contentType, headers)
     }
 
     /** 流式下载到文件（R2 大对象复制/移动用，避免整体读入内存）。401 刷新重试一次。 */
-    suspend fun downloadToFile(path: String, dest: File, isRetry: Boolean = false) {
+    suspend fun downloadToFile(
+        path: String,
+        dest: File,
+        headers: Map<String, String> = emptyMap(),
+        isRetry: Boolean = false,
+    ) {
         val token = tokenProvider.validAccessToken()
         val request = Request.Builder()
             .url("$BASE_URL/$path".toHttpUrl())
+            .apply { headers.forEach { (k, v) -> header(k, v) } }
             .header("Authorization", "Bearer $token")
             .get()
             .build()
@@ -191,16 +209,23 @@ class CfApiClient @Inject constructor(
         }
         if (code == 401 && !isRetry) {
             tokenProvider.refreshAccessToken()
-            return downloadToFile(path, dest, isRetry = true)
+            return downloadToFile(path, dest, headers, isRetry = true)
         }
         if (code !in 200..299) throw ApiError.Http(code)
     }
 
     /** 流式上传文件（R2 大对象上传/复制），只校验 success。401 刷新重试一次。 */
-    suspend fun putFile(path: String, file: File, contentType: String, isRetry: Boolean = false) {
+    suspend fun putFile(
+        path: String,
+        file: File,
+        contentType: String,
+        headers: Map<String, String> = emptyMap(),
+        isRetry: Boolean = false,
+    ) {
         val token = tokenProvider.validAccessToken()
         val request = Request.Builder()
             .url("$BASE_URL/$path".toHttpUrl())
+            .apply { headers.forEach { (k, v) -> header(k, v) } }
             .header("Authorization", "Bearer $token")
             .put(file.asRequestBody(contentType.toMediaTypeOrNull()))
             .build()
@@ -213,13 +238,13 @@ class CfApiClient @Inject constructor(
         }
         if (code == 401 && !isRetry) {
             tokenProvider.refreshAccessToken()
-            return putFile(path, file, contentType, isRetry = true)
+            return putFile(path, file, contentType, headers, isRetry = true)
         }
         if (code !in 200..299) {
             val cfErrors = runCatching {
                 json.decodeFromString(CfEnvelope.serializer(JsonElement.serializer()), bytes.decodeToString()).errors
             }.getOrNull().orEmpty()
-            if (cfErrors.isNotEmpty()) throw ApiError.Cloudflare(cfErrors.map { ApiError.CfError(it.code, it.message) })
+            if (cfErrors.isNotEmpty()) throw ApiError.Cloudflare(cfErrors.map { it.toCfError() })
             throw ApiError.Http(code)
         }
     }
@@ -253,7 +278,7 @@ class CfApiClient @Inject constructor(
             json.decodeFromString(CfEnvelope.serializer(JsonElement.serializer()), bytes.decodeToString())
         }.getOrNull()
         if (env != null && !env.success) {
-            throw ApiError.Cloudflare(env.errors.map { ApiError.CfError(it.code, it.message) })
+            throw ApiError.Cloudflare(env.errors.map { it.toCfError() })
         }
     }
 
@@ -347,7 +372,7 @@ class CfApiClient @Inject constructor(
         } catch (e: Exception) {
             throw ApiError.Decoding(e)
         }
-        if (!env.success) throw ApiError.Cloudflare(env.errors.map { ApiError.CfError(it.code, it.message) })
+        if (!env.success) throw ApiError.Cloudflare(env.errors.map { it.toCfError() })
         return env.result ?: throw ApiError.Decoding(IllegalStateException("result missing"))
     }
 
@@ -382,7 +407,7 @@ class CfApiClient @Inject constructor(
             val cfErrors = runCatching {
                 json.decodeFromString(CfEnvelope.serializer(JsonElement.serializer()), bytes.decodeToString()).errors
             }.getOrNull().orEmpty()
-            if (cfErrors.isNotEmpty()) throw ApiError.Cloudflare(cfErrors.map { ApiError.CfError(it.code, it.message) })
+            if (cfErrors.isNotEmpty()) throw ApiError.Cloudflare(cfErrors.map { it.toCfError() })
             if (code == 401) throw ApiError.Unauthorized
             throw ApiError.Http(code)
         }
@@ -396,6 +421,7 @@ class CfApiClient @Inject constructor(
         query: List<Pair<String, String>>,
         body: ByteArray?,
         contentType: String?,
+        headers: Map<String, String> = emptyMap(),
         isRetry: Boolean = false,
     ): ByteArray {
         val token = tokenProvider.validAccessToken()
@@ -409,6 +435,7 @@ class CfApiClient @Inject constructor(
 
         val request = Request.Builder()
             .url(url)
+            .apply { headers.forEach { (k, v) -> header(k, v) } }
             .header("Authorization", "Bearer $token")
             .method(method, requestBody)
             .build()
@@ -431,7 +458,7 @@ class CfApiClient @Inject constructor(
         // 401：刷新后重试一次
         if (code == 401 && !isRetry) {
             tokenProvider.refreshAccessToken()
-            return executeRaw(method, path, query, body, contentType, isRetry = true)
+            return executeRaw(method, path, query, body, contentType, headers, isRetry = true)
         }
 
         return when (code) {
@@ -446,7 +473,7 @@ class CfApiClient @Inject constructor(
                     ).errors
                 }.getOrNull().orEmpty()
                 if (cfErrors.isNotEmpty()) {
-                    throw ApiError.Cloudflare(cfErrors.map { ApiError.CfError(it.code, it.message) })
+                    throw ApiError.Cloudflare(cfErrors.map { it.toCfError() })
                 }
                 throw ApiError.Http(code)
             }

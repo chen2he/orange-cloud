@@ -309,7 +309,9 @@ class DashboardViewModel @Inject constructor(
 
                 buckets.await()?.let { list ->
                     catalog[DashboardResourceType.R2_BUCKET] = list.map {
-                        DashboardResource(DashboardResourceType.R2_BUCKET, it.name, it.name, it.location)
+                        // 区域限制桶的 id 写作 name@jurisdiction（桶名不允许 @），跳转时拆开透传；默认区域仍是裸桶名
+                        val id = it.jurisdictionOrNull?.let { j -> "${it.name}@$j" } ?: it.name
+                        DashboardResource(DashboardResourceType.R2_BUCKET, id, it.name, it.location)
                     }
                 }
                 databases.await()?.let { list ->

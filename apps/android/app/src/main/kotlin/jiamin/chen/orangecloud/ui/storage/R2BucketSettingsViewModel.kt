@@ -12,6 +12,7 @@ import jiamin.chen.orangecloud.data.repository.R2CatalogRepository
 import jiamin.chen.orangecloud.data.model.R2BucketUsage
 import jiamin.chen.orangecloud.data.model.R2CorsRule
 import jiamin.chen.orangecloud.data.model.R2CustomDomain
+import jiamin.chen.orangecloud.data.model.R2Jurisdiction
 import jiamin.chen.orangecloud.data.repository.AccountStore
 import jiamin.chen.orangecloud.data.repository.StorageRepository
 import kotlinx.coroutines.channels.Channel
@@ -68,6 +69,8 @@ class R2BucketSettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val bucket: String = checkNotNull(savedStateHandle["bucket"])
+    /** 区域限制桶的 jurisdiction，默认区域为 null；公开访问 / 自定义域 / CORS 都是桶级调用，须透传。 */
+    private val jurisdiction: String? = R2Jurisdiction.normalize(savedStateHandle.get<String>("jurisdiction"))
     private val hasRead = authRepository.hasScope(Scopes.R2_READ)
     private val canWrite = authRepository.hasScope(Scopes.R2_WRITE)
     // 数据目录是另一条权限链路（r2-catalog.*），与 workers-r2.* 无关
@@ -105,13 +108,13 @@ class R2BucketSettingsViewModel @Inject constructor(
                 return@launch
             }
             // 三项各自独立、best-effort：单项失败（如 CORS 未设置）不影响其它。
-            runCatching { storageRepository.managedDomain(accountId, bucket) }.getOrNull()?.let { md ->
+            runCatching { storageRepository.managedDomain(accountId, bucket, jurisdiction) }.getOrNull()?.let { md ->
                 _uiState.update { it.copy(publicEnabled = md.enabled ?: false, publicDomain = md.domain, publicLoaded = true) }
             }
-            runCatching { storageRepository.customDomains(accountId, bucket) }.getOrNull()?.let { domains ->
+            runCatching { storageRepository.customDomains(accountId, bucket, jurisdiction) }.getOrNull()?.let { domains ->
                 _uiState.update { it.copy(customDomains = domains) }
             }
-            runCatching { storageRepository.corsPolicy(accountId, bucket) }.getOrNull()?.let { cors ->
+            runCatching { storageRepository.corsPolicy(accountId, bucket, jurisdiction) }.getOrNull()?.let { cors ->
                 _uiState.update { it.copy(corsRules = cors.rules.orEmpty(), corsLoaded = true) }
             }
             // 用量是附加信息：account-analytics 常被 authz 挡，失败即不显示。
@@ -128,7 +131,7 @@ class R2BucketSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val accountId = accountStore.selectedAccountId.value ?: error("no account")
-                storageRepository.setManagedDomainEnabled(accountId, bucket, enabled)
+                storageRepository.setManagedDomainEnabled(accountId, bucket, enabled, jurisdiction)
                 _uiState.update { it.copy(publicEnabled = enabled) }
             } catch (e: Exception) {
                 eventChannel.send(BucketSettingsEvent.Error(e.message))
@@ -143,7 +146,7 @@ class R2BucketSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val accountId = accountStore.selectedAccountId.value ?: error("no account")
-                storageRepository.removeCustomDomain(accountId, bucket, domain)
+                storageRepository.removeCustomDomain(accountId, bucket, domain, jurisdiction)
                 _uiState.update { it.copy(customDomains = it.customDomains.filterNot { d -> d.domain == domain }) }
                 eventChannel.send(BucketSettingsEvent.DomainRemoved)
             } catch (e: Exception) {
@@ -157,7 +160,7 @@ class R2BucketSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val accountId = accountStore.selectedAccountId.value ?: error("no account")
-                storageRepository.deleteCorsPolicy(accountId, bucket)
+                storageRepository.deleteCorsPolicy(accountId, bucket, jurisdiction)
                 _uiState.update { it.copy(corsRules = emptyList()) }
                 eventChannel.send(BucketSettingsEvent.CorsCleared)
             } catch (e: Exception) {

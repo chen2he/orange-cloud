@@ -38,7 +38,7 @@ class AuditLogRepository @Inject constructor(
         val page = runCatching { json.decodeFromString(AuditLogPage.serializer(), bytes.decodeToString()) }
             .getOrElse { throw ApiError.Decoding(it) }
         if (!page.success) {
-            throw ApiError.Cloudflare(page.errors.orEmpty().map { ApiError.CfError(it.code, it.message) })
+            throw ApiError.Cloudflare(page.errors.orEmpty().map { it.toCfError() })
         }
         return page
     }
@@ -69,7 +69,7 @@ class AuditLogRepository @Inject constructor(
         val page = runCatching { json.decodeFromString(AuditLogPage.serializer(), bytes.decodeToString()) }
             .getOrElse { throw ApiError.Decoding(it) }
         if (!page.success) {
-            throw ApiError.Cloudflare(page.errors.orEmpty().map { ApiError.CfError(it.code, it.message) })
+            throw ApiError.Cloudflare(page.errors.orEmpty().map { it.toCfError() })
         }
         return page
     }

@@ -19,11 +19,16 @@ import jiamin.chen.orangecloud.data.model.R2CustomDomain
 import jiamin.chen.orangecloud.data.model.R2CustomDomainList
 import jiamin.chen.orangecloud.data.model.R2ManagedDomain
 import jiamin.chen.orangecloud.data.model.R2ManagedDomainUpdate
+import jiamin.chen.orangecloud.data.model.R2Jurisdiction
 import jiamin.chen.orangecloud.data.model.R2Object
 import jiamin.chen.orangecloud.data.model.R2ObjectPage
 import jiamin.chen.orangecloud.data.model.R2UsageData
 import jiamin.chen.orangecloud.data.model.R2UsageVariables
 import jiamin.chen.orangecloud.data.model.encodeStorageKey
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import java.io.File
 import java.time.Instant
 import java.time.ZoneOffset
@@ -44,42 +49,88 @@ class StorageRepository @Inject constructor(
     /** client/v4 单次 PUT 上限（~300MB）；超过无法在本 App 复制/上传（无 multipart / 服务端 copy）。 */
     val maxUploadBytes: Long = 300L * 1024 * 1024
 
-    suspend fun listBuckets(accountId: String): List<R2Bucket> =
-        api.get<R2BucketList>("accounts/$accountId/r2/buckets", listOf("per_page" to "100")).buckets
+    /**
+     * 全部存储桶（含区域限制桶）。不带头的列表是否包含 EU / US 区域桶并不确定，
+     * 故再分别带 cf-r2-jurisdiction: eu / us 各列一次（失败忽略），按 (name, jurisdiction) 合并去重。
+     * 主列表失败照常抛出；探测列表回来的桶若缺 jurisdiction 字段，用探测的区域补上。
+     * 同名桶可分属不同区域，故全程以 (name, jurisdiction) 而非 name 识别一个桶。
+     */
+    suspend fun listBuckets(accountId: String): List<R2Bucket> = coroutineScope {
+        val path = "accounts/$accountId/r2/buckets"
+        val query = listOf("per_page" to "100")
+        val probes = R2Jurisdiction.PROBED.map { j ->
+            async {
+                runCatching {
+                    api.get<R2BucketList>(path, query, R2Jurisdiction.headers(j)).buckets
+                        // 只在字段缺失时补；回了 "default" 说明服务端忽略了头，原样保留以便与主列表去重
+                        .map { if (it.jurisdiction == null) it.copy(jurisdiction = j) else it }
+                }.getOrElse { if (it is CancellationException) throw it; emptyList() }
+            }
+        }
+        val primary = api.get<R2BucketList>(path, query).buckets
+        (primary + probes.awaitAll().flatten()).distinctBy { it.name to it.jurisdictionOrNull }
+    }
 
     /** 创建 R2 桶（workers-r2-storage.write）。名称须小写字母/数字/连字符，3–63 位。 */
     suspend fun createBucket(accountId: String, name: String): R2Bucket =
         api.post("accounts/$accountId/r2/buckets", R2CreateRequest(name))
 
     /** 删除 R2 桶（workers-r2-storage.write）。Cloudflare 要求桶必须为空，否则报错。不可恢复。 */
-    suspend fun deleteBucket(accountId: String, name: String) =
-        api.delete("accounts/$accountId/r2/buckets/$name")
+    suspend fun deleteBucket(accountId: String, name: String, jurisdiction: String? = null) =
+        api.delete("accounts/$accountId/r2/buckets/$name", R2Jurisdiction.headers(jurisdiction))
 
     /**
      * 对象列表一页。传 delimiter=/ 让服务端把子前缀折叠成「文件夹」，prefix 为当前所在文件夹；
      * result_info.delimited 即子文件夹前缀列表。
      */
-    suspend fun listObjects(accountId: String, bucket: String, prefix: String, cursor: String?): R2ObjectPage {
+    suspend fun listObjects(
+        accountId: String,
+        bucket: String,
+        prefix: String,
+        cursor: String?,
+        jurisdiction: String? = null,
+    ): R2ObjectPage {
         val query = buildList {
             add("per_page" to "100")
             add("delimiter" to "/")
             if (prefix.isNotEmpty()) add("prefix" to prefix)
             cursor?.let { add("cursor" to it) }
         }
-        val paged = api.getList<R2Object>("accounts/$accountId/r2/buckets/$bucket/objects", query)
+        val paged = api.getList<R2Object>(
+            "accounts/$accountId/r2/buckets/$bucket/objects",
+            query,
+            R2Jurisdiction.headers(jurisdiction),
+        )
         val next = if (paged.info?.isTruncated == true) paged.info?.cursor else null
         return R2ObjectPage(paged.items, paged.info?.delimitedPrefixes.orEmpty(), next)
     }
 
-    suspend fun getObjectBytes(accountId: String, bucket: String, key: String): ByteArray =
-        api.getRaw("accounts/$accountId/r2/buckets/$bucket/objects/${encodeStorageKey(key)}")
+    suspend fun getObjectBytes(accountId: String, bucket: String, key: String, jurisdiction: String? = null): ByteArray =
+        api.getRaw(
+            "accounts/$accountId/r2/buckets/$bucket/objects/${encodeStorageKey(key)}",
+            headers = R2Jurisdiction.headers(jurisdiction),
+        )
 
     /** 上传对象（原始字节 PUT，自带 Content-Type；result 可能为 null 故只校验 success）。 */
-    suspend fun putObject(accountId: String, bucket: String, key: String, bytes: ByteArray, contentType: String) =
-        api.putRawVoid("accounts/$accountId/r2/buckets/$bucket/objects/${encodeStorageKey(key)}", bytes, contentType)
+    suspend fun putObject(
+        accountId: String,
+        bucket: String,
+        key: String,
+        bytes: ByteArray,
+        contentType: String,
+        jurisdiction: String? = null,
+    ) = api.putRawVoid(
+        "accounts/$accountId/r2/buckets/$bucket/objects/${encodeStorageKey(key)}",
+        bytes,
+        contentType,
+        R2Jurisdiction.headers(jurisdiction),
+    )
 
-    suspend fun deleteObject(accountId: String, bucket: String, key: String) =
-        api.delete("accounts/$accountId/r2/buckets/$bucket/objects/${encodeStorageKey(key)}")
+    suspend fun deleteObject(accountId: String, bucket: String, key: String, jurisdiction: String? = null) =
+        api.delete(
+            "accounts/$accountId/r2/buckets/$bucket/objects/${encodeStorageKey(key)}",
+            R2Jurisdiction.headers(jurisdiction),
+        )
 
     /**
      * 流式复制对象到新 key（同桶，过临时文件不入内存）。onProgress 0→0.5 下载、0.5→1 上传。
@@ -87,15 +138,16 @@ class StorageRepository @Inject constructor(
      */
     suspend fun copyObject(
         accountId: String, bucket: String, sourceKey: String, destKey: String,
-        contentType: String, onProgress: (Float) -> Unit,
+        contentType: String, jurisdiction: String? = null, onProgress: (Float) -> Unit,
     ) {
         val base = "accounts/$accountId/r2/buckets/$bucket/objects"
+        val headers = R2Jurisdiction.headers(jurisdiction)
         val temp = File.createTempFile("r2copy", null, context.cacheDir)
         try {
             onProgress(0f)
-            api.downloadToFile("$base/${encodeStorageKey(sourceKey)}", temp)
+            api.downloadToFile("$base/${encodeStorageKey(sourceKey)}", temp, headers)
             onProgress(0.5f)
-            api.putFile("$base/${encodeStorageKey(destKey)}", temp, contentType)
+            api.putFile("$base/${encodeStorageKey(destKey)}", temp, contentType, headers)
             onProgress(1f)
         } finally {
             temp.delete()
@@ -103,35 +155,48 @@ class StorageRepository @Inject constructor(
     }
 
     /** 精确判断某 key 是否存在（client/v4 对象端点无 HEAD，用 prefix 列举核对）。 */
-    suspend fun objectExists(accountId: String, bucket: String, key: String): Boolean =
-        listObjects(accountId, bucket, prefix = key, cursor = null).objects.any { it.key == key }
+    suspend fun objectExists(accountId: String, bucket: String, key: String, jurisdiction: String? = null): Boolean =
+        listObjects(accountId, bucket, prefix = key, cursor = null, jurisdiction = jurisdiction).objects.any { it.key == key }
 
     // MARK: - R2 桶设置（公开访问 / CORS）
 
     private fun bucketPath(accountId: String, bucket: String) = "accounts/$accountId/r2/buckets/$bucket"
 
-    suspend fun managedDomain(accountId: String, bucket: String): R2ManagedDomain =
-        api.get("${bucketPath(accountId, bucket)}/domains/managed")
+    // 以下桶级调用都透传 jurisdiction：区域限制桶不带 cf-r2-jurisdiction 头会被当成不存在
+    suspend fun managedDomain(accountId: String, bucket: String, jurisdiction: String? = null): R2ManagedDomain =
+        api.get("${bucketPath(accountId, bucket)}/domains/managed", headers = R2Jurisdiction.headers(jurisdiction))
 
-    suspend fun setManagedDomainEnabled(accountId: String, bucket: String, enabled: Boolean) =
-        api.putChecked("${bucketPath(accountId, bucket)}/domains/managed", R2ManagedDomainUpdate(enabled))
+    suspend fun setManagedDomainEnabled(accountId: String, bucket: String, enabled: Boolean, jurisdiction: String? = null) =
+        api.putChecked(
+            "${bucketPath(accountId, bucket)}/domains/managed",
+            R2ManagedDomainUpdate(enabled),
+            R2Jurisdiction.headers(jurisdiction),
+        )
 
-    suspend fun customDomains(accountId: String, bucket: String): List<R2CustomDomain> =
-        api.get<R2CustomDomainList>("${bucketPath(accountId, bucket)}/domains/custom").domains.orEmpty()
+    suspend fun customDomains(accountId: String, bucket: String, jurisdiction: String? = null): List<R2CustomDomain> =
+        api.get<R2CustomDomainList>(
+            "${bucketPath(accountId, bucket)}/domains/custom",
+            headers = R2Jurisdiction.headers(jurisdiction),
+        ).domains.orEmpty()
 
-    suspend fun removeCustomDomain(accountId: String, bucket: String, domain: String) =
-        api.delete("${bucketPath(accountId, bucket)}/domains/custom/${encodeStorageKey(domain)}")
+    suspend fun removeCustomDomain(accountId: String, bucket: String, domain: String, jurisdiction: String? = null) =
+        api.delete(
+            "${bucketPath(accountId, bucket)}/domains/custom/${encodeStorageKey(domain)}",
+            R2Jurisdiction.headers(jurisdiction),
+        )
 
     /** 当前 CORS 策略（无策略时返回空 rules）。 */
-    suspend fun corsPolicy(accountId: String, bucket: String): R2CorsPolicy =
-        runCatching { api.get<R2CorsPolicy>("${bucketPath(accountId, bucket)}/cors") }.getOrDefault(R2CorsPolicy())
+    suspend fun corsPolicy(accountId: String, bucket: String, jurisdiction: String? = null): R2CorsPolicy =
+        runCatching {
+            api.get<R2CorsPolicy>("${bucketPath(accountId, bucket)}/cors", headers = R2Jurisdiction.headers(jurisdiction))
+        }.getOrDefault(R2CorsPolicy())
 
     /** 整组写入 CORS 策略（PUT 覆盖）。 */
-    suspend fun putCorsPolicy(accountId: String, bucket: String, policy: R2CorsPolicy) =
-        api.putChecked("${bucketPath(accountId, bucket)}/cors", policy)
+    suspend fun putCorsPolicy(accountId: String, bucket: String, policy: R2CorsPolicy, jurisdiction: String? = null) =
+        api.putChecked("${bucketPath(accountId, bucket)}/cors", policy, R2Jurisdiction.headers(jurisdiction))
 
-    suspend fun deleteCorsPolicy(accountId: String, bucket: String) =
-        api.delete("${bucketPath(accountId, bucket)}/cors")
+    suspend fun deleteCorsPolicy(accountId: String, bucket: String, jurisdiction: String? = null) =
+        api.delete("${bucketPath(accountId, bucket)}/cors", R2Jurisdiction.headers(jurisdiction))
 
     /**
      * 每桶用量（本月操作 Class A/B + 当前存储快照），account-analytics GraphQL。

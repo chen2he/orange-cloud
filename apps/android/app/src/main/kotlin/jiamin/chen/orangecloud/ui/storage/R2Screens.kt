@@ -89,7 +89,8 @@ import java.io.File
 @Composable
 fun R2BucketListScreen(
     onBack: () -> Unit,
-    onOpenBucket: (String) -> Unit,
+    /** (桶名, jurisdiction)；默认区域的 jurisdiction 为 null。 */
+    onOpenBucket: (String, String?) -> Unit,
     viewModel: R2BucketListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -132,8 +133,9 @@ fun R2BucketListScreen(
                         Icons.Outlined.Cloud,
                         bucket.name,
                         bucket.location,
-                        onClick = { onOpenBucket(bucket.name) },
+                        onClick = { onOpenBucket(bucket.name, bucket.jurisdictionOrNull) },
                         onLongClick = if (viewModel.canWrite) ({ toDelete = bucket }) else null,
+                        badge = r2JurisdictionLabel(bucket.jurisdiction),
                     )
                 }
             }

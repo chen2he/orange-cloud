@@ -51,7 +51,10 @@ data class Tunnel(
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("conns_active_at") val connsActiveAt: String? = null,
     @SerialName("tun_type") val tunType: String? = null,
+    /** 已弃用：用 [configSrc]。仅在 config_src 缺失时作兜底。 */
     @SerialName("remote_config") val remoteConfig: Boolean? = null,
+    /** 配置来源：local（本地 config.yml）/ cloudflare（远程托管）。取代 remote_config。 */
+    @SerialName("config_src") val configSrc: String? = null,
     /**
      * 过渡期字段：CF 将于 **2026-10-05** 从 list/get 响应移除（2026-07-09 公告）。
      * 只用来在详情页首帧占位，真实数据以 SecurityRepository.tunnelConnections(...) 为准。
@@ -59,6 +62,13 @@ data class Tunnel(
     val connections: List<TunnelConnection>? = null,
 ) {
     val activeConnections: Int get() = connections?.size ?: 0
+
+    /**
+     * 是否远程托管（ingress 可经 API 管理）。以 config_src == "cloudflare" 为准；
+     * 只有 config_src 缺失时才回退到已弃用的 remote_config。两者都缺失为 null（未知）。
+     */
+    val isRemotelyManaged: Boolean?
+        get() = configSrc?.let { it.equals("cloudflare", ignoreCase = true) } ?: remoteConfig
 }
 
 /**
@@ -85,7 +95,20 @@ data class BotManagementConfig(
     @SerialName("cf_robots_variant") val cfRobotsVariant: String? = null,
     /** 托管 robots.txt */
     @SerialName("is_robots_txt_managed") val isRobotsTxtManaged: Boolean? = null,
-)
+    // —— 2026-09-15 起（全套餐）：ai_bots_protection 拆成三类 AI 爬虫，各自一档 ——
+    /** AI 搜索爬虫：disabled / block / only_on_ad_pages */
+    @SerialName("ai_search") val aiSearch: String? = null,
+    /** AI 助手与 Agent：disabled / block / only_on_ad_pages */
+    @SerialName("ai_user") val aiUser: String? = null,
+    /** AI 训练爬虫：disabled / disallow（只在 robots.txt 声明）/ block / only_on_ad_pages */
+    @SerialName("ai_training") val aiTraining: String? = null,
+    /** Bot Preference Sync：按以上三项由 Cloudflare 生成 robots.txt（取代托管 robots.txt） */
+    @SerialName("bot_preference_sync_enabled") val botPreferenceSyncEnabled: Boolean? = null,
+) {
+    /** 响应里出现任一新字段即视为已上新版，界面改用三项选择替代旧的「AI 爬虫」。 */
+    val hasAiPreferences: Boolean
+        get() = aiSearch != null || aiUser != null || aiTraining != null
+}
 
 /** 单字段写入体。null 项不参与序列化（encodeDefaults=false 时默认省略）。 */
 @Serializable
@@ -95,6 +118,10 @@ data class BotManagementUpdate(
     @SerialName("content_bots_protection") val contentBotsProtection: String? = null,
     @SerialName("cf_robots_variant") val cfRobotsVariant: String? = null,
     @SerialName("is_robots_txt_managed") val isRobotsTxtManaged: Boolean? = null,
+    @SerialName("ai_search") val aiSearch: String? = null,
+    @SerialName("ai_user") val aiUser: String? = null,
+    @SerialName("ai_training") val aiTraining: String? = null,
+    @SerialName("bot_preference_sync_enabled") val botPreferenceSyncEnabled: Boolean? = null,
 )
 
 @Serializable

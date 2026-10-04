@@ -2,6 +2,9 @@ package jiamin.chen.orangecloud.core.network
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * Cloudflare API 通用信封 { result, success, errors, messages, result_info }。
@@ -17,7 +20,14 @@ data class CfEnvelope<T>(
 )
 
 @Serializable
-data class CfApiError(val code: Int = 0, val message: String = "")
+data class CfApiError(
+    val code: Int = 0,
+    val message: String = "",
+    /** 2026-08-21 起 403 等错误可能附带：该端点所需权限的文档地址。 */
+    @SerialName("documentation_url") val documentationUrl: String? = null,
+) {
+    fun toCfError(): ApiError.CfError = ApiError.CfError(code, message, documentationUrl)
+}
 
 @Serializable
 data class CfMessage(val code: Int = 0, val message: String = "")
@@ -36,7 +46,15 @@ data class ResultInfo(
     // R2 带 delimiter 列举时的「文件夹」前缀。实测 CF 返回的键就叫 delimited
     // （不是 delimited_prefixes），与 iOS CFAPIResponse.ResultInfo.delimited 一致。
     @SerialName("delimited") val delimitedPrefixes: List<String>? = null,
-)
+    // 对象式游标（Workers Issues 发生记录等）：result_info.cursors.after。
+    // 共享信封里用 JsonElement 宽松接住，避免别的端点回成其它形态时整页解码失败。
+    val cursors: JsonElement? = null,
+) {
+    /** cursors.after（下一页游标）；不存在或为空串时 null。 */
+    val cursorAfter: String?
+        get() = ((cursors as? JsonObject)?.get("after") as? JsonPrimitive)
+            ?.takeIf { it.isString }?.content?.takeIf { it.isNotEmpty() }
+}
 
 /** 列表端点的解码结果：数据 + 分页信息 */
 data class Paged<T>(val items: List<T>, val info: ResultInfo?)

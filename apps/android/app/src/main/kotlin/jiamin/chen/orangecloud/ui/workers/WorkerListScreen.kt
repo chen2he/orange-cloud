@@ -20,7 +20,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.CircularProgressIndicator
@@ -58,9 +60,12 @@ import jiamin.chen.orangecloud.data.model.WorkerScript
 fun WorkerListScreen(
     onWorkerClick: (String) -> Unit = {},
     onCreate: () -> Unit = {},
+    /** Workers Issues（全账户问题列表，Pro 闸门在路由上）。 */
+    onOpenIssues: () -> Unit = {},
     viewModel: WorkerListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val issuesSummary by viewModel.issuesSummary.collectAsStateWithLifecycle()
     val sort by viewModel.sort.collectAsStateWithLifecycle()
     val phase = rememberSkyPhase()
     val onSky = phase.onSky
@@ -101,6 +106,19 @@ fun WorkerListScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
+                    // 「问题」入口：Workers Issues 把未捕获异常 / 5xx / 错误日志归并成问题
+                    item(key = "issues") {
+                        IssuesEntryRow(
+                            subtitle = issuesSummary?.let {
+                                stringResource(
+                                    R.string.wi_summary,
+                                    (it.activeIssues ?: 0L).toInt(),
+                                    (it.activeOccurrences ?: 0L).toInt(),
+                                )
+                            },
+                            onClick = onOpenIssues,
+                        )
+                    }
                     items(sortedWorkers, key = { it.id }) { worker ->
                         WorkerRow(worker, onClick = { onWorkerClick(worker.id) })
                     }
@@ -116,6 +134,47 @@ fun WorkerListScreen(
             ) { Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.worker_create_title)) }
         }
       }
+    }
+}
+
+@Composable
+private fun IssuesEntryRow(subtitle: String?, onClick: () -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+    ) {
+        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(OcOrange.copy(alpha = 0.16f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Outlined.BugReport, contentDescription = null, tint = OcOrange, modifier = Modifier.size(22.dp))
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.wi_title),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Icon(
+                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

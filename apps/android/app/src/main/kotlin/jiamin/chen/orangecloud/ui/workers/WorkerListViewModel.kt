@@ -9,12 +9,16 @@ import jiamin.chen.orangecloud.core.system.AppPrefs
 import jiamin.chen.orangecloud.core.system.ResourceSort
 import jiamin.chen.orangecloud.data.model.WorkerScript
 import jiamin.chen.orangecloud.data.repository.AccountStore
+import jiamin.chen.orangecloud.data.model.WorkerIssuesSummary
 import jiamin.chen.orangecloud.data.repository.WorkerRepository
+import jiamin.chen.orangecloud.data.repository.WorkersIssuesRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -37,6 +41,7 @@ data class WorkerListUiState(
 class WorkerListViewModel @Inject constructor(
     private val accountStore: AccountStore,
     private val workerRepository: WorkerRepository,
+    private val issuesRepository: WorkersIssuesRepository,
     private val appPrefs: AppPrefs,
     authRepository: AuthRepository,
 ) : ViewModel() {
@@ -53,6 +58,11 @@ class WorkerListViewModel @Inject constructor(
     private val canWriteScope = authRepository.hasScope(Scopes.WORKERS_WRITE)
     private val loading = MutableStateFlow(false)
     private val error = MutableStateFlow(false)
+
+    /** Workers Issues 全账户汇总（入口行的副标题），best-effort；缺 workers-observability.read 不请求。 */
+    private val canViewIssues = authRepository.hasScope(Scopes.WORKERS_OBSERVABILITY_READ)
+    private val _issuesSummary = MutableStateFlow<WorkerIssuesSummary?>(null)
+    val issuesSummary: StateFlow<WorkerIssuesSummary?> = _issuesSummary.asStateFlow()
 
     private val workers: Flow<List<WorkerScript>> = accountStore.selectedAccountId.flatMapLatest { id ->
         if (id == null) flowOf(emptyList()) else workerRepository.observeWorkers(id)
@@ -90,6 +100,13 @@ class WorkerListViewModel @Inject constructor(
                 error.value = true
             } finally {
                 loading.value = false
+            }
+        }
+        if (canViewIssues) {
+            viewModelScope.launch {
+                val id = accountStore.run { ensureLoaded(); selectedAccountId.value } ?: return@launch
+                _issuesSummary.value = runCatching { issuesRepository.summary(id) }
+                    .getOrElse { if (it is CancellationException) throw it; null }
             }
         }
     }

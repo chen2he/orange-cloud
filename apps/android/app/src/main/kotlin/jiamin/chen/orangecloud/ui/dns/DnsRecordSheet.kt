@@ -100,12 +100,14 @@ private fun DnsRecordForm(
             fontWeight = FontWeight.Bold,
         )
 
+        // 2026-06-30 起 CF API 不再允许修改已有记录的类型：编辑时锁定，仅新建可选（对齐 iOS .disabled(isEditing)）
         FieldDropdown(
             label = stringResource(R.string.dns_field_type),
             options = DnsForm.recordTypes,
             selected = type,
             optionLabel = { it },
             onSelect = { type = it },
+            enabled = record == null,
         )
 
         OutlinedTextField(

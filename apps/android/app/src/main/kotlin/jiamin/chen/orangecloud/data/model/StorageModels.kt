@@ -16,7 +16,30 @@ data class R2Bucket(
     @SerialName("creation_date") val creationDate: String? = null,
     val location: String? = null,
     @SerialName("storage_class") val storageClass: String? = null,
-)
+    /**
+     * 数据驻留区域：default / eu / us / fedramp / fedramp-high。
+     * 非 default 的桶，其所有桶级 REST 调用都必须带 cf-r2-jurisdiction 头，否则 CF 当作不存在。
+     */
+    val jurisdiction: String? = null,
+) {
+    /** 规整后的区域（缺省 / default 均为 null），用于去重与透传。 */
+    val jurisdictionOrNull: String? get() = R2Jurisdiction.normalize(jurisdiction)
+}
+
+/** R2 区域限制（jurisdiction）工具。2026-08 起除 EU 外新增 US；FedRAMP 仅政府账户。 */
+object R2Jurisdiction {
+    const val HEADER = "cf-r2-jurisdiction"
+
+    /** 列表时额外探测的区域（不带头的列表是否包含区域桶并不确定，见规格 W1-5）。 */
+    val PROBED: List<String> = listOf("eu", "us")
+
+    fun normalize(raw: String?): String? =
+        raw?.trim()?.lowercase()?.takeIf { it.isNotEmpty() && it != "default" }
+
+    /** 桶级请求要带的头；默认区域返回空表。 */
+    fun headers(jurisdiction: String?): Map<String, String> =
+        normalize(jurisdiction)?.let { mapOf(HEADER to it) } ?: emptyMap()
+}
 
 @Serializable
 data class R2Object(

@@ -12,7 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Zone 设置读写（development_mode / security_level）+ 全量缓存清理（对应 iOS ZoneSettingsService）。
+ * Zone 设置读写（development_mode / security_level）+ 缓存清理 / 标记过期（对应 iOS ZoneSettingsService）。
  */
 @Singleton
 class ZoneSettingsRepository @Inject constructor(
@@ -47,5 +47,18 @@ class ZoneSettingsRepository @Inject constructor(
     /** 按 URL 清理缓存（单文件 purge，单次最多 30 个 URL）。 */
     suspend fun purgeFiles(zoneId: String, urls: List<String>) {
         api.post<PurgeResult, PurgeFilesRequest>("zones/$zoneId/purge_cache", PurgeFilesRequest(files = urls))
+    }
+
+    // MARK: - 缓存失效（Invalidate，2026-09-28 GA）
+    // 请求体与 purge_cache 完全相同、同一权限（cache.purge）与限流；区别是只把缓存标记为过期，
+    // 下次请求向源站校验（304 则继续用缓存），而不是直接删掉。
+
+    suspend fun invalidateAllCache(zoneId: String) {
+        api.postChecked("zones/$zoneId/invalidate_cache", PurgeRequest(purgeEverything = true))
+    }
+
+    /** 按 URL 标记过期（与按 URL 清缓存同一上限）。 */
+    suspend fun invalidateFiles(zoneId: String, urls: List<String>) {
+        api.postChecked("zones/$zoneId/invalidate_cache", PurgeFilesRequest(files = urls))
     }
 }

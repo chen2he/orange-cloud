@@ -133,7 +133,8 @@ fun TunnelDetailScreen(
 
                     else -> {
                         val tunnel = state.tunnel!!
-                        val isRemote = tunnel.remoteConfig == true
+                        // config_src 优先，缺失才回退 remote_config（已弃用）
+                        val isRemote = tunnel.isRemotelyManaged == true
                         Column(
                             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
                                 .padding(horizontal = 16.dp).padding(bottom = 24.dp),
@@ -142,7 +143,7 @@ fun TunnelDetailScreen(
                             SectionCard(stringResource(R.string.tunnel_section_info)) {
                                 StatusRow(tunnel.status)
                                 tunnel.tunType?.let { InfoRow(stringResource(R.string.tunnel_field_type), it) }
-                                tunnel.remoteConfig?.let {
+                                tunnel.isRemotelyManaged?.let {
                                     InfoRow(
                                         stringResource(R.string.tunnel_field_config),
                                         stringResource(if (it) R.string.tunnel_config_remote else R.string.tunnel_config_local),

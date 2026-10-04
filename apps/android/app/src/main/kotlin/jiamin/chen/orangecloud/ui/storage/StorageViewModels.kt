@@ -12,6 +12,7 @@ import jiamin.chen.orangecloud.data.model.KVKey
 import jiamin.chen.orangecloud.data.model.KVNamespace
 import jiamin.chen.orangecloud.data.model.R2Bucket
 import jiamin.chen.orangecloud.data.model.R2Folder
+import jiamin.chen.orangecloud.data.model.R2Jurisdiction
 import jiamin.chen.orangecloud.data.model.R2Object
 import jiamin.chen.orangecloud.data.model.D1Column
 import jiamin.chen.orangecloud.data.repository.AccountStore
@@ -96,8 +97,15 @@ class R2BucketListViewModel @Inject constructor(
             _opState.update { it.copy(isDeleting = true) }
             try {
                 val accountId = accountStore.selectedAccountId.value ?: error("no account")
-                storageRepository.deleteBucket(accountId, bucket.name)
-                state.update { it.copy(items = it.items.filterNot { b -> b.name == bucket.name }) }
+                storageRepository.deleteBucket(accountId, bucket.name, bucket.jurisdiction)
+                // 同名桶可分属不同区域，按 (name, jurisdiction) 定位
+                state.update {
+                    it.copy(
+                        items = it.items.filterNot { b ->
+                            b.name == bucket.name && b.jurisdictionOrNull == bucket.jurisdictionOrNull
+                        },
+                    )
+                }
                 eventChannel.send(StorageOpEvent.Deleted)
             } catch (e: Exception) {
                 eventChannel.send(StorageOpEvent.Error(e.message))
@@ -278,6 +286,8 @@ class R2ObjectListViewModel @Inject constructor(
 ) : ViewModel() {
 
     val bucket: String = checkNotNull(savedStateHandle["bucket"])
+    /** 区域限制桶的 jurisdiction（eu / us / fedramp…），默认区域为 null；所有桶级调用都要透传。 */
+    private val jurisdiction: String? = R2Jurisdiction.normalize(savedStateHandle.get<String>("jurisdiction"))
     private val hasScope = authRepository.hasScope(Scopes.R2_READ)
     private val canWrite = authRepository.hasScope(Scopes.R2_WRITE)
     private var cursor: String? = null
@@ -331,7 +341,7 @@ class R2ObjectListViewModel @Inject constructor(
             val bytes = if (accountId == null) {
                 null
             } else {
-                runCatching { storageRepository.getObjectBytes(accountId, bucket, obj.key) }.getOrNull()
+                runCatching { storageRepository.getObjectBytes(accountId, bucket, obj.key, jurisdiction) }.getOrNull()
             }
             val content: R2Preview = when {
                 bytes == null -> R2Preview.Failed
@@ -407,7 +417,7 @@ class R2ObjectListViewModel @Inject constructor(
                 _uiState.update { it.copy(hasError = true) }
                 return
             }
-            val page = storageRepository.listObjects(accountId, bucket, prefix, cursor)
+            val page = storageRepository.listObjects(accountId, bucket, prefix, cursor, jurisdiction)
             currentCoroutineContext().ensureActive()
             cursor = page.nextCursor
             val folders = R2Folder.makeList(page.folderPrefixes, prefix)
@@ -431,7 +441,7 @@ class R2ObjectListViewModel @Inject constructor(
         val accountId = accountStore.selectedAccountId.value ?: return null
         _uiState.update { it.copy(isDownloading = true) }
         return try {
-            storageRepository.getObjectBytes(accountId, bucket, key)
+            storageRepository.getObjectBytes(accountId, bucket, key, jurisdiction)
         } catch (e: Exception) {
             eventChannel.send(R2Event.Error(e.message))
             null
@@ -447,7 +457,7 @@ class R2ObjectListViewModel @Inject constructor(
             try {
                 val accountId = accountStore.selectedAccountId.value ?: error("no account")
                 // 上传进当前文件夹（前缀 + 文件名）
-                storageRepository.putObject(accountId, bucket, prefix + filename, bytes, contentType)
+                storageRepository.putObject(accountId, bucket, prefix + filename, bytes, contentType, jurisdiction)
                 eventChannel.send(R2Event.Uploaded)
                 loadFirst()
             } catch (e: Exception) {
@@ -463,7 +473,7 @@ class R2ObjectListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val accountId = accountStore.selectedAccountId.value ?: error("no account")
-                storageRepository.deleteObject(accountId, bucket, key)
+                storageRepository.deleteObject(accountId, bucket, key, jurisdiction)
                 _uiState.update { it.copy(objects = it.objects.filterNot { obj -> obj.key == key }) }
                 eventChannel.send(R2Event.Deleted)
             } catch (e: Exception) {
@@ -482,15 +492,15 @@ class R2ObjectListViewModel @Inject constructor(
             val accountId = accountStore.selectedAccountId.value ?: return@launch
             _uiState.update { it.copy(isCopying = true, copyProgress = 0f) }
             try {
-                storageRepository.copyObject(accountId, bucket, sourceKey, destKey, contentType) { p ->
+                storageRepository.copyObject(accountId, bucket, sourceKey, destKey, contentType, jurisdiction) { p ->
                     _uiState.update { it.copy(copyProgress = p) }
                 }
                 if (isMove) {
-                    if (!storageRepository.objectExists(accountId, bucket, destKey)) {
+                    if (!storageRepository.objectExists(accountId, bucket, destKey, jurisdiction)) {
                         eventChannel.send(R2Event.MoveVerifyFailed)
                         return@launch
                     }
-                    storageRepository.deleteObject(accountId, bucket, sourceKey)
+                    storageRepository.deleteObject(accountId, bucket, sourceKey, jurisdiction)
                     eventChannel.send(R2Event.Moved)
                 } else {
                     eventChannel.send(R2Event.Copied)

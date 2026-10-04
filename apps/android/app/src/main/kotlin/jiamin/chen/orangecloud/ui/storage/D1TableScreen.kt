@@ -77,12 +77,15 @@ fun D1TableScreen(
     var editingRow by remember { mutableStateOf<Map<String, JsonElement>?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val readonlyMsg = stringResource(R.string.d1_row_readonly)
+    val dailyLimitMsg = stringResource(R.string.d1_daily_limit)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 D1RowEvent.Saved, D1RowEvent.Deleted -> editingRow = null
-                is D1RowEvent.Error -> snackbarHostState.showSnackbar(event.message ?: readonlyMsg)
+                is D1RowEvent.Error -> snackbarHostState.showSnackbar(
+                    event.message?.let { if (isD1DailyLimitError(it)) "$dailyLimitMsg\n\n$it" else it } ?: readonlyMsg,
+                )
             }
         }
     }
@@ -108,7 +111,14 @@ fun D1TableScreen(
                         Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator(color = onSky) }
 
                     state.rows.isEmpty() && state.error != null ->
-                        SkyEmptyState(Icons.Outlined.TableRows, stringResource(R.string.error_generic), onSky, stringResource(R.string.common_refresh)) { viewModel.load() }
+                        SkyEmptyState(
+                            Icons.Outlined.TableRows,
+                            // 额度用尽时给出原因与原文，而不是笼统的「出错了」
+                            state.error?.takeIf { isD1DailyLimitError(it) }?.let { d1ErrorText(it) }
+                                ?: stringResource(R.string.error_generic),
+                            onSky,
+                            stringResource(R.string.common_refresh),
+                        ) { viewModel.load() }
 
                     state.rows.isEmpty() ->
                         SkyEmptyState(Icons.Outlined.TableRows, stringResource(R.string.d1_table_empty), onSky, stringResource(R.string.common_refresh)) { viewModel.load() }

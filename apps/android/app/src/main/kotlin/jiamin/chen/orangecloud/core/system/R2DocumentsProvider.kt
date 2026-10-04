@@ -81,7 +81,7 @@ class R2DocumentsProvider : DocumentsProvider() {
         val cursor = MatrixCursor(projection ?: DEFAULT_DOC_PROJECTION)
         when (typeOf(documentId)) {
             T_ROOT -> cursor.addDir(DOC_ROOT, context!!.getString(R.string.r2_provider_root), 0)
-            T_BUCKET -> cursor.addDir(documentId, payload(documentId), bucketFlags())
+            T_BUCKET -> cursor.addDir(documentId, bucketDisplayName(payload(documentId)), bucketFlags())
             T_FOLDER -> {
                 val (_, prefix) = bucketAndRest(documentId)
                 cursor.addDir(documentId, prefix.trim('/').substringAfterLast('/'), folderFlags())
@@ -100,11 +100,12 @@ class R2DocumentsProvider : DocumentsProvider() {
         try {
             when (typeOf(parentDocumentId)) {
                 T_ROOT -> runBlocking { storage.listBuckets(accountId) }.forEach { bucket ->
-                    cursor.addDir(makeId(T_BUCKET, bucket.name, ""), bucket.name, bucketFlags())
+                    val token = bucketToken(bucket.name, bucket.jurisdictionOrNull)
+                    cursor.addDir(makeId(T_BUCKET, token, ""), bucketDisplayName(token), bucketFlags())
                 }
                 T_BUCKET, T_FOLDER -> {
                     val (bucket, prefix) = parentBucketPrefix(parentDocumentId)
-                    val page = runBlocking { storage.listObjects(accountId, bucket, prefix, null) }
+                    val page = runBlocking { storage.listObjects(accountId, bucket.bucketName, prefix, null, bucket.bucketJurisdiction) }
                     page.folderPrefixes.toSet().filter { it != prefix }.forEach { p ->
                         cursor.addDir(makeId(T_FOLDER, bucket, p), p.removePrefix(prefix).trim('/'), folderFlags())
                     }
@@ -140,7 +141,7 @@ class R2DocumentsProvider : DocumentsProvider() {
         val temp = File.createTempFile("r2_", "_" + key.substringAfterLast('/').take(40), context!!.cacheDir)
 
         if (!isWrite) {
-            temp.writeBytes(runBlocking { storage.getObjectBytes(accountId, bucket, key) })
+            temp.writeBytes(runBlocking { storage.getObjectBytes(accountId, bucket.bucketName, key, bucket.bucketJurisdiction) })
             temp.deleteOnExit()
             return ParcelFileDescriptor.open(temp, ParcelFileDescriptor.MODE_READ_ONLY)
         }
@@ -148,13 +149,13 @@ class R2DocumentsProvider : DocumentsProvider() {
         if (!canWrite) throw IllegalStateException("no write permission")
         // 读改写（rw 非 truncate）先拉现有内容进临时文件
         if (mode.contains('r') && !mode.contains('t')) {
-            runCatching { temp.writeBytes(runBlocking { storage.getObjectBytes(accountId, bucket, key) }) }
+            runCatching { temp.writeBytes(runBlocking { storage.getObjectBytes(accountId, bucket.bucketName, key, bucket.bucketJurisdiction) }) }
         }
         val mime = URLConnection.guessContentTypeFromName(key) ?: "application/octet-stream"
         return ParcelFileDescriptor.open(temp, ParcelFileDescriptor.parseMode(mode), uploadHandler) { err ->
             try {
                 if (err == null) {
-                    runBlocking { storage.putObject(accountId, bucket, key, temp.readBytes(), mime) }
+                    runBlocking { storage.putObject(accountId, bucket.bucketName, key, temp.readBytes(), mime, bucket.bucketJurisdiction) }
                     notifyParentOf(documentId)
                 }
             } catch (e: Exception) {
@@ -173,13 +174,15 @@ class R2DocumentsProvider : DocumentsProvider() {
         val (bucket, prefix) = parentBucketPrefix(parentDocumentId)
         return if (mimeType == Document.MIME_TYPE_DIR) {
             val folderKey = prefix + displayName.trim('/') + "/"
-            runBlocking { storage.putObject(accountId, bucket, folderKey, ByteArray(0), "application/x-directory") }
+            runBlocking {
+                storage.putObject(accountId, bucket.bucketName, folderKey, ByteArray(0), "application/x-directory", bucket.bucketJurisdiction)
+            }
             notifyChildren(parentDocumentId)
             makeId(T_FOLDER, bucket, folderKey)
         } else {
             val key = prefix + displayName
             val mime = mimeType.ifBlank { URLConnection.guessContentTypeFromName(displayName) ?: "application/octet-stream" }
-            runBlocking { storage.putObject(accountId, bucket, key, ByteArray(0), mime) }
+            runBlocking { storage.putObject(accountId, bucket.bucketName, key, ByteArray(0), mime, bucket.bucketJurisdiction) }
             notifyChildren(parentDocumentId)
             makeId(T_OBJECT, bucket, key)
         }
@@ -193,9 +196,12 @@ class R2DocumentsProvider : DocumentsProvider() {
         val newKey = parentPrefix + displayName
         if (newKey == key) return documentId
         runBlocking {
-            val bytes = storage.getObjectBytes(accountId, bucket, key)
-            storage.putObject(accountId, bucket, newKey, bytes, URLConnection.guessContentTypeFromName(newKey) ?: "application/octet-stream")
-            storage.deleteObject(accountId, bucket, key)
+            val bytes = storage.getObjectBytes(accountId, bucket.bucketName, key, bucket.bucketJurisdiction)
+            storage.putObject(
+                accountId, bucket.bucketName, newKey, bytes,
+                URLConnection.guessContentTypeFromName(newKey) ?: "application/octet-stream", bucket.bucketJurisdiction,
+            )
+            storage.deleteObject(accountId, bucket.bucketName, key, bucket.bucketJurisdiction)
         }
         notifyParentOf(documentId)
         return makeId(T_OBJECT, bucket, newKey)
@@ -209,9 +215,12 @@ class R2DocumentsProvider : DocumentsProvider() {
         val newKey = dstPrefix + srcKey.substringAfterLast('/')
         if (dstBucket == srcBucket && newKey == srcKey) return sourceDocumentId
         runBlocking {
-            val bytes = storage.getObjectBytes(accountId, srcBucket, srcKey)
-            storage.putObject(accountId, dstBucket, newKey, bytes, URLConnection.guessContentTypeFromName(newKey) ?: "application/octet-stream")
-            storage.deleteObject(accountId, srcBucket, srcKey)
+            val bytes = storage.getObjectBytes(accountId, srcBucket.bucketName, srcKey, srcBucket.bucketJurisdiction)
+            storage.putObject(
+                accountId, dstBucket.bucketName, newKey, bytes,
+                URLConnection.guessContentTypeFromName(newKey) ?: "application/octet-stream", dstBucket.bucketJurisdiction,
+            )
+            storage.deleteObject(accountId, srcBucket.bucketName, srcKey, srcBucket.bucketJurisdiction)
         }
         notifyChildren(sourceParentDocumentId)
         notifyChildren(targetParentDocumentId)
@@ -224,7 +233,7 @@ class R2DocumentsProvider : DocumentsProvider() {
         val (bucket, rest) = bucketAndRest(documentId)
         runBlocking {
             when (typeOf(documentId)) {
-                T_OBJECT -> storage.deleteObject(accountId, bucket, rest)
+                T_OBJECT -> storage.deleteObject(accountId, bucket.bucketName, rest, bucket.bucketJurisdiction)
                 T_FOLDER -> deletePrefix(accountId, bucket, rest)
                 else -> Unit
             }
@@ -238,13 +247,13 @@ class R2DocumentsProvider : DocumentsProvider() {
         var cursor: String? = null
         var pages = 0
         do {
-            val page = storage.listObjects(accountId, bucket, prefix, cursor)
-            page.objects.forEach { storage.deleteObject(accountId, bucket, it.key) }
+            val page = storage.listObjects(accountId, bucket.bucketName, prefix, cursor, bucket.bucketJurisdiction)
+            page.objects.forEach { storage.deleteObject(accountId, bucket.bucketName, it.key, bucket.bucketJurisdiction) }
             page.folderPrefixes.toSet().filter { it != prefix }.forEach { deletePrefix(accountId, bucket, it, depth + 1) }
             cursor = page.nextCursor
             pages++
         } while (cursor != null && pages < 100)
-        runCatching { storage.deleteObject(accountId, bucket, prefix) }
+        runCatching { storage.deleteObject(accountId, bucket.bucketName, prefix, bucket.bucketJurisdiction) }
     }
 
     // MARK: - 通知系统刷新
@@ -296,6 +305,16 @@ class R2DocumentsProvider : DocumentsProvider() {
     }
 
     // MARK: - documentId 编码：<type char><bucket> <rest>（空格分隔 bucket 与 key/prefix）
+    // 区域限制桶的 bucket 段写作 name@jurisdiction（桶名不允许 @，无歧义）；默认区域仍是裸桶名，
+    // 既有文档 ID 不变。桶级调用都靠这个后缀带上 cf-r2-jurisdiction 头。
+
+    private fun bucketToken(name: String, jurisdiction: String?): String =
+        if (jurisdiction == null) name else "$name@$jurisdiction"
+    private val String.bucketName: String get() = substringBefore('@')
+    private val String.bucketJurisdiction: String? get() = substringAfter('@', "").ifEmpty { null }
+    /** 同名桶可分属不同区域，文件选择器里用「name (EU)」区分。 */
+    private fun bucketDisplayName(token: String): String =
+        token.bucketJurisdiction?.let { "${token.bucketName} (${it.uppercase()})" } ?: token.bucketName
 
     private fun typeOf(id: String): Char = id.firstOrNull() ?: T_ROOT
     private fun makeId(type: Char, bucket: String, rest: String): String = "$type$bucket $rest"

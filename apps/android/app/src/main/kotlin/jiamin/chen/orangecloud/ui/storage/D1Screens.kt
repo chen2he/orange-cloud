@@ -178,6 +178,7 @@ fun D1QueryScreen(
     val favFullMsg = stringResource(R.string.d1_favorite_full, D1QueryPrefs.MAX_FAVORITES)
     val exportFailedMsg = stringResource(R.string.d1_export_failed)
     val exportShareTitle = stringResource(R.string.d1_export_share)
+    val dailyLimitMsg = stringResource(R.string.d1_daily_limit)
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -187,7 +188,9 @@ fun D1QueryScreen(
                 D1QueryEvent.TableDropped -> { toDropTable = null; snackbarHostState.showSnackbar(droppedMsg) }
                 D1QueryEvent.FavoriteTooLong -> snackbarHostState.showSnackbar(favTooLongMsg)
                 D1QueryEvent.FavoriteFull -> snackbarHostState.showSnackbar(favFullMsg)
-                is D1QueryEvent.Error -> snackbarHostState.showSnackbar(event.message ?: errMsg)
+                is D1QueryEvent.Error -> snackbarHostState.showSnackbar(
+                    event.message?.let { if (isD1DailyLimitError(it)) "$dailyLimitMsg\n\n$it" else it } ?: errMsg,
+                )
             }
         }
     }
@@ -306,6 +309,10 @@ fun D1QueryScreen(
                     }
                 }
                 state.error?.let {
+                    // 免费套餐每日行数上限：先给中文解释（不用等宽），再附 CF 原文
+                    if (isD1DailyLimitError(it)) {
+                        Text(stringResource(R.string.d1_daily_limit), color = Color(0xFFE5484D), fontSize = 13.sp)
+                    }
                     Text(it, color = Color(0xFFE5484D), fontSize = 13.sp, fontFamily = FontFamily.Monospace)
                 }
                 if (state.columns.isNotEmpty()) {

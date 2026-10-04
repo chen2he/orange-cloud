@@ -102,7 +102,7 @@ class TunnelDetailViewModel @Inject constructor(
                     it.copy(tunnel = tunnel, connections = tunnel.connections.orEmpty())
                 }
                 loadConnections(accountId)
-                if (tunnel.remoteConfig == true) loadConfiguration(accountId)
+                if (tunnel.isRemotelyManaged == true) loadConfiguration(accountId)
             } catch (e: Exception) {
                 _uiState.update { it.copy(hasError = true) }
             } finally {

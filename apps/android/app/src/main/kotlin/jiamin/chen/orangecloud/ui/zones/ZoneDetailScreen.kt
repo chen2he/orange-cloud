@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Dns
+import androidx.compose.material.icons.outlined.GppMaybe
 import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.MonitorHeart
 import androidx.compose.material.icons.outlined.Lock
@@ -62,7 +63,7 @@ import jiamin.chen.orangecloud.core.design.theme.OcSuccess
 import jiamin.chen.orangecloud.data.model.Zone
 
 /** 域名级深入工具（统一一个回调，新增工具只加枚举项 + ToolRow，免改签名）。 */
-enum class ZoneTool { CACHE, RATE_LIMIT, EMAIL_ROUTING, LOAD_BALANCER, HEALTH_CHECK, DNS_SETTINGS, MANAGED_HEADERS }
+enum class ZoneTool { CACHE, RATE_LIMIT, EMAIL_ROUTING, LOAD_BALANCER, HEALTH_CHECK, DNS_SETTINGS, MANAGED_HEADERS, SECURITY_INSIGHTS }
 
 /** 单个域名的工具中枢 + 概览（hero 卡 + 工具分发 + Name Servers）。对应 iOS ZoneDetailView。 */
 @Composable
@@ -115,6 +116,8 @@ fun ZoneDetailScreen(
                 ToolRow(Icons.Outlined.SwapHoriz, stringResource(R.string.mh_title), { onOpenZoneTool(ZoneTool.MANAGED_HEADERS) })
                 ToolRow(Icons.AutoMirrored.Outlined.ShowChart, stringResource(R.string.zone_tool_analytics), onOpenAnalytics)
                 ToolRow(Icons.Outlined.Shield, stringResource(R.string.zone_tool_waf), onOpenWaf)
+                // 安全洞察（Security Center，全套餐）：扫描出的配置风险，归在安全类工具旁
+                ToolRow(Icons.Outlined.GppMaybe, stringResource(R.string.si_title), { onOpenZoneTool(ZoneTool.SECURITY_INSIGHTS) })
                 ToolRow(Icons.Outlined.Bolt, stringResource(R.string.zone_tool_cache), { onOpenZoneTool(ZoneTool.CACHE) })
                 ToolRow(Icons.Outlined.Timer, stringResource(R.string.zone_tool_rate_limit), { onOpenZoneTool(ZoneTool.RATE_LIMIT) })
                 ToolRow(Icons.Outlined.MailOutline, stringResource(R.string.zone_tool_email_routing), { onOpenZoneTool(ZoneTool.EMAIL_ROUTING) })

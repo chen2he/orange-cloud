@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Build
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Public
@@ -85,6 +86,8 @@ fun WorkerDetailScreen(
     onOpenDomains: () -> Unit = {},
     onOpenDeployments: () -> Unit = {},
     onOpenBuilds: () -> Unit = {},
+    /** 该 Worker 的 Workers Issues（筛选后的问题列表，Pro 闸门在路由上）。 */
+    onOpenIssues: () -> Unit = {},
     onEditCode: () -> Unit = {},
     // 查看免费；写操作（编辑/删除）门控 Pro：编辑走路由 ProGate，删除在此按 isPro 拦（非 Pro → onShowPaywall）
     isPro: Boolean = true,
@@ -93,6 +96,7 @@ fun WorkerDetailScreen(
 ) {
     val worker by viewModel.worker.collectAsStateWithLifecycle()
     val isDeleting by viewModel.isDeleting.collectAsStateWithLifecycle()
+    val activeIssues by viewModel.activeIssues.collectAsStateWithLifecycle()
     val phase = rememberSkyPhase()
     val onSky = phase.onSky
     val snackbar = remember { androidx.compose.material3.SnackbarHostState() }
@@ -153,6 +157,16 @@ fun WorkerDetailScreen(
                         ManageRow(Icons.Outlined.Public, stringResource(R.string.worker_manage_domains), onOpenDomains)
                         ManageRow(Icons.Outlined.History, stringResource(R.string.worker_manage_deployments), onOpenDeployments)
                         ManageRow(Icons.Outlined.Build, stringResource(R.string.builds_title), onOpenBuilds)
+                        // Workers Issues：带该 Worker 的活跃问题数，点进筛选后的列表
+                        if (viewModel.canViewIssues) {
+                            ManageRow(
+                                Icons.Outlined.BugReport,
+                                stringResource(R.string.wi_title),
+                                onOpenIssues,
+                                trailing = activeIssues?.let { formatIssueCount(it) },
+                                trailingHighlight = (activeIssues ?: 0L) > 0L,
+                            )
+                        }
                     }
                 }
 
@@ -302,7 +316,14 @@ private fun WorkerDeleteDialog(
 }
 
 @Composable
-private fun ManageRow(icon: ImageVector, label: String, onClick: () -> Unit) {
+private fun ManageRow(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    /** 右侧计数（如活跃问题数）；trailingHighlight 时用强调色。 */
+    trailing: String? = null,
+    trailingHighlight: Boolean = false,
+) {
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -310,6 +331,15 @@ private fun ManageRow(icon: ImageVector, label: String, onClick: () -> Unit) {
         Icon(icon, contentDescription = null, tint = OcOrange, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(14.dp))
         Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+        if (trailing != null) {
+            Text(
+                trailing,
+                fontSize = 14.sp,
+                fontWeight = if (trailingHighlight) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (trailingHighlight) Color(0xFFE5484D) else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.width(4.dp))
+        }
         Icon(
             Icons.AutoMirrored.Outlined.KeyboardArrowRight,
             contentDescription = null,

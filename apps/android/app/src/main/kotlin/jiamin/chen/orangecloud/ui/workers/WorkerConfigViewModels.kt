@@ -234,7 +234,11 @@ class WorkerBindingsViewModel @Inject constructor(
                 val accountId = accountId()
                 val d1 = if (canReadD1) runCatching { storageRepository.listDatabases(accountId) }.getOrDefault(emptyList()) else emptyList()
                 val kv = if (canReadKV) runCatching { storageRepository.listNamespaces(accountId) }.getOrDefault(emptyList()) else emptyList()
-                val r2 = if (canReadR2) runCatching { storageRepository.listBuckets(accountId) }.getOrDefault(emptyList()) else emptyList()
+                // 绑定只按桶名引用，区域限制桶（EU / US…）需要额外的 jurisdiction 字段，这里只列默认区域的桶
+                val r2 = if (canReadR2) {
+                    runCatching { storageRepository.listBuckets(accountId) }.getOrDefault(emptyList())
+                        .filter { it.jurisdictionOrNull == null }
+                } else emptyList()
                 _uiState.update { it.copy(d1Databases = d1, kvNamespaces = kv, r2Buckets = r2) }
                 resourcesLoaded = true
             } finally {

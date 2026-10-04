@@ -124,7 +124,7 @@ class PagesRepository @Inject constructor(
         val body = json.encodeToString(PagesHashesBody.serializer(), PagesHashesBody(hashes)).encodeToByteArray()
         val bytes = api.bearerJson("POST", "pages/assets/check-missing", jwt, body)
         val env = json.decodeFromString(CfEnvelope.serializer(ListSerializer(String.serializer())), bytes.decodeToString())
-        if (!env.success) throw ApiError.Cloudflare(env.errors.map { ApiError.CfError(it.code, it.message) })
+        if (!env.success) throw ApiError.Cloudflare(env.errors.map { it.toCfError() })
         return env.result ?: emptyList()
     }
 
